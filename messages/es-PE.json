@@ -350,7 +350,7 @@
     "slide3": {
       "kicker": "Definiciones",
       "title": "Cuatro etapas, anidadas no secuenciales — todo sistema autónomo todavía contiene reglas, aprendizaje y modelos generativos dentro de sí.",
-      "body": "Esta es la tarjeta de referencia densa para el resto del resumen. Cada tarjeta define qué ES la era, qué PUEDE hacer, qué NO PUEDE hacer y el valor económico que creó. La idea de anidamiento (abajo a la derecha) es crítica: la IA autónoma no reemplaza a la IA generativa — se construye sobre ella.",
+      "body": "Esta es la tarjeta de referencia densa para el resto del resumen. Cada tarjeta define qué ES la era, qué PUEDE hacer, qué NO PUEDE hacer y el valor económico que creó. La idea de anidamiento es crítica: la IA autónoma no reemplaza a la IA generativa — se construye sobre ella. Los casos de uso evolucionan desde conteo simple (Etapa 1) hasta tareas de percepción como grafiti y detección de fuego (Etapa 2), generación de contenido para reportes de incidentes (Etapa 3), hasta respuesta autónoma de extremo a extremo incluyendo reportes auto-generados y escalada con juez LLM (Etapa 4).",
       "nestingTitle": "La idea de anidamiento — las capacidades se apilan, no se reemplazan",
       "nestingBody": "Un sistema efectivo de etapa 4 (autónomo) casi siempre contiene agentes de etapa 3 que usan modelos generativos de etapa 2 que fueron entrenados con patrones identificados originalmente por sistemas de etapa 1. Eliminar cualquier capa rompe toda la pila.",
       "stage": "Etapa",
@@ -401,7 +401,7 @@
     "slide8": {
       "kicker": "Realidad empresarial",
       "title": "El 85% de los empleados están atascados en las etapas 2–3 de adopción de IA — solo el 10% ha alcanzado la etapa autónoma.",
-      "body": "El estudio de adopción de BCG de 2025 mapea el uso de IA de los empleados en cinco etapas, de asistencia de información a orquestación totalmente autónoma. El hallazgo demoledor: la mayoría de las organizaciones han comprado herramientas de IA pero no han rediseñado el trabajo alrededor de ellas. Deloitte confirma: el 71% de las empresas usa IA, pero solo el 25% ha pasado el 40%+ de pilotos a producción. La brecha entre despliegue y valor es un problema de rediseño de procesos, no de tecnología.",
+      "body": "El estudio de adopción de BCG mapea el uso de IA en cinco etapas. El hallazgo demoledor: la mayoría de las organizaciones han comprado herramientas de IA pero no han rediseñado el trabajo alrededor de ellas. La brecha entre despliegue y valor es un problema de rediseño de procesos. Los sistemas tradicionales (Etapa 1-2) cuentan personas y activan alertas estáticas. Los sistemas ML/DL (Etapa 2-3) detectan grafiti, objetos abandonados, fuego y resbalones. Pero solo los sistemas autónomos (Etapa 4) cierran el ciclo — percibiendo, razonando, actuando y autocorrigiéndose con reportes auto-generados y escalada con juez LLM. Solo el 25% ha pasado el 40%+ de pilotos a producción.",
       "youAreHere": "← Usted está aquí",
       "bracket": "85% de empleados atascados aquí — herramientas compradas, sin rediseño de procesos",
       "stat1Value": "71%",
@@ -414,7 +414,7 @@
     "slide9": {
       "kicker": "Mapeo del proyecto",
       "title": "Vision Agent está construido nativamente en la etapa 4 — cada cámara de plaza es un ciclo percibir-razonar-actuar, no solo un detector.",
-      "body": "La mayoría de los sistemas de cámaras cívicas son etapa 2: cuentan personas y activan una alerta de umbral estático. Vision Agent cierra el ciclo. El diagrama siguiente mapea el ciclo autónomo canónico sobre los componentes reales del prototipo, para que pueda ver exactamente qué código hace qué función cognitiva.",
+      "body": "La mayoría de los sistemas de cámaras cívicas son Etapa 2: cuentan personas y activan una alerta de umbral estático. Vision Agent cierra el ciclo. El diagrama siguiente mapea el ciclo autónomo canónico sobre los componentes reales del prototipo. El sistema maneja detección de avalanchas de multitud, alertas de grafiti y vandalismo, detección temprana de fuego y humo, detección de objetos abandonados, y evaluación de daño estructural post-sismo — todo a través del mismo ciclo percibir-razonar-actuar-reflexionar con retroalimentación humana para gobernanza.",
       "mappingTitle": "Qué significa esto en la práctica",
       "analyticsLayer": "Capa de analítica (Etapa 2)",
       "analyticsBody": "TF.js COCO-SSD detecta personas. Un z-score + EMA de ventana deslizante de 2 minutos calcula el puntaje de anomalía. Percepción + estadística puras — sin decisiones.",

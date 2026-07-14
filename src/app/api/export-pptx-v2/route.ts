@@ -1,17 +1,17 @@
 /**
- * /api/export-pptx-v2 — Infographic/timeline style PowerPoint.
+ * /api/export-pptx-v2 — McKinsey/BCG text-dense infographic style.
  *
- * DIFFERENCES vs v1 (4-card layout):
- *   - Horizontal timeline arrow with 4 era nodes + year markers + value callouts
- *   - Agentic loop as a horizontal flow: Percibir → Razonar → Actuar → Reflexionar ↻
- *   - Human Feedback node (our customization) connected with bidirectional arrows
- *   - 3-tier use cases row: Traditional | ML/DL Modern | Agentic Future
- *   - More visual, infographic-leaning style
+ * Layout (13.333" × 7.5"):
+ *   A: Header (logo, brand, meta)
+ *   B: Title (action title)
+ *   C: 4 era columns left-to-right with explanatory paragraphs + use cases
+ *   D: Capabilities strip (4 cells aligned with columns, from Section 5/6)
+ *   E: Agentic loop diagram (4 nodes + loop-back + Human Feedback, from "The Leap")
+ *   F: Section 9 quote ("Most civic-camera systems are Stage 2...")
+ *   G: Value generated + footer
  *
- * Geometry validated by /home/z/my-project/scripts/validate-pptx-v2-geometry.py
- * All measurements in inches. Slide: 13.333" × 7.5" (16:9 widescreen).
- *
- * All objects are NATIVE PowerPoint shapes (fully editable).
+ * No dates, no money. All text from translation files.
+ * Geometry validated by /home/z/my-project/scripts/validate-pptx-v2-geometry-v2.py
  */
 
 import { NextResponse } from 'next/server'
@@ -21,7 +21,6 @@ import pptxgen from 'pptxgenjs'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// ─── i18n ───────────────────────────────────────────────────────────────────
 async function getMessages() {
   const store = await cookies()
   const locale = store.get('NEXT_LOCALE')?.value === 'es-PE' ? 'es-PE' : 'en'
@@ -29,56 +28,33 @@ async function getMessages() {
   return { locale, messages }
 }
 
-// ─── Colors ─────────────────────────────────────────────────────────────────
 const C = {
-  emerald600: '059669',
-  emerald500: '10B981',
-  emerald50: 'ECFDF5',
-  emerald100: 'D1FAE5',
-  zinc950: '09090B',
-  zinc800: '27272A',
-  zinc700: '3F3F46',
-  zinc600: '52525B',
-  zinc500: '71717A',
-  zinc400: 'A1A1AA',
-  zinc300: 'D4D4D8',
-  zinc200: 'E4E4E7',
-  zinc100: 'F4F4F5',
-  zinc50: 'FAFAFA',
-  amber500: 'F59E0B',
-  amber100: 'FEF3C7',
-  amber50: 'FFFBEB',
-  rose600: 'E11D48',
-  rose100: 'FEE2E2',
+  emerald600: '059669', emerald50: 'ECFDF5', emerald100: 'D1FAE5',
+  zinc950: '09090B', zinc800: '27272A', zinc700: '3F3F46', zinc600: '52525B',
+  zinc500: '71717A', zinc400: 'A1A1AA', zinc300: 'D4D4D8', zinc200: 'E4E4E7',
+  zinc100: 'F4F4F5', zinc50: 'FAFAFA',
+  amber500: 'F59E0B', amber100: 'FEF3C7', amber50: 'FFFBEB',
   white: 'FFFFFF',
-  blue400: '60A5FA', // only for "human feedback" accent — NOT a brand color
 }
 
-// ─── Layout constants (validated by Python script) ──────────────────────────
 const SLIDE_W = 13.333
 const SLIDE_H = 7.5
 const MARGIN = 0.30
 const CONTENT_W = SLIDE_W - 2 * MARGIN
 
-// Era node positions (validated)
-const NODE_W = 2.50
-const NODE_H = 1.00
-const NODE_Y = 1.35
-const NODE_CENTERS = [1.5, 4.6, 7.7, 10.8]
+// Era columns
+const COL_GAP = 0.15
+const COL_W = (CONTENT_W - 3 * COL_GAP) / 4
+const COL_Y = 1.10
+const COL_H = 2.75
 
-// Loop node positions (validated)
-const LOOP_Y = 4.15
-const LOOP_H = 0.95
-const LOOP_NODE_W = 1.85
-const LOOP_GAP = 0.55
-const TOTAL_LOOP_W = 4 * LOOP_NODE_W + 3 * LOOP_GAP // 9.05"
-const LOOP_START_X = (SLIDE_W - TOTAL_LOOP_W) / 2 // 2.14"
-
-// Use case tier positions (validated)
-const UC_Y = 6.40
-const UC_H = 0.90
-const UC_W = (CONTENT_W - 2 * 0.20) / 3 // 4.11"
-const UC_GAP = 0.20
+// Loop nodes
+const LOOP_Y = 4.65
+const LOOP_H = 0.60
+const LOOP_NODE_W = 1.55
+const LOOP_GAP = 0.50
+const TOTAL_LOOP_W = 4 * LOOP_NODE_W + 3 * LOOP_GAP
+const LOOP_START_X = (SLIDE_W - TOTAL_LOOP_W) / 2
 
 export async function GET() {
   const { locale, messages } = await getMessages()
@@ -94,18 +70,17 @@ export async function GET() {
   const pres = new pptxgen()
   pres.defineLayout({ name: 'CUSTOM_WIDE', width: SLIDE_W, height: SLIDE_H })
   pres.layout = 'CUSTOM_WIDE'
-  pres.title = 'Vision Agent — Strategic Brief V2 (Infographic)'
+  pres.title = 'Vision Agent — Strategic Brief V2'
   pres.author = 'Vision Agent'
   pres.company = 'Z.ai'
 
   const slide = pres.addSlide()
   slide.background = { color: C.white }
 
-  // ════════════════════════════════════════════════════════════════════════
-  // ZONE A: HEADER (y: 0.10 – 0.62)
-  // ════════════════════════════════════════════════════════════════════════
+  // Compute column X positions
+  const colXs = [0, 1, 2, 3].map((i) => MARGIN + i * (COL_W + COL_GAP))
 
-  // Logo: emerald rounded rectangle with "VA" text
+  // ═══ ZONE A: HEADER ═══
   slide.addShape(pres.ShapeType.roundRect, {
     x: 0.30, y: 0.10, w: 0.45, h: 0.45,
     fill: { color: C.emerald600 }, line: { type: 'none' }, rectRadius: 0.08,
@@ -114,421 +89,313 @@ export async function GET() {
     x: 0.30, y: 0.10, w: 0.45, h: 0.45,
     fontSize: 14, bold: true, color: C.white, align: 'center', valign: 'middle', fontFace: 'Georgia',
   })
-
-  // Brand title
   slide.addText(`${t('Header.brand')} — ${t('Nav.brief')}`, {
     x: 0.85, y: 0.10, w: 7.5, h: 0.45,
     fontSize: 13, bold: true, color: C.zinc950, align: 'left', valign: 'middle', fontFace: 'Georgia',
   })
-
-  // Meta tag
-  slide.addText(`${t('Header.version')}  ·  ${isES ? '14/07/2026' : '2026-07-14'}  ·  ${isES ? 'Perú' : 'Peru'}`, {
+  slide.addText(`${t('Header.version')}  ·  ${isES ? 'Perú' : 'Peru'}`, {
     x: 10.33, y: 0.10, w: 2.7, h: 0.45,
     fontSize: 9, color: C.zinc500, align: 'right', valign: 'middle', fontFace: 'Consolas',
   })
-
-  // Header separator line
   slide.addShape(pres.ShapeType.line, {
-    x: MARGIN, y: 0.62, w: CONTENT_W, h: 0,
-    line: { color: C.zinc200, width: 1 },
+    x: MARGIN, y: 0.60, w: CONTENT_W, h: 0, line: { color: C.zinc200, width: 1 },
   })
 
-  // ════════════════════════════════════════════════════════════════════════
-  // ZONE B: TITLE (y: 0.70 – 1.15)
-  // ════════════════════════════════════════════════════════════════════════
-  slide.addText(t('Tab3.slide1.title'), {
-    x: MARGIN, y: 0.70, w: CONTENT_W, h: 0.45,
-    fontSize: 15, bold: true, color: C.zinc950, align: 'left', valign: 'middle',
-    fontFace: 'Georgia', shrinkText: true,
-  })
+  // ═══ ZONE B: TITLE ═══
+  slide.addText(
+    isES
+      ? 'La IA evolucionó en cuatro etapas — cada una añadió capacidades que la anterior no tenía, hasta llegar a sistemas que actúan autónomamente.'
+      : 'AI evolved through four stages — each adding capabilities the previous lacked, culminating in systems that act autonomously.',
+    {
+      x: MARGIN, y: 0.65, w: CONTENT_W, h: 0.40,
+      fontSize: 14, bold: true, color: C.zinc950, align: 'left', valign: 'middle',
+      fontFace: 'Georgia', shrinkText: true,
+    }
+  )
 
-  // ════════════════════════════════════════════════════════════════════════
-  // ZONE C: TIMELINE (y: 1.25 – 3.80)
-  // ════════════════════════════════════════════════════════════════════════
+  // ═══ ZONE C: 4 ERA COLUMNS ═══
+  const eraData = [
+    {
+      stage: isES ? 'ETAPA 1' : 'STAGE 1',
+      name: isES ? 'Programas Estáticos' : 'Static Programs',
+      color: C.zinc400,
+      def: isES
+        ? 'Los humanos codifican reglas; el sistema ejecuta lógica determinista. Cada decisión es auditable porque un humano escribió cada regla. Sin aprendizaje ni adaptación.'
+        : 'Humans encode rules; the system executes deterministic logic. Every decision is auditable because a human wrote each rule. No learning or adaptation.',
+      useCases: isES
+        ? ['Conteo de personas y vehículos', 'Detección de intrusión en zonas', 'Monitoreo de colas', 'Disponibilidad de estacionamiento', 'Dwell time en bahías de carga']
+        : ['People & vehicle counting', 'Zone intrusion detection', 'Queue monitoring', 'Parking availability', 'Loading bay dwell time'],
+    },
+    {
+      stage: isES ? 'ETAPA 2' : 'STAGE 2',
+      name: isES ? 'ML / Deep Learning' : 'ML / Deep Learning',
+      color: C.zinc600,
+      def: isES
+        ? 'Los modelos aprenden patrones de los datos. Ningún humano escribe las reglas — el modelo las descubre. Percepción a escala: clasificación, detección de anomalías, reconocimiento.'
+        : 'Models learn patterns from data. No human writes the rules — the model discovers them. Perception at scale: classification, anomaly detection, recognition.',
+      useCases: isES
+        ? ['Grafiti y vandalismo en fachadas', 'Objetos abandonados o sospechosos', 'Fuego y humo (3 fotogramas)', 'Resbalones y superficies mojadas', 'Intrusión vehicular fuera de horario', 'Cámaras térmicas nocturnas', 'Nivel de agua e inundaciones', 'Deslizamientos con frame-diff']
+        : ['Graffiti & façade vandalism', 'Abandoned/suspicious objects', 'Fire & smoke (3-frame verify)', 'Slip & wet surface hazards', 'After-hours vehicle intrusion', 'Night thermal cameras', 'Water level & flood detection', 'Landslide frame-diff detection'],
+    },
+    {
+      stage: isES ? 'ETAPA 3' : 'STAGE 3',
+      name: isES ? 'IA Cognitiva / Generativa' : 'Cognitive / Generative AI',
+      color: C.amber500,
+      def: isES
+        ? 'Modelos que sintetizan nuevo contenido — texto, código, imágenes. Asistentes que resumen, traducen y responden preguntas, pero no pueden actuar en el mundo ni perseguir objetivos.'
+        : 'Models that synthesize new content — text, code, images. Assistants that summarize, translate, and answer questions, but cannot act in the world or pursue goals.',
+      useCases: isES
+        ? ['Descripción automática de incidentes', 'Resumen de eventos del día', 'Traducción multilingüe de reportes', 'Clasificación de severidad por lenguaje', 'Consultas en lenguaje natural sobre video']
+        : ['Auto incident description', 'Daily event summarization', 'Multilingual report translation', 'Severity classification by language', 'Natural language video queries'],
+    },
+    {
+      stage: isES ? 'ETAPA 4' : 'STAGE 4',
+      name: isES ? 'IA Autónoma' : 'Agentic AI',
+      color: C.emerald600,
+      def: isES
+        ? 'Sistemas que perciben, razonan, actúan y se autocorrigen en un ciclo. Planifican flujos multi-paso, usan herramientas y revisan el curso. De la asistencia a la ejecución de extremo a extremo.'
+        : 'Systems that perceive, reason, act, and self-correct in a loop. They plan multi-step workflows, use tools, and revise course. From assistance to end-to-end execution.',
+      useCases: isES
+        ? ['Reporte de incidente auto-generado', 'Escalada con juez LLM (filtra FP)', 'Memoria visual: incidentes similares', 'Malla multicámara con re-ID', 'Daño estructural post-sismo', 'Inteligencia de negocio (conversión)', 'Respuesta coordinada a desastres', 'Escalada a servicios de emergencia']
+        : ['Auto-generated incident report', 'LLM-judge escalation (FP filter)', 'Visual memory: similar incidents', 'Multi-camera mesh with re-ID', 'Post-earthquake structural damage', 'Business intelligence (conversion)', 'Coordinated disaster response', 'Emergency services escalation'],
+    },
+  ]
 
-  // Timeline section label
-  slide.addText(isES ? 'EVOLUCIÓN DE LA IA — 70 AÑOS' : 'AI EVOLUTION — 70 YEARS', {
-    x: MARGIN, y: 1.20, w: 4, h: 0.20,
-    fontSize: 8, bold: true, color: C.emerald600, align: 'left', valign: 'middle',
-    fontFace: 'Consolas',
-  })
+  eraData.forEach((era, i) => {
+    const cx = colXs[i]
 
-  // 4 era nodes (above the arrow)
-  const eraColors = [C.zinc400, C.zinc600, C.amber500, C.emerald600]
-  const eraKeys = ['stage1', 'stage2', 'stage3', 'stage4']
-  const eraYears = ['1956', '1986', '2017', '2024']
-
-  eraKeys.forEach((kp, i) => {
-    const cx = NODE_CENTERS[i]
-    const nx = cx - NODE_W / 2
-    const color = eraColors[i]
-
-    // Node card
+    // Card background
     slide.addShape(pres.ShapeType.roundRect, {
-      x: nx, y: NODE_Y, w: NODE_W, h: NODE_H,
+      x: cx, y: COL_Y, w: COL_W, h: COL_H,
       fill: { color: C.white }, line: { color: C.zinc200, width: 1 },
-      rectRadius: 0.06,
-      shadow: { type: 'outer', blur: 3, offset: 1, color: '000000', opacity: 0.08 },
+      rectRadius: 0.04,
+      shadow: { type: 'outer', blur: 3, offset: 1, color: '000000', opacity: 0.06 },
     })
 
-    // Color bar at top of node
+    // Color header bar
     slide.addShape(pres.ShapeType.rect, {
-      x: nx, y: NODE_Y, w: NODE_W, h: 0.06,
-      fill: { color }, line: { type: 'none' },
+      x: cx, y: COL_Y, w: COL_W, h: 0.06,
+      fill: { color: era.color }, line: { type: 'none' },
     })
 
-    // Stage number + era year
-    slide.addText(
-      [
-        { text: `${isES ? 'ETAPA' : 'STAGE'} ${i + 1}`, options: { fontSize: 7, color: C.zinc400, fontFace: 'Consolas', breakLine: true } },
-        { text: eraYears[i], options: { fontSize: 10, bold: true, color, fontFace: 'Consolas' } },
-      ],
-      { x: nx + 0.10, y: NODE_Y + 0.10, w: NODE_W - 0.20, h: 0.35, align: 'left', valign: 'top' }
-    )
+    // Stage label
+    slide.addText(era.stage, {
+      x: cx + 0.10, y: COL_Y + 0.10, w: COL_W - 0.20, h: 0.20,
+      fontSize: 7, bold: true, color: C.zinc400, align: 'left', valign: 'middle',
+      fontFace: 'Consolas',
+    })
 
-    // Stage name
-    slide.addText(t(`Stages.${kp}Name`), {
-      x: nx + 0.10, y: NODE_Y + 0.40, w: NODE_W - 0.20, h: 0.25,
-      fontSize: 11, bold: true, color: C.zinc950, align: 'left', valign: 'middle',
+    // Era name
+    slide.addText(era.name, {
+      x: cx + 0.10, y: COL_Y + 0.28, w: COL_W - 0.20, h: 0.25,
+      fontSize: 12, bold: true, color: C.zinc950, align: 'left', valign: 'middle',
       fontFace: 'Georgia', shrinkText: true,
     })
 
-    // Short description (trimmed for fit)
-    const shortDescs: Record<string, { en: string; es: string }> = {
-      stage1: { en: 'Rules, deterministic', es: 'Reglas, determinista' },
-      stage2: { en: 'Patterns from data', es: 'Patrones de datos' },
-      stage3: { en: 'Content synthesis', es: 'Síntesis de contenido' },
-      stage4: { en: 'Perceive-reason-act loop', es: 'Ciclo percibir-razonar-actuar' },
-    }
-    slide.addText(isES ? shortDescs[kp].es : shortDescs[kp].en, {
-      x: nx + 0.10, y: NODE_Y + 0.65, w: NODE_W - 0.20, h: 0.30,
+    // Definition paragraph
+    slide.addText(era.def, {
+      x: cx + 0.10, y: COL_Y + 0.55, w: COL_W - 0.20, h: 0.68,
       fontSize: 8, color: C.zinc600, align: 'left', valign: 'top', fontFace: 'Calibri',
+      lineSpacingMultiple: 1.15, shrinkText: true,
+    })
+
+    // Use cases label
+    slide.addText(isES ? 'CASOS DE USO' : 'USE CASES', {
+      x: cx + 0.10, y: COL_Y + 1.25, w: COL_W - 0.20, h: 0.15,
+      fontSize: 7, bold: true, color: era.color, align: 'left', valign: 'middle',
+      fontFace: 'Consolas',
+    })
+
+    // Use cases bullets
+    const ucText = era.useCases.map((uc) => `• ${uc}`).join('\n')
+    slide.addText(ucText, {
+      x: cx + 0.10, y: COL_Y + 1.42, w: COL_W - 0.20, h: 1.25,
+      fontSize: 7.5, color: C.zinc700, align: 'left', valign: 'top', fontFace: 'Calibri',
+      lineSpacingMultiple: 1.2, shrinkText: true,
+    })
+  })
+
+  // ═══ ZONE D: CAPABILITIES STRIP ═══
+  const capData = [
+    isES ? 'Reglas deterministas · Entrada estructurada · Sin aprendizaje · Auditoría completa'
+      : 'Deterministic rules · Structured input · No learning · Full audit',
+    isES ? 'Percepción · Clasificación · Detección de anomalías · Reconocimiento de patrones'
+      : 'Perception · Classification · Anomaly detection · Pattern recognition',
+    isES ? 'Generación de contenido · Resumen · Traducción · Razonamiento superficial'
+      : 'Content generation · Summarization · Translation · Shallow reasoning',
+    isES ? 'Planificación multi-paso · Uso de herramientas · Autocorrección · Orquestación'
+      : 'Multi-step planning · Tool use · Self-correction · Orchestration',
+  ]
+
+  capData.forEach((cap, i) => {
+    const cx = colXs[i]
+    slide.addShape(pres.ShapeType.rect, {
+      x: cx, y: 3.90, w: COL_W, h: 0.45,
+      fill: { color: C.zinc50 }, line: { color: C.zinc200, width: 1 },
+    })
+    slide.addText(cap, {
+      x: cx + 0.08, y: 3.93, w: COL_W - 0.16, h: 0.39,
+      fontSize: 7, color: C.zinc600, align: 'left', valign: 'middle', fontFace: 'Calibri',
       shrinkText: true,
     })
   })
 
-  // Timeline arrow (full width, below nodes)
-  slide.addShape(pres.ShapeType.pentagon, {
-    x: 0.50, y: 2.50, w: 12.33, h: 0.35,
-    fill: { color: C.zinc100 }, line: { color: C.zinc300, width: 1 },
-  })
-
-  // Connector lines from each era node down to the timeline arrow
-  eraKeys.forEach((_, i) => {
-    const cx = NODE_CENTERS[i]
-    // Vertical connector line from node bottom to arrow top
-    slide.addShape(pres.ShapeType.line, {
-      x: cx, y: NODE_Y + NODE_H, w: 0, h: 2.50 - (NODE_Y + NODE_H),
-      line: { color: eraColors[i], width: 1.5, dashType: 'dash' },
-    })
-    // Small dot at the connection point on the arrow
-    slide.addShape(pres.ShapeType.ellipse, {
-      x: cx - 0.05, y: 2.50 - 0.05, w: 0.10, h: 0.10,
-      fill: { color: eraColors[i] }, line: { type: 'none' },
-    })
-  })
-
-  // Year labels below arrow
-  eraYears.forEach((yr, i) => {
-    const cx = NODE_CENTERS[i]
-    slide.addText(yr, {
-      x: cx - 0.5, y: 2.95, w: 1.0, h: 0.25,
-      fontSize: 11, bold: true, color: C.zinc700, align: 'center', valign: 'middle',
-      fontFace: 'Consolas',
-    })
-  })
-
-  // Value callouts below years
-  const valueTexts = [
-    { en: 'Scalable bounded automation', es: 'Automatización delimitada' },
-    { en: 'Perception at scale', es: 'Percepción a escala' },
-    { en: '$33.9B invested · 78% use AI', es: '$33.9 mil M · 78% usa IA' },
-    { en: 'End-to-end process execution', es: 'Ejecución de extremo a extremo' },
-  ]
-
-  valueTexts.forEach((vt, i) => {
-    const cx = NODE_CENTERS[i]
-    const vx = cx - 1.0
-    const color = eraColors[i]
-
-    // Value box
-    slide.addShape(pres.ShapeType.rect, {
-      x: vx, y: 3.30, w: 2.0, h: 0.50,
-      fill: { color: C.zinc50 }, line: { color: C.zinc200, width: 1 },
-    })
-
-    // Value text
-    slide.addText(
-      [
-        { text: `${isES ? 'VALOR' : 'VALUE'}\n`, options: { fontSize: 6, bold: true, color, fontFace: 'Consolas' } },
-        { text: isES ? vt.es : vt.en, options: { fontSize: 8, color: C.zinc800, fontFace: 'Calibri' } },
-      ],
-      {
-        x: vx + 0.08, y: 3.32, w: 1.84, h: 0.46,
-        align: 'center', valign: 'middle', shrinkText: true,
-      }
-    )
-  })
-
-  // ════════════════════════════════════════════════════════════════════════
-  // ZONE D: AGENTIC LOOP (y: 3.95 – 6.20)
-  // ════════════════════════════════════════════════════════════════════════
-
+  // ═══ ZONE E: AGENTIC LOOP DIAGRAM ═══
   // Section label
   slide.addText(isES ? 'CICLO AUTÓNOMO — CON RETROALIMENTACIÓN HUMANA' : 'AGENTIC LOOP — WITH HUMAN FEEDBACK', {
-    x: MARGIN, y: 3.90, w: 6, h: 0.20,
+    x: MARGIN, y: 4.40, w: 6, h: 0.20,
     fontSize: 8, bold: true, color: C.emerald600, align: 'left', valign: 'middle',
     fontFace: 'Consolas',
   })
 
   // 4 loop nodes
-  const loopNames = isES
-    ? ['Percibir', 'Razonar', 'Actuar', 'Reflexionar']
-    : ['Perceive', 'Reason', 'Act', 'Reflect']
+  const loopNames = isES ? ['Percibir', 'Razonar', 'Actuar', 'Reflexionar'] : ['Perceive', 'Reason', 'Act', 'Reflect']
   const loopDescs = isES
-    ? ['COCO-SSD\n90 clases', 'Motor de reglas\n+ juez LLM', 'Snapshot\nEmail\nReporte', 'Veredicto LLM\n→ siguiente ciclo']
+    ? ['COCO-SSD\n90 clases', 'Motor de reglas\n+ juez LLM', 'Snapshot\nEmail\nReporte', 'Veredicto LLM\n→ próximo ciclo']
     : ['COCO-SSD\n90 classes', 'Rule engine\n+ LLM judge', 'Snapshot\nEmail\nReport', 'LLM verdict\n→ next tick']
-  const loopIcons = ['👁', '🧠', '⚡', '🔄']
 
+  const loopCenters: number[] = []
   loopNames.forEach((name, i) => {
     const nx = LOOP_START_X + i * (LOOP_NODE_W + LOOP_GAP)
+    loopCenters.push(nx + LOOP_NODE_W / 2)
 
-    // Node card — emerald for the loop, with subtle gradient effect via two shapes
     slide.addShape(pres.ShapeType.roundRect, {
       x: nx, y: LOOP_Y, w: LOOP_NODE_W, h: LOOP_H,
       fill: { color: i === 3 ? C.emerald50 : C.white },
-      line: { color: C.emerald600, width: 1.5 },
-      rectRadius: 0.06,
-      shadow: { type: 'outer', blur: 4, offset: 1, color: '059669', opacity: 0.15 },
+      line: { color: C.emerald600, width: 1.5 }, rectRadius: 0.06,
+      shadow: { type: 'outer', blur: 3, offset: 1, color: '059669', opacity: 0.12 },
     })
 
-    // Step number badge (circle in top-right of node)
+    // Step number badge
     slide.addShape(pres.ShapeType.ellipse, {
-      x: nx + LOOP_NODE_W - 0.30, y: LOOP_Y - 0.05, w: 0.25, h: 0.25,
+      x: nx + LOOP_NODE_W - 0.28, y: LOOP_Y - 0.05, w: 0.22, h: 0.22,
       fill: { color: C.emerald600 }, line: { color: C.white, width: 1 },
     })
     slide.addText(String(i + 1), {
-      x: nx + LOOP_NODE_W - 0.30, y: LOOP_Y - 0.05, w: 0.25, h: 0.25,
-      fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle',
-      fontFace: 'Consolas',
+      x: nx + LOOP_NODE_W - 0.28, y: LOOP_Y - 0.05, w: 0.22, h: 0.22,
+      fontSize: 8, bold: true, color: C.white, align: 'center', valign: 'middle', fontFace: 'Consolas',
     })
 
-    // Node label
     slide.addText(name, {
-      x: nx, y: LOOP_Y + 0.08, w: LOOP_NODE_W, h: 0.30,
-      fontSize: 12, bold: true, color: C.emerald600, align: 'center', valign: 'middle',
-      fontFace: 'Georgia',
+      x: nx, y: LOOP_Y + 0.05, w: LOOP_NODE_W, h: 0.20,
+      fontSize: 11, bold: true, color: C.emerald600, align: 'center', valign: 'middle', fontFace: 'Georgia',
     })
-
-    // Node description
     slide.addText(loopDescs[i], {
-      x: nx + 0.05, y: LOOP_Y + 0.38, w: LOOP_NODE_W - 0.10, h: 0.50,
-      fontSize: 8, color: C.zinc600, align: 'center', valign: 'top', fontFace: 'Calibri',
+      x: nx + 0.05, y: LOOP_Y + 0.25, w: LOOP_NODE_W - 0.10, h: 0.30,
+      fontSize: 7, color: C.zinc600, align: 'center', valign: 'top', fontFace: 'Calibri',
       shrinkText: true,
     })
   })
 
-  // Forward arrows between loop nodes (3 arrows)
+  // Forward arrows
   for (let i = 0; i < 3; i++) {
-    const srcX = LOOP_START_X + i * (LOOP_NODE_W + LOOP_GAP) + LOOP_NODE_W // right edge of src
-    const dstX = LOOP_START_X + (i + 1) * (LOOP_NODE_W + LOOP_GAP) // left edge of dst
-    const arrowY = LOOP_Y + LOOP_H / 2 - 0.06
-    const arrowW = dstX - srcX
-
+    const srcX = LOOP_START_X + i * (LOOP_NODE_W + LOOP_GAP) + LOOP_NODE_W
+    const dstX = LOOP_START_X + (i + 1) * (LOOP_NODE_W + LOOP_GAP)
     slide.addShape(pres.ShapeType.rightArrow, {
-      x: srcX, y: arrowY, w: arrowW, h: 0.12,
+      x: srcX, y: LOOP_Y + LOOP_H / 2 - 0.06, w: dstX - srcX, h: 0.12,
       fill: { color: C.emerald600 }, line: { type: 'none' },
     })
   }
 
-  // Loop-back path: down from Reflect → left → up to Perceive
-  const reflectCx = LOOP_START_X + 3 * (LOOP_NODE_W + LOOP_GAP) + LOOP_NODE_W / 2
-  const perceiveCx = LOOP_START_X + LOOP_NODE_W / 2
-  const loopBackY = LOOP_Y + LOOP_H + 0.25
+  // Loop-back path
+  const reflectCx = loopCenters[3]
+  const perceiveCx = loopCenters[0]
+  const loopBackY = LOOP_Y + LOOP_H + 0.20
 
-  // Down arrow from Reflect bottom
   slide.addShape(pres.ShapeType.downArrow, {
-    x: reflectCx - 0.06, y: LOOP_Y + LOOP_H, w: 0.12, h: 0.30,
+    x: reflectCx - 0.05, y: LOOP_Y + LOOP_H, w: 0.10, h: 0.25,
     fill: { color: C.emerald600 }, line: { type: 'none' },
   })
-
-  // Left arrow along the bottom (from reflect to perceive)
   slide.addShape(pres.ShapeType.leftArrow, {
-    x: perceiveCx, y: loopBackY, w: reflectCx - perceiveCx, h: 0.12,
+    x: perceiveCx, y: loopBackY, w: reflectCx - perceiveCx, h: 0.10,
     fill: { color: C.emerald600 }, line: { type: 'none' },
   })
-
-  // Up arrow to Perceive bottom
   slide.addShape(pres.ShapeType.upArrow, {
-    x: perceiveCx - 0.06, y: loopBackY, w: 0.12, h: 0.30,
+    x: perceiveCx - 0.05, y: loopBackY, w: 0.10, h: 0.25,
     fill: { color: C.emerald600 }, line: { type: 'none' },
   })
-
-  // "Loop" label on the loop-back arrow
   slide.addText(isES ? '↻ ciclo autónomo' : '↻ autonomous loop', {
-    x: (perceiveCx + reflectCx) / 2 - 1.0, y: loopBackY + 0.15, w: 2.0, h: 0.20,
-    fontSize: 8, bold: true, color: C.emerald600, align: 'center', valign: 'middle',
-    fontFace: 'Consolas',
+    x: (perceiveCx + reflectCx) / 2 - 1.0, y: loopBackY + 0.12, w: 2.0, h: 0.18,
+    fontSize: 7, bold: true, color: C.emerald600, align: 'center', valign: 'middle', fontFace: 'Consolas',
   })
 
-  // Human Feedback node (our customization) — amber accent for "human in the loop"
-  const hfW = 3.20
-  const hfH = 0.65
-  const hfX = (SLIDE_W - hfW) / 2
-  const hfY = loopBackY + 0.50
+  // Human Feedback node
+  const HF_W = 3.00
+  const HF_H = 0.50
+  const HF_X = (SLIDE_W - HF_W) / 2
+  const HF_Y = loopBackY + 0.35
 
-  // Shadow/glow behind
   slide.addShape(pres.ShapeType.roundRect, {
-    x: hfX - 0.03, y: hfY + 0.03, w: hfW + 0.06, h: hfH,
-    fill: { color: C.amber100 }, line: { type: 'none' }, rectRadius: 0.08,
+    x: HF_X, y: HF_Y, w: HF_W, h: HF_H,
+    fill: { color: C.amber50 }, line: { color: C.amber500, width: 1.5 }, rectRadius: 0.06,
   })
-
-  // Main card
-  slide.addShape(pres.ShapeType.roundRect, {
-    x: hfX, y: hfY, w: hfW, h: hfH,
-    fill: { color: C.amber50 }, line: { color: C.amber500, width: 2 },
-    rectRadius: 0.08,
-  })
-
-  // Human icon circle on the left
+  // Human icon circle
   slide.addShape(pres.ShapeType.ellipse, {
-    x: hfX + 0.10, y: hfY + 0.12, w: 0.40, h: 0.40,
+    x: HF_X + 0.08, y: HF_Y + 0.10, w: 0.30, h: 0.30,
     fill: { color: C.amber500 }, line: { type: 'none' },
   })
   slide.addText('H', {
-    x: hfX + 0.10, y: hfY + 0.12, w: 0.40, h: 0.40,
-    fontSize: 14, bold: true, color: C.white, align: 'center', valign: 'middle',
-    fontFace: 'Georgia',
+    x: HF_X + 0.08, y: HF_Y + 0.10, w: 0.30, h: 0.30,
+    fontSize: 12, bold: true, color: C.white, align: 'center', valign: 'middle', fontFace: 'Georgia',
   })
-
-  // Human Feedback text
   slide.addText(
     [
-      { text: isES ? 'Retroalimentación Humana' : 'Human Feedback', options: { fontSize: 11, bold: true, color: C.zinc950, fontFace: 'Georgia', breakLine: true } },
-      { text: isES ? 'Reconocer · Silenciar · Ajustar umbrales' : 'Acknowledge · Silence · Tune thresholds', options: { fontSize: 8, color: C.zinc600, fontFace: 'Calibri' } },
+      { text: isES ? 'Retroalimentación Humana' : 'Human Feedback', options: { fontSize: 10, bold: true, color: C.zinc950, fontFace: 'Georgia', breakLine: true } },
+      { text: isES ? 'Reconocer · Silenciar · Ajustar umbrales' : 'Acknowledge · Silence · Tune thresholds', options: { fontSize: 7, color: C.zinc600, fontFace: 'Calibri' } },
     ],
+    { x: HF_X + 0.45, y: HF_Y + 0.03, w: HF_W - 0.55, h: HF_H - 0.06, align: 'left', valign: 'middle', shrinkText: true }
+  )
+
+  // Bidirectional arrows to Human Feedback
+  const midX = (perceiveCx + reflectCx) / 2
+  slide.addShape(pres.ShapeType.downArrow, {
+    x: midX - 0.10, y: loopBackY + 0.12, w: 0.07, h: HF_Y - loopBackY - 0.12,
+    fill: { color: C.amber500 }, line: { type: 'none' },
+  })
+  slide.addShape(pres.ShapeType.upArrow, {
+    x: midX + 0.03, y: loopBackY + 0.12, w: 0.07, h: HF_Y - loopBackY - 0.12,
+    fill: { color: C.amber500 }, line: { type: 'none' },
+  })
+
+  // ═══ ZONE F: SECTION 9 QUOTE ═══
+  slide.addShape(pres.ShapeType.rect, {
+    x: MARGIN, y: 6.30, w: CONTENT_W, h: 0.50,
+    fill: { color: C.emerald50 }, line: { color: C.emerald600, width: 1 },
+  })
+  slide.addText(
+    isES
+      ? 'La mayoría de los sistemas de cámaras cívicas son Etapa 2: cuentan personas y activan una alerta de umbral estático. Vision Agent cierra el ciclo — percibe la plaza, razona sobre anomalías, actúa vía escalada de 3 niveles, y reflexiona vía el juez LLM que filtra falsos positivos.'
+      : 'Most civic-camera systems are Stage 2: they count people and trigger a static threshold alert. Vision Agent closes the loop — perceives the plaza, reasons about anomalies, acts via 3-tier escalation, and reflects via the LLM judge that filters false positives.',
     {
-      x: hfX + 0.60, y: hfY + 0.05, w: hfW - 0.70, h: hfH - 0.10,
-      align: 'left', valign: 'middle', shrinkText: true,
+      x: MARGIN + 0.15, y: 6.33, w: CONTENT_W - 0.30, h: 0.44,
+      fontSize: 8, italic: true, color: C.zinc800, align: 'left', valign: 'middle',
+      fontFace: 'Georgia', shrinkText: true,
     }
   )
 
-  // Bidirectional arrows between loop-back line and Human Feedback
-  const midX = (perceiveCx + reflectCx) / 2
-  // Down arrow (loop → human feedback)
-  slide.addShape(pres.ShapeType.downArrow, {
-    x: midX - 0.15, y: loopBackY + 0.15, w: 0.10, h: hfY - loopBackY - 0.15,
-    fill: { color: C.amber500 }, line: { type: 'none' },
-  })
-  // Up arrow (human feedback → loop)
-  slide.addShape(pres.ShapeType.upArrow, {
-    x: midX + 0.05, y: loopBackY + 0.15, w: 0.10, h: hfY - loopBackY - 0.15,
-    fill: { color: C.amber500 }, line: { type: 'none' },
-  })
-
-  // ════════════════════════════════════════════════════════════════════════
-  // ZONE E: USE CASES — 3 TIERS (y: 6.30 – 7.40)
-  // ════════════════════════════════════════════════════════════════════════
-
-  // Section label
-  slide.addText(isES ? 'CASOS DE USO — 3 TIERS EVOLUTIVOS' : 'USE CASES — 3 EVOLUTIONARY TIERS', {
-    x: MARGIN, y: 6.25, w: 6, h: 0.20,
-    fontSize: 8, bold: true, color: C.emerald600, align: 'left', valign: 'middle',
-    fontFace: 'Consolas',
-  })
-
-  const tiers = [
-    {
-      id: 'traditional',
-      title: isES ? 'Tradicional (S1-S2)' : 'Traditional (S1-S2)',
-      color: C.zinc500,
-      bgColor: C.zinc50,
-      cases: isES
-        ? ['Conteo de personas', 'Detección de intrusión', 'Monitoreo de cola', 'Disponibilidad de estacionamiento']
-        : ['People counting', 'Intrusion detection', 'Queue monitoring', 'Parking availability'],
-    },
-    {
-      id: 'mldl',
-      title: isES ? 'ML/DL Moderno (S2-S3)' : 'Modern ML/DL (S2-S3)',
-      color: C.amber500,
-      bgColor: C.amber50,
-      cases: isES
-        ? ['Grafiti y vandalismo', 'Objetos abandonados', 'Fuego y humo', 'Resbalones y peligros']
-        : ['Graffiti & vandalism', 'Abandoned objects', 'Fire & smoke', 'Slip & hazard detection'],
-    },
-    {
-      id: 'agentic',
-      title: isES ? 'Futuro Agéntico (S4)' : 'Agentic Future (S4)',
-      color: C.emerald600,
-      bgColor: C.emerald50,
-      cases: isES
-        ? ['Reporte auto-generado', 'Escalada con juez LLM', 'Memoria visual (v2)', 'Malla multicámara (v3)']
-        : ['Auto-generated report', 'LLM-judge escalation', 'Visual memory (v2)', 'Multi-camera mesh (v3)'],
-    },
-  ]
-
-  tiers.forEach((tier, i) => {
-    const tx = MARGIN + i * (UC_W + UC_GAP)
-
-    // Tier card with subtle shadow
-    slide.addShape(pres.ShapeType.rect, {
-      x: tx, y: UC_Y, w: UC_W, h: UC_H,
-      fill: { color: tier.bgColor }, line: { color: tier.color, width: 1 },
-      shadow: { type: 'outer', blur: 3, offset: 1, color: '000000', opacity: 0.06 },
-    })
-
-    // Color bar at top (thicker for emphasis)
-    slide.addShape(pres.ShapeType.rect, {
-      x: tx, y: UC_Y, w: UC_W, h: 0.06,
-      fill: { color: tier.color }, line: { type: 'none' },
-    })
-
-    // Tier number badge
-    slide.addShape(pres.ShapeType.ellipse, {
-      x: tx + 0.12, y: UC_Y + 0.14, w: 0.22, h: 0.22,
-      fill: { color: tier.color }, line: { type: 'none' },
-    })
-    slide.addText(String(i + 1), {
-      x: tx + 0.12, y: UC_Y + 0.14, w: 0.22, h: 0.22,
-      fontSize: 9, bold: true, color: C.white, align: 'center', valign: 'middle',
-      fontFace: 'Consolas',
-    })
-
-    // Tier title
-    slide.addText(tier.title, {
-      x: tx + 0.42, y: UC_Y + 0.08, w: UC_W - 0.52, h: 0.22,
-      fontSize: 9, bold: true, color: C.zinc950, align: 'left', valign: 'middle',
-      fontFace: 'Georgia', shrinkText: true,
-    })
-
-    // Tier cases (compact 2-column list)
-    const casesText = tier.cases.map((c) => `• ${c}`).join('\n')
-    slide.addText(casesText, {
-      x: tx + 0.15, y: UC_Y + 0.36, w: UC_W - 0.30, h: 0.50,
-      fontSize: 7.5, color: C.zinc700, align: 'left', valign: 'top', fontFace: 'Calibri',
-      lineSpacingMultiple: 1.15, shrinkText: true,
-    })
-  })
-
-  // ════════════════════════════════════════════════════════════════════════
-  // FOOTER — value generated callout + sources (y: 7.35 – 7.48)
-  // ════════════════════════════════════════════════════════════════════════
-
-  // Value generated label (right-aligned, in emerald)
+  // ═══ ZONE G: VALUE + FOOTER ═══
   slide.addText(
     isES
-      ? 'VALOR GENERADO: respuesta automática <2s · evidencia auditable · gobernanza con disyuntor'
-      : 'VALUE GENERATED: <2s auto-response · auditable evidence · circuit-breaker governance',
+      ? 'VALOR GENERADO: respuesta automática · evidencia auditable · gobernanza con disyuntor · reportes auto-generados · juez LLM'
+      : 'VALUE GENERATED: auto-response · auditable evidence · circuit-breaker governance · auto-generated reports · LLM judge',
     {
-      x: MARGIN, y: 7.35, w: CONTENT_W, h: 0.15,
+      x: MARGIN, y: 6.85, w: CONTENT_W, h: 0.20,
       fontSize: 7, bold: true, color: C.emerald600, align: 'right', valign: 'middle',
       fontFace: 'Consolas', shrinkText: true,
+    }
+  )
+  slide.addText(
+    isES
+      ? 'Fuentes: McKinsey · BCG · Bain · Gartner · Deloitte · WEF · Stanford HAI · MIT Sloan · Sequoia · VastData'
+      : 'Sources: McKinsey · BCG · Bain · Gartner · Deloitte · WEF · Stanford HAI · MIT Sloan · Sequoia · VastData',
+    {
+      x: MARGIN, y: 7.10, w: CONTENT_W, h: 0.25,
+      fontSize: 7, color: C.zinc400, align: 'left', valign: 'middle', fontFace: 'Consolas',
     }
   )
 
   // Generate
   const buffer = (await pres.write({ outputType: 'nodebuffer' })) as Uint8Array
-
   return new NextResponse(buffer as BodyInit, {
     status: 200,
     headers: {

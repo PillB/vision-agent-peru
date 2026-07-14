@@ -454,3 +454,50 @@ Stage Summary:
 - Python geometry validation passed (0 overflow, 0 unintended overlaps)
 - Both PPTX versions (V1 4-card + V2 infographic) downloadable from Tab 3
 - All content in Peruvian Spanish
+
+---
+Task ID: pptx-v2-mckinsey-redesign
+Agent: orchestrator
+Task: Redesign V2 as McKinsey/BCG text-dense infographic with use cases, no dates/money, capabilities strip, agentic loop, Section 9 quote
+
+Work Log:
+- Wrote Python geometry validator v2: /home/z/my-project/scripts/validate-pptx-v2-geometry-v2.py
+  - 69 elements across 7 zones (A-G), 0 errors, 4 intentional warnings (loop-back corners)
+- Rewrote /api/export-pptx-v2 route with new McKinsey-style layout:
+  - Zone A: Header (logo, brand, meta — NO dates)
+  - Zone B: Title (action title, NO dates)
+  - Zone C: 4 era columns left-to-right, each with:
+    - Color header bar + stage label + era name
+    - Explanatory paragraph (2-3 sentences, McKinsey-dense)
+    - "USE CASES" label + bullet list (5-8 use cases per era)
+    - Traditional: people counting, intrusion, queues, parking, loading bay dwell
+    - ML/DL: graffiti, abandoned objects, fire/smoke, slip, thermal, flood, landslide
+    - Cognitive: incident description, summarization, translation, NL queries
+    - Agentic: auto-report, LLM judge, visual memory, multi-camera, post-quake, BI, disasters
+  - Zone D: Capabilities strip (4 cells aligned with columns, from Section 5/6):
+    - "Reglas deterministas · Sin aprendizaje" → "Percepción · Clasificación" → "Generación · Resumen" → "Planificación · Herramientas · Autocorrección"
+  - Zone E: Agentic loop diagram (from "The Leap"):
+    - 4 nodes (Percibir→Razonar→Actuar→Reflexionar) with numbered badges
+    - Forward arrows + loop-back path (down→left→up)
+    - Human Feedback node (amber, icon "H", bidirectional arrows)
+  - Zone F: Section 9 quote ("La mayoría de los sistemas de cámaras cívicas son Etapa 2...")
+  - Zone G: Value generated + sources footer
+- NO dates (1956, 2024, etc.) anywhere
+- NO money ($33.9B, $234B) anywhere
+- Validated: 80 shapes, 75 text runs, 0 overflow, 0 date/money patterns
+- Updated translation files (en.json + es-PE.json):
+  - Slide 3 body: added use case evolution narrative (counting → graffiti/fire → content → auto-report)
+  - Slide 8 body: added traditional vs ML/DL vs agentic use case gap
+  - Slide 9 body: added concrete use cases (crowd surge, graffiti, fire, abandoned, post-quake)
+- Lint: 0 errors, 0 warnings. TypeScript: 0 errors.
+- Agent Browser verified: V2 download works (HTTP 200), no crashes, no console errors
+- Strategic Brief sections verified: use case insights now present in slides 3, 8, 9
+
+Stage Summary:
+- V2 PPTX redesigned as McKinsey/BCG text-dense infographic (80 editable shapes)
+- No dates, no money — pure capability + use case narrative
+- 4 era columns with explanatory paragraphs + 5-8 use cases each
+- Capabilities strip from Section 5/6 below columns
+- Full agentic loop diagram (4 nodes + Human Feedback) from "The Leap"
+- Section 9 quote in emerald callout box
+- Tab 3 sections updated with use case insights in both EN and ES-PE

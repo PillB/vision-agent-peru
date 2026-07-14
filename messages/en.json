@@ -350,7 +350,7 @@
     "slide3": {
       "kicker": "Definitions",
       "title": "Four stages, nested not sequential — every agentic system still contains rules, learning, and generative models inside it.",
-      "body": "This is the dense reference card for the rest of the brief. Each card defines what the era IS, what it CAN do, what it CAN'T do, and the economic value it created. The nesting insight (bottom-right) is critical: agentic AI does not replace generative AI — it builds on top of it.",
+      "body": "This is the dense reference card for the rest of the brief. Each card defines what the era IS, what it CAN do, what it CAN'T do, and the economic value it created. The nesting insight (bottom-right) is critical: agentic AI does not replace generative AI — it builds on top of it. Use cases evolve from simple counting (Stage 1) through perception tasks like graffiti and fire detection (Stage 2), content generation for incident reports (Stage 3), to end-to-end autonomous response including auto-generated reports and LLM-judged escalation (Stage 4).",
       "nestingTitle": "The nesting insight — capabilities stack, they don't replace",
       "nestingBody": "An effective Stage 4 system (agentic) almost always contains Stage 3 agents that use Stage 2 generative models that were trained on patterns originally identified by Stage 1 systems. Removing any layer breaks the whole stack.",
       "stage": "Stage",
@@ -401,7 +401,7 @@
     "slide8": {
       "kicker": "Enterprise Reality",
       "title": "85% of employees are stuck at stages 2–3 of AI adoption — only 10% have reached the agentic stage.",
-      "body": "BCG's 2025 adoption study maps employee AI usage across five stages, from information assistance to fully autonomous orchestration. The damning finding: most organizations have purchased AI tools but haven't redesigned work around them. Deloitte confirms: 71% of enterprises use AI, but only 25% have moved 40%+ of pilots to production. The gap between deployment and value is a process-redesign problem, not a technology problem.",
+      "body": "BCG's adoption study maps employee AI usage across five stages. The damning finding: most organizations have purchased AI tools but haven't redesigned work around them. The gap between deployment and value is a process-redesign problem. Traditional camera systems (Stage 1-2) count people and trigger static alerts. ML/DL systems (Stage 2-3) detect graffiti, abandoned objects, fire, and slip hazards. But only agentic systems (Stage 4) close the loop — perceiving, reasoning, acting, and self-correcting with auto-generated reports and LLM-judged escalation. Only 25% have moved 40%+ of pilots to production.",
       "youAreHere": "← You are here",
       "bracket": "85% of employees stuck here — purchased tools, no process redesign",
       "stat1Value": "71%",
@@ -414,7 +414,7 @@
     "slide9": {
       "kicker": "Project Mapping",
       "title": "Vision Agent is built natively on Stage 4 — every plaza camera is a perceive-reason-act loop, not just a detector.",
-      "body": "Most civic-camera systems are Stage 2: they count people and trigger a static threshold alert. Vision Agent closes the loop. The diagram below maps the canonical agentic loop onto the actual prototype components, so you can see exactly which code does which cognitive function.",
+      "body": "Most civic-camera systems are Stage 2: they count people and trigger a static threshold alert. Vision Agent closes the loop. The diagram below maps the canonical agentic loop onto the actual prototype components. The system handles crowd surge detection, graffiti and vandalism alerts, fire and smoke early warning, abandoned object detection, and post-earthquake structural damage assessment — all through the same perceive-reason-act-reflect pipeline with human feedback for governance.",
       "mappingTitle": "What this means in practice",
       "analyticsLayer": "Analytics layer (Stage 2)",
       "analyticsBody": "TF.js COCO-SSD detects persons. A 2-minute sliding-window z-score + EMA computes the anomaly score. Pure perception + statistics — no decisions.",
