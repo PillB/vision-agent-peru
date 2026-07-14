@@ -167,7 +167,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   isRunning: false,
   fps: 0,
   lastDetectionLatencyMs: 0,
-  detectionMode: 'simulation',   // default to simulation (no TF.js model load = lower memory)
+  detectionMode: 'real',   // default to real ML (COCO-SSD on real video frames)
 
   detections: [],
   personCount: 0,

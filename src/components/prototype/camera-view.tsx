@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { Play, Pause, Camera as CameraIcon, Loader2, AlertCircle, RefreshCw, Cpu, Sparkles } from 'lucide-react'
+import { Play, Pause, Camera as CameraIcon, Loader2, AlertCircle, RefreshCw, Cpu } from 'lucide-react'
 import { usePrototypeStore, CAMERA_SOURCES, type Detection } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,8 +18,6 @@ const RealMlLoader = dynamic(
   () => import('./real-ml-loader').then((m) => m.RealMlLoader),
   { ssr: false, loading: () => null }
 )
-
-type Mode = 'real' | 'simulation'
 
 export function CameraView() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -280,21 +278,10 @@ export function CameraView() {
     setSnapshotView(url)
   }
 
-  const handleModeSwitch = (mode: Mode) => {
-    if (mode === detectionMode) return
-    setRunning(false)
-    clearSamples()
-    setDetectionMode(mode)
-    if (mode === 'simulation') {
-      setModelStatus('ready')
-    }
-    pushTrace(`Mode switched → ${mode === 'real' ? 'real ML (COCO-SSD)' : 'simulation'}`)
-  }
-
   const tierColor = currentTier === 3 ? 'bg-rose-600' : currentTier === 2 ? 'bg-amber-500' : currentTier === 1 ? 'bg-amber-400' : 'bg-emerald-500'
   const tierLabel = currentTier === 3 ? 'CRITICAL' : currentTier === 2 ? 'ANOMALY' : currentTier === 1 ? 'WATCH' : 'NOMINAL'
 
-  const canStart = detectionMode === 'simulation' || modelStatus === 'ready'
+  const canStart = modelStatus === 'ready'
 
   return (
     <div className="space-y-3">
@@ -326,28 +313,11 @@ export function CameraView() {
           </SelectContent>
         </Select>
 
-        {/* Mode toggle */}
-        <div className="flex items-center gap-1 rounded-md border border-zinc-200 bg-white p-0.5">
-          <button
-            onClick={() => handleModeSwitch('real')}
-            className={`px-2.5 py-1 text-xs font-medium rounded transition flex items-center gap-1.5 ${
-              detectionMode === 'real' ? 'bg-emerald-600 text-white' : 'text-zinc-600 hover:text-zinc-900'
-            }`}
-            title="Run actual COCO-SSD model on video frames (best with GPU)"
-          >
-            <Cpu className="h-3 w-3" />
-            Real ML
-          </button>
-          <button
-            onClick={() => handleModeSwitch('simulation')}
-            className={`px-2.5 py-1 text-xs font-medium rounded transition flex items-center gap-1.5 ${
-              detectionMode === 'simulation' ? 'bg-emerald-600 text-white' : 'text-zinc-600 hover:text-zinc-900'
-            }`}
-            title="Synthetic person counts (with realistic crowd surges) — same agent pipeline"
-          >
-            <Sparkles className="h-3 w-3" />
-            Simulation
-          </button>
+        {/* Real ML badge — simulation mode removed to eliminate fake annotations.
+            The prototype now runs real COCO-SSD on real video frames only. */}
+        <div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5">
+          <Cpu className="h-3 w-3 text-emerald-600" />
+          <span className="text-xs font-medium text-emerald-700">Real ML (COCO-SSD)</span>
         </div>
 
         <Button
@@ -389,12 +359,6 @@ export function CameraView() {
               <span>Model load failed</span>
             </span>
           )}
-          {detectionMode === 'simulation' && (
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-mono">Simulation · 1 Hz</span>
-            </span>
-          )}
           {isRunning && (
             <>
               <span className="font-mono">FPS: <span className="text-zinc-950">{fps}</span></span>
@@ -430,11 +394,9 @@ export function CameraView() {
             <span className={`h-1.5 w-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-400'}`} />
             {activeCamera.label}
           </div>
-          {detectionMode === 'simulation' && (
-            <div className="bg-emerald-600/90 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-md font-mono uppercase tracking-wide">
-              Sim
-            </div>
-          )}
+          <div className="bg-emerald-600/90 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-md font-mono uppercase tracking-wide">
+            Live ML
+          </div>
         </div>
         <div className="absolute top-3 right-3">
           <div className={`text-white text-xs px-2.5 py-1 rounded-md font-mono font-semibold flex items-center gap-1.5 ${tierColor}`}>
@@ -478,7 +440,7 @@ export function CameraView() {
             <div className="bg-white/95 px-4 py-3 rounded-lg text-sm text-rose-700 max-w-md">
               <div className="font-semibold mb-1">Model failed to load</div>
               <div className="text-xs text-zinc-600 mb-2">
-                The COCO-SSD model could not be loaded. Switch to <strong>Simulation</strong> mode to continue the demo, or refresh to retry.
+                The COCO-SSD model could not be loaded. Please refresh the page to retry. The model loads from Google's CDN on first run.
               </div>
             </div>
           </div>

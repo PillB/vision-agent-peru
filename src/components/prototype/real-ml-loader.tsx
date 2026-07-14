@@ -45,8 +45,14 @@ export function RealMlLoader({ videoRef, canvasRef, onModelStatus, onModelReady 
             const video = videoRef.current
             const canvas = canvasRef.current
             const model = modelRef.current
-            if (!video || !canvas || !model) return null
-            if (video.readyState < 2 || video.videoWidth === 0) return null
+            if (!video || !canvas || !model) {
+              console.log('[RealMlLoader] detect: missing', { video: !!video, canvas: !!canvas, model: !!model })
+              return null
+            }
+            if (video.readyState < 2 || video.videoWidth === 0) {
+              console.log('[RealMlLoader] detect: video not ready', { readyState: video.readyState, videoWidth: video.videoWidth })
+              return null
+            }
 
             const targetW = 480
             const targetH = Math.round((video.videoHeight / video.videoWidth) * targetW)
@@ -62,10 +68,15 @@ export function RealMlLoader({ videoRef, canvasRef, onModelStatus, onModelReady 
             const predictions = await model.detect(canvas, 20)
             const latency = performance.now() - t0
 
-            const scaleX = canvas.width / video.videoWidth
-            const scaleY = canvas.height / video.videoHeight
+            console.log('[RealMlLoader] detect result', {
+              predictions: predictions.length,
+              latency: latency.toFixed(0) + 'ms',
+              classes: predictions.slice(0, 5).map((p) => `${p.class}:${p.score.toFixed(2)}`),
+            })
+
+            // Bboxes are already in canvas coordinates — no scaling needed
             const dets: Detection[] = predictions.map((p) => ({
-              bbox: [p.bbox[0] * scaleX, p.bbox[1] * scaleY, p.bbox[2] * scaleX, p.bbox[3] * scaleY] as [number, number, number, number],
+              bbox: [p.bbox[0], p.bbox[1], p.bbox[2], p.bbox[3]] as [number, number, number, number],
               class: p.class,
               score: p.score,
             }))
