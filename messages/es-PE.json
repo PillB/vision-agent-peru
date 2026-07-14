@@ -305,11 +305,11 @@
     },
     "help": {
       "title": "Cómo usar el prototipo",
-      "step1": "Elija una cámara (Cusco / Lima / Arequipa — filmación de archivo de escenas reales de plazas).",
-      "step2": "Haga clic en Iniciar análisis — el modelo COCO-SSD se carga (~5s la primera vez) luego se ejecuta a ~1 Hz.",
-      "step3": "Observe el gráfico llenarse. Después de ~10 segundos la línea base del z-score se estabiliza; las anomalías activarán N1 (insignia) → N2 (captura+email) → N3 (juez LLM+reporte).",
-      "step4": "Ajuste los umbrales con los controles en Razonamiento del agente. Active/desactive el juez LLM.",
-      "step5": "Reconozca los hallazgos para silenciar; o use Silenciar 5m para una pausa de disyuntor."
+      "step1": "Elija una cámara (tráfico urbano con personas y vehículos reales).",
+      "step2": "Haga clic en Iniciar análisis — el modelo de IA (COCO-SSD) se carga en su navegador (~5s la primera vez) luego detecta personas y vehículos en tiempo real.",
+      "step3": "Observe el gráfico. Después de ~10 segundos el sistema aprende el patrón normal; actividad inusual activará alertas (Tier 1=vigilancia, 2=anomalía, 3=crítico).",
+      "step4": "Use los controles en Razonamiento del agente para ajustar sensibilidad. Active el juez LLM para filtrar falsos positivos. Cambie de nivel de capacidad para ver cómo cambia el comportamiento.",
+      "step5": "Haga clic en Reconocer en alertas que ya vio, o Silenciar 5m para un descanso. Revise el panel de Identidades para ver personas/vehículos rastreados con IDs únicos."
     }
   },
   "Tab3": {

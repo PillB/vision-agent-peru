@@ -24,14 +24,20 @@ export function ReportsPanel() {
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-emerald-600" />
           <h3 className="text-sm font-semibold text-zinc-950">Incident reports</h3>
         </div>
         <Badge variant="outline" className="text-xs font-mono">{reports.length}</Badge>
       </div>
-      <ScrollArea className="flex-1 max-h-[300px] pr-2">
+      {/* ELI5 hint */}
+      <div className="mb-3 rounded-md bg-zinc-50 border border-zinc-100 px-2.5 py-1.5 text-[10px] text-zinc-500 leading-relaxed">
+        💡 <strong>¿Qué es esto?</strong> Cuando ocurre un incidente crítico (Tier 3), el agente
+        genera automáticamente un reporte en lenguaje natural con: resumen, línea de tiempo,
+        acciones tomadas, evidencia y recomendaciones. Haga clic en un reporte para expandirlo.
+      </div>
+      <ScrollArea className="flex-1 max-h-[260px] pr-2">
         {reports.length === 0 ? (
           <div className="text-center py-8 text-xs text-zinc-400">
             <FileText className="h-6 w-6 mx-auto mb-2 text-zinc-300" />

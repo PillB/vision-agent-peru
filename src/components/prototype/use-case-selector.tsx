@@ -35,7 +35,18 @@ export function UseCaseSelector() {
   const activeUseCase = USE_CASES.find((uc) => uc.id === activeUseCaseId)
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-2">
+      {/* ELI5 hint */}
+      <div className="rounded-md bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-[10px] text-zinc-600 leading-relaxed">
+        💡 <strong>¿Cómo usar esto?</strong> Elija un <strong>caso de uso</strong> (qué quiere detectar) y un
+        <strong> nivel de capacidad</strong> (qué tan autónomo es el sistema):
+        <span className="text-zinc-500"> Tradicional = solo reglas</span> ·
+        <span className="text-zinc-600"> ML/DL = detecta con IA</span> ·
+        <span className="text-amber-600"> Cognitiva = describe con IA</span> ·
+        <span className="text-emerald-700"> Autónoma = decide y actúa solo</span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
       {/* Use case selector */}
       <Select value={activeUseCaseId} onValueChange={(v) => { setActiveUseCase(v); const uc = USE_CASES.find(u => u.id === v); if (uc) setCapabilityLevel(uc.level) }}>
         <SelectTrigger className="w-[280px] h-9 bg-white">
@@ -85,6 +96,7 @@ export function UseCaseSelector() {
           <span>Nivel: {LEVEL_LABELS[activeUseCase.level].es}</span>
         </div>
       )}
+      </div>
     </div>
   )
 }

@@ -812,3 +812,45 @@ Full face/gait/clothing embeddings (OSNet, ArcFace) require ONNX models too heav
 This implementation uses lightweight appearance features (bbox geometry + color histogram) as proxy.
 The architecture is designed to swap in deep embeddings when available — the GlobalIdentityManager
 interface is embedding-agnostic (uses AppearanceFeatures which can be extended).
+
+---
+Task ID: usability-testing-eli5
+Agent: orchestrator (3-agent simulation: Newbie + Supervisor + Developer)
+Task: Usability testing with ELI5 explainability improvements
+
+METHODOLOGY:
+- Simulated 3-agent process: Newbie (high-school grad, limited working memory) attempts the full user flow; Supervisor logs confusion points; Developer implements fixes
+- Code-based UI audit substituted for Playwright browser testing due to 4GB RAM constraint (server + browser + TF.js = OOM)
+- Analyzed every component the Newbie would interact with: page tabs, info banner, use case selector, capability switcher, camera selector, Start button, metrics, chart, agent trace, alerts, actions, reports, identity panel, help text, language toggle
+
+ISSUES FOUND (8):
+1. Help text step 1 references old camera names ("Cusco / Lima / Arequipa") but cameras are now "Intersección Urbana" etc. → FIXED: updated to "urban traffic with real people and vehicles"
+2. Use case selector has no ELI5 hint → FIXED: added hint explaining what use cases and capability levels are
+3. Capability level switcher has no explanation of what each level does → FIXED: included in use case selector ELI5 hint with color-coded descriptions
+4. Camera selector has no description of what cameras show → FIXED: updated help text
+5. "Real ML (COCO-SSD)" badge uses technical jargon with no tooltip → FIXED: added title tooltip in Spanish
+6. Metrics row uses jargon (z-score, Tier, Latency) with no hints → FIXED: added ELI5 hint explaining each metric
+7. Reports panel has no ELI5 hint → FIXED: added hint explaining auto-generated reports
+8. Start/Pause button has no tooltip → FIXED: added title attribute
+
+FIXES APPLIED (8):
+1. messages/en.json + es-PE.json: Updated all 5 help steps with plain language, new camera names, and clearer instructions
+2. use-case-selector.tsx: Added ELI5 hint with color-coded level descriptions
+3. camera-view.tsx: Added tooltip on Real ML badge + Start/Pause button
+4. metrics-row.tsx: Added ELI5 hint explaining all 6 metrics
+5. reports-panel.tsx: Added ELI5 hint explaining auto-generated reports
+
+VALIDATION:
+- Lint: 0 errors, 0 warnings
+- TypeScript: 0 errors
+- ELI5 hints: 8 panels with hints (actions, agent-trace, alerts, count-chart, identity, metrics, reports, use-case-selector)
+- Help text: updated in both EN and ES
+- Tooltips: 2 key UI elements (Real ML badge, Start button)
+- Stub check: clean
+- Playwright: verified initial page render works; deeper testing limited by 4GB RAM OOM when browser loads TF.js
+
+PEDAGOGICAL RATIONALE:
+- ELI5 hints reduce cognitive load by providing just-in-time explanations at the point of need
+- Color-coded level descriptions in the use case selector help the Newbie map visual cues to concepts
+- Updated help text uses plain language ("AI model" instead of "COCO-SSD", "unusual activity" instead of "z-score anomaly")
+- Tooltips on key buttons provide context without cluttering the UI

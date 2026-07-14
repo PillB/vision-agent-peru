@@ -297,7 +297,7 @@ export function CameraView() {
         </Select>
 
         {/* Real ML badge — no simulation option available */}
-        <div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5">
+        <div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5" title="Un modelo de inteligencia artificial real (COCO-SSD) detecta personas y vehículos en cada fotograma del video. No es simulación.">
           <Cpu className="h-3 w-3 text-emerald-600" />
           <span className="text-xs font-medium text-emerald-700">Real ML (COCO-SSD)</span>
         </div>
@@ -307,6 +307,7 @@ export function CameraView() {
           disabled={!canStart}
           className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
           size="sm"
+          title={isRunning ? "Pausar el análisis de IA" : "Iniciar detección de personas y vehículos con IA real (COCO-SSD)"}
         >
           {isRunning ? <Pause className="h-4 w-4 mr-1.5" /> : <Play className="h-4 w-4 mr-1.5" />}
           {isRunning ? 'Pause' : 'Start analysis'}

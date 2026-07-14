@@ -64,10 +64,19 @@ export function MetricsRow() {
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-      {tiles.map((t) => (
-        <Tile key={t.label} {...t} />
-      ))}
+    <div className="space-y-2">
+      {/* ELI5 hint */}
+      <div className="rounded-md bg-zinc-50 border border-zinc-100 px-2.5 py-1 text-[10px] text-zinc-500 leading-relaxed">
+        💡 <strong>¿Qué significan estos números?</strong> Cámara = cuál feed está activo ·
+        Personas = detecciones actuales · Z-score = qué tan inusual es vs lo normal (mayor a 2 = raro) ·
+        Incidentes = alertas activas · Tier = nivel de severidad (0=normal, 3=crítico) ·
+        Latencia = cuánto tarda la IA en procesar cada fotograma.
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        {tiles.map((t) => (
+          <Tile key={t.label} {...t} />
+        ))}
+      </div>
     </div>
   )
 }

@@ -305,11 +305,11 @@
     },
     "help": {
       "title": "How to use the prototype",
-      "step1": "Pick a camera (Cusco / Lima / Arequipa — stock footage of real plaza scenes).",
-      "step2": "Click Start analysis — the COCO-SSD model loads (~5s first run) then runs at ~1 Hz.",
-      "step3": "Watch the chart fill in. After ~10 seconds the z-score baseline stabilizes; anomalies will trigger T1 (badge) → T2 (snapshot+email) → T3 (LLM judge+report).",
-      "step4": "Tune thresholds with the sliders in Agent reasoning. Toggle the LLM judge on/off.",
-      "step5": "Acknowledge hits to silence; or use Silence 5m for a circuit-breaker pause."
+      "step1": "Pick a camera feed (urban traffic with real people and vehicles).",
+      "step2": "Click Start analysis — the AI model (COCO-SSD) loads in your browser (~5s first time) then detects people and vehicles in real time.",
+      "step3": "Watch the chart fill in. After ~10 seconds the system learns the normal pattern; unusual activity will trigger alerts (Tier 1=watch, 2=anomaly, 3=critical).",
+      "step4": "Use the sliders in Agent reasoning to adjust sensitivity. Toggle the LLM judge to filter false positives. Switch capability levels to see how the system behavior changes.",
+      "step5": "Click Acknowledge on alerts you've seen, or Silence 5m for a break. Check the Identity panel to see tracked people/vehicles with unique IDs."
     }
   },
   "Tab3": {
