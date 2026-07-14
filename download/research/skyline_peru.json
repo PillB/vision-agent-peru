@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://www.skylinewebcams.com/en/webcam/peru/lima/lima/miraflores.html",
+    "name": "【LIVE】 Webcam Lima - Miraflores - SkylineWebcams",
+    "snippet": "Rating 4.8 (630) Experience the beautiful city of Lima like never before with our live webcam of Óvalo de Miraflores. Watch the hustle and bustle of this city in Peru.",
+    "host_name": "www.skylinewebcams.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.skylinewebcams.com/en/webcam/peru.html",
+    "name": "Live Cams in Peru - SkylineWebcams",
+    "snippet": "Peru SkylineWebcams. Skyline of Miraflores. Panoramic view of Miraflores, view of the square and the cathedral, view from Playa Pocitas in Peru Alejandro",
+    "host_name": "www.skylinewebcams.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=CGGevFTJ8EE",
+    "name": "Recorded live footage from Lima - Peru | SkylineWebcams - YouTube",
+    "snippet": "Welcome to SkylineWebcams! We are the most visited live cam site in the world! With over 2000 webcams installed in more than 60 countries, ...",
+    "host_name": "www.youtube.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.skylinewebcams.com/en/webcam/peru/lima/lima/playa-el-silencio.html",
+    "name": "【LIVE】 Webcam Lima - Playa el Silencio | SkylineWebcams",
+    "snippet": "Rating 4.6 (63) Dive into our Lima live webcam and soak up the digital sun at Playa El Silencio! This picturesque beach is located in Punta Hermosa.",
+    "host_name": "www.skylinewebcams.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.home-assistant.io/t/integrate-a-webcam-public-https-stream-online-with-a-specif-url-as-a-generic-camera-or-mpeg-camera/426989",
+    "name": "Integrate a webcam (public https stream online with a specif url) as a",
+    "snippet": "Go to integrations and add a generic camera integration, you add the URL to the stream source URL not the still image URL. Change the RTSP transport protocol.",
+    "host_name": "community.home-assistant.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.skylinewebcams.com/webcam/peru/lima/lima/san-bartolo.html",
+    "name": "【LIVE】 Webcam San Bartolo - Lima - SkylineWebcams",
+    "snippet": "Rating 4.5 (143) Watch the beautiful San Bartolo seafront promenade in Lima, Peru with our live webcam. Enjoy the ocean waves and stunning views in real-time.",
+    "host_name": "www.skylinewebcams.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/channel/UC2WMV4vCYurHdHPd9pCqYSg",
+    "name": "SkylineWebcams - YouTube",
+    "snippet": "Live now · Videos · Past live streams.",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/yt-dlp/yt-dlp/issues/7115",
+    "name": "Skylinewebcams - Failed to extract stream url · Issue #7115 - GitHub",
+    "snippet": "The streams can be found at https://hd-auth.skylinewebcams.com/live.m3u8?a=VALUE, although the VALUE changes every time you clear your cookies.",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

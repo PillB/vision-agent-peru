@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/24680509/anomaly-detection-using-exponential-weighted-moving-average",
+    "name": "Anomaly detection using exponential weighted moving average",
+    "snippet": "I would like to detect anomaly using exponential weighted moving average. For an instance of time t, I will be having the data point (DP) value. Calculating Exponential Moving Average (EMA) using javascript simple moving average of \"live\" stream - fast implementation More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ejournal.gomit.id/ijaaiml/article/download/287/400/7832",
+    "name": "[PDF] Real-Time Outlier Detection in Fast-Moving Data Streams",
+    "snippet": "Exponential Moving Average-Based Anomaly Detection: 1. Step 1: Calculate the EMA recursively as data arrives. 2. Step 2: Compute the residual r(t)=x(t)−EMA(t).\nTwo commonly used techniques for anomaly detection are the Moving Average (MA) and Exponential Moving Average (EMA) methods. Despite their widespread use ...",
+    "host_name": "ejournal.gomit.id",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stats.stackexchange.com/questions/107472/anomaly-detection-using-exponential-weighted-moving-average",
+    "name": "Anomaly detection using exponential weighted moving average?",
+    "snippet": "DP−EMA(new) = Will give you the deviation of the DP from the Average (EMA(new)). 2. EMSD{(EMAnew) & (EMAold))} would give us the value of the ... Simple algorithm for online outlier detection of a generic time series Switching between alpha, half-life and span in exponential moving average More results from stats.stackexchange.com\nI would like to detect anomaly using exponential weighted moving average (EMA below) and data points (DP below).",
+    "host_name": "stats.stackexchange.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/wearesinch/simple-anomaly-detection-algorithms-for-streaming-data-machine-learning-92cfaeb6f43b",
+    "name": "Simple Anomaly Detection algorithms for Streaming Data - Medium",
+    "snippet": "In this article, we are going to learn two simple techniques to detect anomalies in near real-time streaming data: Moving Average and Exponential Moving ...",
+    "host_name": "medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=6-wvvsB50aQ",
+    "name": "Javascript - Exponential Moving Average - EMA - YouTube",
+    "snippet": "Exercise file: http://tomtomheylen.com/quantitative_analysis/javascript_exponential_moving_average.php Support the channel on Patreon: ...",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.scitepress.org/Papers/2025/134378/134378.pdf",
+    "name": "[PDF] Anomaly Detection on Univariate Time Series Data Using Exponentially",
+    "snippet": "The EWMA is calculated by taking the weighted average of the current and previous values, where the weights decay exponentially as the data points be- come ...\nThis article aims to investigate the application of the Exponen- tially Weighted Moving Average for the timely detec- tion of anomalies in time series data,",
+    "host_name": "www.scitepress.org",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://oneuptime.com/blog/post/2026-01-30-anomaly-detection-integration/view",
+    "name": "How to Implement Anomaly Detection Integration - OneUptime",
+    "snippet": "Z-Score Detection. The simplest method: measure how many standard deviations a point is from the mean. Python",
+    "host_name": "oneuptime.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kaggle.com/code/neomatrix369/anomaly-detection-streaming-data-extended",
+    "name": "Anomaly Detection - Streaming Data (Extended) - Kaggle",
+    "snippet": "The expected value range is computed using the formula Exponential Moving Average + standard deviation * threshold ; if it is out of the expected value range, ...\nComparing Moving Average with Exponential Moving Average, we can noticed that Exponential smoothes the expected value and avoids detecting unnecessary outliers.",
+    "host_name": "www.kaggle.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tinybird.co/blog/anomaly-detection",
+    "name": "Simple statistics for anomaly detection on time-series data - Tinybird",
+    "snippet": "The Z-score measures how far a data point is away from the mean as a signed multiple of the standard deviation. Large absolute values of the Z- ...",
+    "host_name": "www.tinybird.co",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/pdf/2209.12398",
+    "name": "[PDF] Real-time Anomaly Detection for Multivariate Data Streams - arXiv",
+    "snippet": "We present a real-time multivariate anomaly detection algorithm for data streams based on the Probabilistic Exponentially Weighted. Moving ...",
+    "host_name": "arxiv.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

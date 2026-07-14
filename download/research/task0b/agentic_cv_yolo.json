@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/agentralabs/agentic-vision",
+    "name": "GitHub - agentralabs/agentic-vision: Persistent visual memory for AI",
+    "snippet": "AgenticVision-MCP exposes 21 tools, 6 resources, and 4 prompts via the Model Context Protocol. Any LLM that speaks MCP gains visual memory automatically.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ultralytics.com/blog/agentic-ai-and-computer-vision-the-future-of-automation",
+    "name": "Agentic AI and computer vision: The future of automation - Ultralytics",
+    "snippet": "Join our community and GitHub repository to learn more about AI. Check out our Ultralytics YOLO licenses to get started with computer vision ...",
+    "host_name": "www.ultralytics.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/picselliahq/atlas",
+    "name": "picselliahq/atlas: Solving Computer Vision with AI agents - GitHub",
+    "snippet": "We built Atlas with this in mind, using the latest Agentic and LLM capabilities to use our data and models as a knowledge base to answer questions, run analysis ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/397806744_Agentic_AI_for_Computer_Vision_A_Review",
+    "name": "(PDF) Agentic AI for Computer Vision: A Review - ResearchGate",
+    "snippet": "This review maps current research on agentic approaches in computer vision and examines how autonomy is implemented in practice. This search is based on ...",
+    "host_name": "www.researchgate.net",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pub.towardsai.net/top-12-computer-vision-github-repositories-320464cf3e13",
+    "name": "Top 12 Computer Vision GitHub Repositories - Towards AI",
+    "snippet": "A complete guide to learn how to set up and create your own agentic LLM system with local databases and specialized for your task.",
+    "host_name": "pub.towardsai.net",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/landing-ai/vision-agent",
+    "name": "GitHub - landing-ai/vision-agent: This tool has been deprecated. Use",
+    "snippet": "VisionAgent is the Visual AI pilot from LandingAI. Give it a prompt and an image, and it automatically picks the right vision models and outputs ready-to-run ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/getstream/Vision-Agents",
+    "name": "Open Vision Agents by Stream - GitHub",
+    "snippet": "Open Vision Agents by Stream. Build voice and vision agents quickly with any model or video provider. Uses Stream's edge network for ultra-low latency.",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://opendatascience.com/the-top-ten-github-agentic-ai-repositories-in-2025",
+    "name": "The Top Ten GitHub Agentic AI Repositories in 2025",
+    "snippet": "GitHub's latest Octoverse report highlights that over 4.3 million AI-related repositories now exist (a 178% YoY jump in LLM-focused projects).",
+    "host_name": "opendatascience.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/topics/agentic-ai?l=c%23&o=asc&s=stars",
+    "name": "agentic-ai · GitHub Topics",
+    "snippet": "AI-powered coding assistant that monitors Trello boards, analyzes tickets with Claude AI, generates code changes, and creates pull requests automatically.",
+    "host_name": "github.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.blog/ai-and-ml/github-copilot/building-an-agentic-memory-system-for-github-copilot",
+    "name": "Building an agentic memory system for GitHub Copilot",
+    "snippet": "Copilot's cross-agent memory system lets agents learn and improve across your development workflow, starting with coding agent and code ...",
+    "host_name": "github.blog",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

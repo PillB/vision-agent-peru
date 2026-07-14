@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/landing-ai/vision-agent",
+    "name": "GitHub - landing-ai/vision-agent: This tool has been deprecated. Use",
+    "snippet": "This tool has been deprecated. VisionAgent is the Visual AI pilot from LandingAI. Give it a prompt and an image, and it automatically picks the right vision ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/getstream/Vision-Agents",
+    "name": "Open Vision Agents by Stream - GitHub",
+    "snippet": "Vision Agents give you the building blocks to create intelligent, low-latency video experiences powered by your models, your infrastructure, and your use cases.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/landing-ai/vision-agent-tools",
+    "name": "GitHub - landing-ai/vision-agent-tools: This tool has been deprecated. Use",
+    "snippet": "Unleash the Power of Computer Vision! This repository provides a suite of tools designed to tackle your image and video-based computer vision challenges.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/landing-ai/vision-agent-mcp",
+    "name": "GitHub - landing-ai/vision-agent-mcp: This tool has been deprecated. Use",
+    "snippet": "VisionAgent MCP is a lightweight, side-car MCP server that runs locally on STDIN/STDOUT, translating each tool call from an MCP-compatible client (Claude ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://visionagents.ai",
+    "name": "Vision Agents - Vision Agents",
+    "snippet": "The open-source Python framework for real-time voice and video AI. Plug in any LLM, speech, or vision model from 35+ providers and ship agents for telehealth, ...",
+    "host_name": "visionagents.ai",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/landing-ai/vision-agent/issues",
+    "name": "Issues · landing-ai/vision-agent - GitHub",
+    "snippet": "landing-ai/vision-agent.",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/docs/inference-providers/en/integrations/visionagents",
+    "name": "Vision Agents - Hugging Face",
+    "snippet": "Vision Agents is an SDK for building real-time AI applications with support for text and vision language models, streaming responses, and video understanding.",
+    "host_name": "huggingface.co",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pypi.org/project/vision-agent/0.0.52",
+    "name": "vision-agent - PyPI",
+    "snippet": "Vision Agent is a library that helps you utilize agent frameworks for your vision tasks. Many current vision problems can easily take hours or days to solve.",
+    "host_name": "pypi.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/landing-ai/vision-agent/discussions",
+    "name": "landing-ai vision-agent · Discussions - GitHub",
+    "snippet": "Explore the GitHub Discussions forum for landing-ai vision-agent. Discuss code, ask questions & collaborate with the developer community.",
+    "host_name": "github.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2403.09027v1",
+    "name": "VisionGPT: Vision-Language Understanding Agent Using  - arXiv",
+    "snippet": "In this paper, we introduce VisionGPT to consolidate and automate the integration of state-of-the-art foundation models, thereby facilitating vision-language ...",
+    "host_name": "arxiv.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

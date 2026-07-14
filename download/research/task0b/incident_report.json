@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=A705gYzCPiE",
+    "name": "Incident Reporting Agent | Building an Autonomous Agent step-by-step | Using AI Prompts | EP20 - YouTube",
+    "snippet": "In this video, you'll learn to build an AI Prompt to analyze the incident photo. Your AI Prompt will be facilitated by a flow action, ...",
+    "host_name": "www.youtube.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/optyxstack/the-ai-incident-report-template-i-actually-use-for-wrong-answers-and-tool-failures-174l",
+    "name": "The AI Incident Report Template I Actually Use for Wrong Answers and Tool Failures",
+    "snippet": "A lightweight incident report template for production AI systems covering wrong answers, tool failures, latency spikes, and cost regressions ...",
+    "host_name": "dev.to",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.trustcloud.ai/docs/trustops/helpful-resources/documentation-templates/security-incident-report-template",
+    "name": "Security Incident Report Template Download for free - BIZOPS-7 - TrustCommunity",
+    "snippet": "This template serves as a standardized format for documenting critical information related to security breaches, incidents, or anomalies.",
+    "host_name": "community.trustcloud.ai",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://word.cloud.microsoft/create/en/blog/incident-report-template-AI",
+    "name": "How to create an incident report template with AI | Microsoft Word Blog",
+    "snippet": "Create a clear incident report template in Microsoft Word with Copilot. Capture every detail, standardize reporting, and save time with AI.",
+    "host_name": "word.cloud.microsoft",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.smartsheet.com/free-incident-report-templates?srsltid=AfmBOopgl4Y0taeJUb56tDo8R4kDIbbSsiVUodn37SImV3ANHtOZJJFV",
+    "name": "Free Incident Report Templates: All Formats, All Types - Smartsheet",
+    "snippet": "We've gathered the most widely used free incident report templates in Excel, Microsoft Word, Adobe PDF, and Google Docs and Sheets formats.",
+    "host_name": "www.smartsheet.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://learn.microsoft.com/en-us/defender-xdr/security-copilot-m365d-create-incident-report",
+    "name": "Create incident reports with Microsoft Copilot in Microsoft Defender",
+    "snippet": "Microsoft Security Copilot in the Microsoft Defender portal assists security operations teams with writing incident reports efficiently.\nUtilizing Security Copilot's AI-powered data processing, security teams can immediately create incident reports with a click of a button in the ...",
+    "host_name": "learn.microsoft.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://safeaiaus.org/governance-templates/ai-incident-report-form",
+    "name": "AI Incident Report Form Template - SafeAI-Aus",
+    "snippet": "Standardised AI incident report form template for Australian businesses. Helps document, track and respond to AI-related incidents while maintaining ...",
+    "host_name": "safeaiaus.org",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://forum.smartconservationtools.org/t/incident-report-template/1258",
+    "name": "Incident Report Template - SMART Community Discussions",
+    "snippet": "I am battling to work out how the current BIRT template is set as regards the ordering of the attributes listed in the observation.",
+    "host_name": "forum.smartconservationtools.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs-cortex.paloaltonetworks.com/r/Cortex-XSOAR/6.11/Cortex-XSOAR-Administrator-Guide/Create-an-Incident-Summary-Report",
+    "name": "Create and generate a custom Incident Summary report in Cortex XSOAR, from the incident page. Save reports as templates. - Administrator Guide - 6.11",
+    "snippet": "You can create and customize reports in PDF, CSV and Word formats based on the tabs in the Incident page. This enables you to capture investigation-specific ...",
+    "host_name": "docs-cortex.paloaltonetworks.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.atlassian.com/software/confluence/resources/guides/how-to/incident-report",
+    "name": "Free Incident Report Template | Confluence - Atlassian",
+    "snippet": "A free incident report template streamlines the documentation process by providing a clear framework for gathering and organizing information.",
+    "host_name": "www.atlassian.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

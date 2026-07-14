@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://community.home-assistant.io/t/integrate-a-webcam-public-https-stream-online-with-a-specif-url-as-a-generic-camera-or-mpeg-camera/426989",
+    "name": "Integrate a webcam (public https stream online with a specif url) as a",
+    "snippet": "Hi, I'm trying to integrate a public webcam into homeassistant, I managed to extract the video stream from the site (https://www.skylinewebcams.",
+    "host_name": "community.home-assistant.io",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/6666423/overcoming-display-forbidden-by-x-frame-options",
+    "name": "Overcoming \"Display forbidden by X-Frame-Options\" - Stack Overflow",
+    "snippet": "If you are getting this error while trying to embed a Google Map in an iframe , you need to add &output=embed to the source link.",
+    "host_name": "stackoverflow.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/yt-dlp/yt-dlp/issues/7115",
+    "name": "Skylinewebcams - Failed to extract stream url · Issue #7115 - GitHub",
+    "snippet": "The streams can be found at https://hd-auth.skylinewebcams.com/live.m3u8?a=VALUE, although the VALUE changes every time you clear your cookies.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discourse.processing.org/t/importing-live-internet-video-in-processing/8218?page=2",
+    "name": "Importing Live Internet Video in Processing - Page 2 - Libraries",
+    "snippet": "Hi there, I was just wondering if it is possible to import a live internet video feed from the following weblink into Processing: Ultimately ...",
+    "host_name": "discourse.processing.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discourse.weather-watch.com/t/how-to-embed-live-webcam-stream/71804",
+    "name": "How to embed live webcam stream - Weather-Watch Forum",
+    "snippet": "You to use your external modem IP address(or use DDNS) with your camera. Your link needs the userid-password.",
+    "host_name": "discourse.weather-watch.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.orivisiontech.com/how-to-stream-the-ip-camera-to-live-streaming-platforms.html",
+    "name": "How to Stream the IP Camera to Live Streaming Platforms - ORIVISION",
+    "snippet": "This article tells you how to push stream from your IP camera to any public destination and embed it into a website or even a live chatting webcam.",
+    "host_name": "www.orivisiontech.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.sharptools.io/t/adding-m3u8-stream/978",
+    "name": "Adding m3u8 stream - Legacy Tasker/Widgets",
+    "snippet": "I have a netatmo camera. The live stream URL is on a http://192.x.x.x/live/high/index.m3u8 problem is that you cannot seem to add m3u8 ...",
+    "host_name": "community.sharptools.io",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ipcamlive.com/faqs",
+    "name": "Embedding IP Camera Live Video Stream into web page - IPCamLive",
+    "snippet": "You can stream your IP Camera directly without additional PC or software using IPCamLive. All you need is to be able to access your camera online.",
+    "host_name": "www.ipcamlive.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

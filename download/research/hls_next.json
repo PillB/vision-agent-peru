@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://github.com/video-dev/hls.js/issues/2331",
+    "name": "Playing a stream from a different website · Issue #2331 - GitHub",
+    "snippet": "You can build a proxy that will fetch the HLS resources and return them from your own domain and point HLS.js at that proxy, but you'll take on the costs of ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/57422482/hls-proxy-and-cors",
+    "name": "HLS proxy and CORS [duplicate] - javascript - Stack Overflow",
+    "snippet": "You would run an HLS Proxy on a server that your front-end does have access to (either by being on the same host or by configuring CORS access). Access-Control-Allow-Origin with HLS streaming and video JS Proxying a HLS (.m3u8) video streaming server - Stack Overflow More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.logrocket.com/next-js-real-time-video-streaming-hls-js-alternatives",
+    "name": "Next.js real-time video streaming: HLS.js and alternatives",
+    "snippet": "Set up real-time video streaming in Next.js using HLS.js and alternatives, exploring integration, adaptive streaming, and token-based ...",
+    "host_name": "blog.logrocket.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mux.com/articles/adding-video-to-your-next-js-application",
+    "name": "Add Video to Next.js with Mux | Integration Guide",
+    "snippet": "Learn how to add video streaming to your Next.js app. Embed adaptive HLS video, build hero sections with autoplay, and deploy to Vercel with Mux.",
+    "host_name": "www.mux.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=auMlV3ei6P4",
+    "name": "Stream like Netflix using HLS.js - YouTube",
+    "snippet": "Preload Configuration 15:21 - Plays Inline for Mobile 17:39 - Cross-Origin ... HLS Streaming Server with NGINX. Nerd on the Street•185K ...",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@dilshanmw717/building-a-modern-hls-video-player-with-next-js-a-complete-guide-19c39c61ae73",
+    "name": "Building a Modern HLS Video Player with Next.js: A Complete Guide",
+    "snippet": "In this article, I'll walk you through building WixPlayer, a modern HLS video player built with Next.js that supports adaptive streaming for ...",
+    "host_name": "medium.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  }
+]

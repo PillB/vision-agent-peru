@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.mdpi.com/1424-8220/26/8/2330",
+    "name": "Agentic and LLM-Based Multimodal Anomaly Detection - MDPI",
+    "snippet": "Agentic anomaly detection (AAD) extends conventional anomaly detection paradigms by integrating autonomy, reasoning, and tool use into detection pipelines.",
+    "host_name": "www.mdpi.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ieeexplore.ieee.org/iel8/6488907/6702522/11316132.pdf",
+    "name": "Optimized SHAP Explanations with Zero-Day Attack Resilience",
+    "snippet": "The agent employs a reasoning-followed-by- action pipeline with a specialized action space for anomaly detection. The LLM is created to generate structured ...",
+    "host_name": "ieeexplore.ieee.org",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://towardsdatascience.com/boosting-your-anomaly-detection-with-llms",
+    "name": "Boosting Your Anomaly Detection With LLMs | Towards Data Science",
+    "snippet": "In this post, we'll take a look at some emerging ways people are using LLMs in anomaly detection pipelines: Direct anomaly detection; Data ...",
+    "host_name": "towardsdatascience.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://galileo.ai/blog/real-time-anomaly-detection-multi-agent-ai",
+    "name": "Real-Time Anomaly Detection for Multi-Agent AI Systems | Galileo",
+    "snippet": "This article explores practical methods, detection strategies, and implementation techniques for real-time anomaly detection in multi-agent AI ...",
+    "host_name": "galileo.ai",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/tmgthb/Autonomous-Agents",
+    "name": "tmgthb/Autonomous-Agents - GitHub",
+    "snippet": "The framework utilizes a multi-stage pipeline comprising static analysis, LLM-based architecture reconstruction, adversarial criticism, and goal elicitation to ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/399700415_Agentic_and_LLM-Based_Multimodal_Anomaly_Detection_Architectures_Challenges_and_Prospects",
+    "name": "Agentic and LLM-Based Multimodal Anomaly Detection - ResearchGate",
+    "snippet": "This paper provides a comprehensive review of recent advancements at the intersection of agentic AI and multimodal anomaly detection.",
+    "host_name": "www.researchgate.net",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://vegavid.com/ai-agents-for-smart-cities",
+    "name": "AI Agents for Smart Cities Automation Solutions - Vegavid Technology",
+    "snippet": "Rating 5.0 (4) AI Agents for Smart Cities analyze urban data, automate public services, optimize infrastructure, help governments improve planning and citizen experiences.",
+    "host_name": "vegavid.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2508.01844v1",
+    "name": "CloudAnoAgent: Anomaly Detection for Cloud Sites via LLM Agent with",
+    "snippet": "CloudAnoAgent jointly processes structured metrics and textual log data in a unified pipeline, leveraging symbolic verification to validate detection hypotheses",
+    "host_name": "arxiv.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S0950705126001462",
+    "name": "SORA-ATMAS: Adaptive trust management and multi-LLM",
+    "snippet": "We propose SORA-ATMAS, an adaptive trust management and multi-LLM governance framework for smart-city disaster management. Evaluation with Weather, Traffic, and ...",
+    "host_name": "www.sciencedirect.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=5Igexz7kzMo",
+    "name": "AI Agents: Transforming Anomaly Detection & Resolution - YouTube",
+    "snippet": "... smarter, reliable systems. AI news moves fast. Sign up for a ... AI Agents + LLM Reasoning: Transforming Autonomous Workflows. IBM ...",
+    "host_name": "www.youtube.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

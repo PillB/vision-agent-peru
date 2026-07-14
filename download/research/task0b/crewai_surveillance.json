@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://developer.ibm.com/articles/awb-comparing-ai-agent-frameworks-crewai-langgraph-and-beeai",
+    "name": "Comparing AI agent frameworks: CrewAI, LangGraph, and BeeAI",
+    "snippet": "CrewAI adopts a comprehensive approach to agent collaboration, structuring its architecture around crews, agents, tasks, and execution processes. The framework ...",
+    "host_name": "developer.ibm.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=VC2uDeJg98s",
+    "name": "LangGraph, AG2, CrewAI, Semantic Kernel for AI Development - YouTube",
+    "snippet": "Unlock the power of Large Language Model (LLM) agents and build sophisticated AI applications with this in-depth tutorial!",
+    "host_name": "www.youtube.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LangChain/comments/1lwzcld/struggling_to_build_a_reliable_ai_agent_with_tool",
+    "name": "Struggling to Build a Reliable AI Agent with Tool Calling - Reddit",
+    "snippet": "I built a production-ready template for AI Agents using LangGraph and Clean Architecture (Open Source). 45. 20. Is LangGraph the best framework ...",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.developersdigest.tech/guides/ai-agent-frameworks-compared",
+    "name": "AI Agent Frameworks Compared: LangGraph vs CrewAI vs Mastra vs",
+    "snippet": "Deep comparison of the top AI agent frameworks - LangGraph, CrewAI, Mastra, CopilotKit, AutoGen, and Claude Code.",
+    "host_name": "www.developersdigest.tech",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.crewai.com/v1.15.1/en/guides/migration/migrating-from-langgraph",
+    "name": "Moving from LangGraph to CrewAI: A Practical Guide for Engineers",
+    "snippet": "In LangGraph, achieving something similar means manually implementing agent communication protocols, tool-calling loops, and delegation logic inside your node ...",
+    "host_name": "docs.crewai.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.kodemsecurity.com/resources/langchain-langgraph-crewai-security-issues-in-ai-agent-frameworks-for-javascript-and-typescript",
+    "name": "LangChain, LangGraph, CrewAI: Security Issues in AI Agent",
+    "snippet": "LangGraph registers tool names that agents can invoke. Monitor runtime sequences of tool calls for anomalies.",
+    "host_name": "www.kodemsecurity.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://galileo.ai/blog/autogen-vs-crewai-vs-langgraph-vs-openai-agents-framework",
+    "name": "AutoGen vs. CrewAI vs. LangGraph vs. OpenAI Multi-Agents Framework",
+    "snippet": "Better observability translates directly into faster mean-time-to-resolution: LangGraph makes reproducing bugs trivial, CrewAI surfaces ...",
+    "host_name": "galileo.ai",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.truefoundry.com/blog/crewai-vs-langgraph",
+    "name": "Crewai vs LangGraph: Know The Differences - Truefoundry",
+    "snippet": "Side-by-side comparison of crewai vs langgraph, covering features, architecture differences, trade-offs, and best use cases.",
+    "host_name": "www.truefoundry.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://open-design.ai/plugins/design-system-stripe",
+    "name": "Stripe design system — palette, typography & tokens for your agent",
+    "snippet": "Where most design systems use neutral gray or black shadows, Stripe's primary shadow color ( rgba(50,50,93,0.25) ) is a deep blue-gray that echoes the brand's ...",
+    "host_name": "open-design.ai",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/elements/appearance-api",
+    "name": "Elements Appearance API - Stripe Documentation",
+    "snippet": "Modify colors, fonts, borders, padding, and more with the Appearance API. Elements supports visual customization, you can modify colors, fonts, borders, ...",
+    "host_name": "docs.stripe.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.stripe.com/stripe-apps/style",
+    "name": "Style your app | Stripe Documentation",
+    "snippet": "The Stripe Apps layout styling API allows you to write styles that can take advantage of our design tokens and includes other improvements over vanilla CSS.",
+    "host_name": "docs.stripe.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.saasframe.io/examples/documentation",
+    "name": "Stripe Documentation UI Design - SaaSFrame",
+    "snippet": "Color Palette and Typography. A core palette of deep navy, soft grays, and accents of indigo and blue create a sleek, technical vibe that ...",
+    "host_name": "www.saasframe.io",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://getdesign.md/stripe/design-md",
+    "name": "Design System Analysis: Stripe - getdesign.md",
+    "snippet": "Stripe takes payment infrastructure as its base, then sharpens it through signature purple gradients, weight-300 elegance. It works best for payment platforms,",
+    "host_name": "getdesign.md",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://styles.refero.design/style/48e5de76-05d5-4c4e-a269-c7c245b291ec",
+    "name": "Stripe design system - Refero Styles",
+    "snippet": "Stripe uses a near-monochrome financial-instrument language: a soft cool-white canvas with deep navy headings, almost no decorative chrome, and one vivid indigo ...",
+    "host_name": "styles.refero.design",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stripe.com/payments/elements",
+    "name": "Stripe Elements | Custom Checkout Design and UI",
+    "snippet": "Use CSS properties to customize font, color, spacing, and more. Customize the colors and fonts to match your brand. SaaS AI companies Creator",
+    "host_name": "stripe.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.design-extractor.com/gallery/stripe",
+    "name": "Stripe — Design Tokens & System - Design Extractor",
+    "snippet": "Explore the extracted design system for Stripe: colors, typography, spacing, and component tokens. Copy any format for your AI workflow.",
+    "host_name": "www.design-extractor.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

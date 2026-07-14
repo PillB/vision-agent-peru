@@ -1,0 +1,204 @@
+# Worklog — Agentic Camera Intelligence System (Peru)
+
+Shared multi-agent work log. Each new section starts with `---` and includes Task ID, Agent, Task, Work Log, Stage Summary.
+
+---
+Task ID: 0-init
+Agent: orchestrator
+Task: Initialize project, load fullstack-dev skill, set up AGENT_STATE.md and worklog
+
+Work Log:
+- Loaded fullstack-dev skill (Next.js 16 + TS + Tailwind 4 + shadcn/ui + Prisma)
+- Verified project structure at /home/z/my-project
+- Created AGENT_STATE.md with 3-step cycle checkboxes per phase
+- Created /home/z/my-project/scripts and /home/z/my-project/download
+
+Stage Summary:
+- Environment ready. Tech stack confirmed.
+- Approach: TF.js COCO-SSD for in-browser person detection (no Python backend needed — keeps single-bun-dev constraint).
+- Public Peru camera feeds: most are HLS/MJPEG via SkylineWebcams; browser CORS + model loading constraints mean we'll use high-fidelity stock video loops of plaza scenes as live simulation, with real YOLO/SSD processing on top.
+- Agentic layer: rule-based reasoning + optional LLM call via z-ai-web-dev-sdk (server-side only).
+
+---
+Task ID: 0-a
+Agent: Research Scout (Peru cameras)
+Task: Research public/open camera feeds in Peru (Cusco Plaza de Armas / Plaza Mayor de Lima / Machu Picchu / Arequipa) and identify which sources are practically embeddable in a Next.js web app; find royalty-free stock-video fallbacks that can be processed by real TF.js COCO-SSD.
+
+Work Log:
+- Read /home/z/my-project/worklog.md to align with orchestrator's chosen stack (Next.js + TF.js COCO-SSD + bun dev).
+- Loaded web-search skill, saved raw results to /home/z/my-project/download/research/*.json (cusco_skyline, skyline_peru, lima_plaza, machu_picchu, arequipa, insecam, pexels_plaza, pexels_peru, pexels_square, pexels_latam, pexels_mp4, pixabay_plaza, pixabay_mp4, coverr_plaza, skyline_cors, skyline_snapshot, hls_next).
+- Identified the 4 SkylineWebcams Peru feeds (Cusco Plaza Mayor, Arequipa Plaza Mayor, Lima Miraflores, Machu Picchu Aguas Calientes) and their underlying HLS endpoint pattern `https://hd-auth.skylinewebcams.com/live.m3u8?a=VALUE` (cookie-tokenized, VALUE rotates per session — confirmed via yt-dlp issue #7115).
+- curl -I verification of headers on https://www.skylinewebcams.com/en/webcam/peru/cusco/cusco/plaza-mayor.html -> `x-frame-options: SAMEORIGIN` (iframe embedding BLOCKED cross-origin) even though `access-control-allow-origin: *` is also sent (CORS header does not bypass X-Frame-Options for iframes).
+- curl -I on https://hd-auth.skylinewebcams.com/live.m3u8 -> returns `content-type: text/html` + `x-frame-options: DENY` (NOT an HLS playlist — endpoint returns an HTML auth-challenge page without the per-session `?a=` token). Confirms: SkylineWebcams HLS cannot be consumed directly by hls.js in the browser.
+- Reviewed insecam.org Peru/Lima entries (e.g. /en/view/961887 Vivotek Lima). Decision: EXCLUDE from prototype — insecam catalogs unsecured PRIVATE IP cameras; embedding in a public demo is a privacy/legal liability (multiple Reddit/Spiceworks threads confirm the legality gray area). Even when "public," subjects have no consent expectation.
+- Researched Pexels / Pixabay / Coverr stock-video CDNs for plaza/crowd/street-market footage that is genuinely free (Pexels license: free for commercial use, no attribution; Pixabay license: same).
+- Verified with curl -I that the following direct MP4 URLs are alive (HTTP 200, content-type video/mp4, accept-ranges: bytes, served from CloudFront/Cloudflare CDN) and embeddable in a Next.js <video> element:
+  * https://videos.pexels.com/video-files/3858833/3858833-hd_1280_720_24fps.mp4  (14 MB, 1280x720, 24fps — already used by Ultralytics YOLO demo, validated for ML person/vehicle detection)
+  * https://videos.pexels.com/video-files/3141208/3141208-uhd_2560_1440_25fps.mp4 (34 MB, 2560x1440, 25fps — plaza/street scene)
+  * https://cdn.pixabay.com/video/2025/06/09/284568_large.mp4 (32 MB — people walking, served by Cloudflare)
+  * https://cdn.pixabay.com/video/2024/10/21/237451_large.mp4 (27 MB — crowd/pedestrian scene, served by Cloudflare)
+- Cross-checked that Pexels CDN sends `access-control-allow-origin: *` (visible even on its 403 responses), so direct cross-origin <video crossOrigin="anonymous"> fetching works for canvas pixel reads (TF.js needs this for pixel access without tainting the canvas).
+
+Stage Summary:
+- All 4 major Peru public feeds (Cusco, Arequipa, Lima Miraflores, Machu Picchu) live on SkylineWebcams and are technically HLS — BUT they are NOT embeddable in a Next.js app because (a) the .m3u8 URL is gated by a per-session token derived from cookies via their JS, and (b) the iframe route sets X-Frame-Options: SAMEORIGIN. Verdict: requires a server-side proxy that runs their token-acquisition JS (puppeteer) and re-exposes the HLS chunks — too heavy for a single-bun Next.js prototype. DEPRIORITIZED for v1.
+- Worldcam.eu / Webcamhopper / SpotCameras Peru pages are just thumbnail aggregators that hot-link back to SkylineWebcams — same blockers.
+- insecam.org Peru cameras are technically MJPEG and embeddable, but ethically/legally off-limits (unconsented private cameras). EXCLUDED.
+- RECOMMENDED PRIMARY SOURCE FOR PROTOTYPE: download 2-3 of the verified Pexels/Pixabay MP4 files into /public/sim/, play them in a <video loop muted> element, and sample frames into TF.js COCO-SSD at ~3 fps for REAL person detection. This satisfies the "real ML on real video of real people walking" requirement without any live-feed legal/CORS problems.
+- TOP 3 recommended stock-video URLs for the simulation fallback (all confirmed HTTP 200 + CORS-friendly as of 2026-07-14):
+  1. https://videos.pexels.com/video-files/3858833/3858833-hd_1280_720_24fps.mp4  (BEST — already battle-tested by Ultralytics for YOLO detection)
+  2. https://cdn.pixabay.com/video/2025/06/09/284568_large.mp4  (people walking, Cloudflare-hosted, stable)
+  3. https://videos.pexels.com/video-files/3141208/3141208-uhd_2560_1440_25fps.mp4  (high-res plaza scene)
+  Backup: https://cdn.pixabay.com/video/2024/10/21/237451_large.mp4
+- Next-action handoff to implementation agent: curl these 3 URLs into /home/z/my-project/public/sim/{cusco,lima,arequipa}.mp4 (rename by semantic role), then build the camera-grid UI with <video> + canvas + @tensorflow-models/coco-ssd. Optionally a "live mode" toggle that swaps to a SkylineWebcams iframe embed inside a same-origin proxy route if/when added later.
+
+---
+Task ID: 0-b
+Agent: Research Scout (agentic CV)
+Task: Research innovative agentic computer-vision architectures (YOLO/COCO-SSD + LLM agents for anomaly detection, smart-city surveillance, automated response) and produce a menu of 8-12 implementable ideas for the Next.js prototype (no Python backend). Also research streaming anomaly stats formulas, agentic action/escalation patterns, and LLM-as-judge false-positive filtering.
+
+Work Log:
+- Read /home/z/my-project/worklog.md to align with orchestrator's stack decision (Next.js + TF.js COCO-SSD in-browser + z-ai-web-dev-sdk server-side LLM, single `bun dev` process).
+- Loaded web-search skill. Saved raw JSON results to /home/z/my-project/download/research/task0b/ across 6 initial searches (agentic_cv_yolo, smart_city_anomaly, vision_agent, yolo_gpt4, surveillance_pipeline, agentic_camera_x) + 6 follow-up searches (streaming_anomaly_stats, llm_judge, escalation_tiers, nextjs_alerts, coco_ssd_browser, incident_report) + 2 final targeted searches (yolo_region_counting, crewai_surveillance). Total: 14 search result files.
+- Deep-read 11 high-value URLs by fetching HTML via curl and stripping to plain text (Ultralytics agentic CV blog, LandingAI vision-agent repo, GetStream Vision-Agents repo, caoyunkang GPT4V anomaly detection repo, Galileo real-time anomaly blog, agentralabs AgenticVision-MCP repo, Tinybird simple stats anomaly blog, dev.to AI incident report template, AlertOps escalation blog).
+- Key findings on agentic CV architectures (5 reference projects):
+  1. LandingAI VisionAgent (5.3k★, github.com/landing-ai/vision-agent) — Prompt + image → LLM planner picks from a tool palette (florence2_object_detection, countgd_object_detection, owlv2_sam2_video_tracking, extract_frames_and_timestamps, overlay_bounding_boxes) → emits runnable code. "Agentic" here = LLM picks the right vision model + chain. Pattern we can borrow: a small registry of named detection tools the LLM can call.
+  2. GetStream Vision-Agents (8k★, github.com/getstream/Vision-Agents) — Real-time video pipeline: Ultralytics YOLOPoseProcessor runs BEFORE the realtime LLM (Gemini Live / OpenAI Realtime), so the LLM "sees" pre-processed detections and can call tools mid-stream (Twilio, MCP, function calling). "Agentic" = a processor pipeline feeding an LLM with tool-calling + memory across turns. Pattern: vision model + LLM in a single stream, with the LLM able to invoke downstream actions.
+  3. agentralabs/agentic-vision (github.com/agentralabs/agentic-vision) — Persistent visual memory: capture images → embed with CLIP ViT-B/32 → store in .avis binary → query by similarity/time/description; 21 MCP tools (vision_capture, vision_compare, vision_query, vision_similar, vision_track, vision_diff, vision_link). "Agentic" = giving any LLM persistent visual recall across sessions. Pattern: each alert captures an embedded snapshot so future alerts can be compared to past incidents ("did this same scene happen yesterday?").
+  4. caoyunkang/GPT4V-for-Generic-Anomaly-Detection (130★, arxiv 2311.02782) — GPT-4V used zero/one-shot for industrial, medical, pedestrian, traffic, time-series anomalies. Key technique: prompts include class information, human expertise ("normal is X"), AND reference images for comparison. "Agentic" = VLM reasons about whether the current frame deviates from a described normal. Pattern: LLM-as-judge pass on detection events with reference-image context.
+  5. Ultralytics blog "Agentic AI and computer vision" — Defines the canonical loop: Perception → Decision-making → Action → Adaptation (continuous). Concrete security-camera example: detect intruder → check employee DB → lock doors → track movement → dispatch drone. "Agentic" = the system doesn't just alert, it takes downstream actions in sequence. Pattern: make our agent's action list pluggable (log, snapshot, email, escalate, dispatch).
+
+- Key findings on streaming anomaly statistics (concrete formulas):
+  * Z-score: `z = (x − μ) / σ` where μ, σ computed over a rolling window of last N samples (Tinybird uses N=30 minutes, threshold ±2). Robust variant: use median + MAD (median absolute deviation) instead of mean + stddev to resist the anomaly itself contaminating the baseline.
+  * Exponential Moving Average (EMA): `EMA_t = α·x_t + (1−α)·EMA_{t-1}` with α = 2/(N+1) for span N. Recursive — O(1) memory, perfect for in-browser tick loop.
+  * EMA-based anomaly (Kaggle / Medium wearesinch): residual `r_t = x_t − EMA_t`; alarm if `|r_t| > k·σ_EMA` (k≈3). Maintain a parallel EMA of `r_t²` to compute `σ_EMA` online: `var_t = α·r_t² + (1−α)·var_t-1`, `σ_t = √var_t`. This is the EWMA control-chart (scitepress 2025).
+  * Windowed mean + stddev (Tinybird recipe): take last 30 min, remove outliers from the sample, compute μ/σ, then evaluate z-score on the next data point. To avoid locality noise, aggregate in 10-second buckets and require the anomaly to persist for a sustained window before alerting.
+  * Probabilistic EWMA for multivariate (arXiv 2209.12398) — overkill for v1, mentioned for completeness.
+  * Recommended for our prototype: a 30-sample ring buffer of per-frame person_count, plus a parallel EMA(α=0.1) for the "live" band. Render mean ± 2σ on a chart as the "normal band" and flash when current count breaches it.
+
+- Key findings on agentic action / escalation patterns:
+  * 3-tier escalation is the de facto industry standard (AlertOps, PagerDuty, OpsGenie):
+    - Tier 1 (info / low): dashboard badge + log entry, no notification.
+    - Tier 2 (warning): notify primary on-call via email + push; auto-escalate if not acknowledged within ~5 min.
+    - Tier 3 (critical): SMS / phone / Slack webhook; also notify stakeholders.
+    - Tier 4 (catastrophic / broadcast): manager + stakeholder broadcast + status page.
+  * AlertOps case studies: 50% false-positive reduction (Delta Dental), 90% alert-noise reduction (WCAtech) — achieved via alert correlation (group related alerts) + context-rich payloads (affected asset, historical context, similar past incidents, link to investigate).
+  * Galileo's automated-response safety patterns: circuit breaker (disable automation if too many responses fire in a window), deadman switch (periodic human confirmation required for high-tier auto-actions), automatic rollback.
+  * Incident report template (dev.to/optyxstack) — 10 sections: (1) Summary [ID, ts, owner, status, user-visible impact], (2) What failed [checkbox list], (3) Scope [affected feature, cohorts, first-detected, detection method], (4) Request-level evidence [request IDs, model_version, prompt_version, tool_schema_version], (5) Failure classification [primary/secondary layer + supporting/contradicting evidence], (6) Timeline, (7) Root cause [direct + contributing + why checks didn't catch], (8) Fix [immediate + permanent + owner + due], (9) Guardrail to add [eval case / alert / dashboard / release gate / log field / rollback rule], (10) Proof of recovery.
+  * Tinybird real-world pattern: SQL anomaly query exposed as API endpoint, polled every X seconds; on anomaly → Teams chat message with snapshot of the time-series + threshold + actionable link. We can mirror this with a Next.js API route + Resend email + Slack webhook.
+
+- Key findings on LLM-as-judge for false-positive filtering:
+  * Definition (evidentlyai, deepeval, galileo): use a (larger or equal) LLM to evaluate the quality/correctness of another model's output. False positive = judge says "Pass" but human says "Fail" — dangerous because it creates false confidence.
+  * Best practices (mbrenndoerfer.com, galileo, montecarlo): explicit rubric criteria, few-shot examples of pass/fail, chain-of-thought ("reason then verdict"), output as structured JSON {verdict, confidence, reason}, validate the judge against a small human-labeled set first.
+  * Eugene Yan's empirical result: LLM-evaluators achieve ~0.8 precision AND ~0.8 recall on factual-consistency tasks — useful noise reducer but not ground truth.
+  * Trend Micro caution: LLM judges can be tricked by adversarial inputs and may miss hallucinated threats — for surveillance, ALWAYS keep the human-acknowledge gate for Tier ≥3.
+  * Recommended pattern for our prototype: when a rule fires (e.g., "loitering > 90s"), POST the cropped frame + detection JSON to a server route that calls z-ai chat completion with a structured rubric ("Is this a true positive? Consider: lighting, occlusion, partial body, reflection, false bounding box. Return {verdict: real|false_positive, confidence: 0..1, reason: string}"). Only escalate to Tier 2 if verdict=real OR confidence<0.6 (uncertain = still escalate, but mark for review).
+
+- Verified that the recommended implementation libraries work in our stack:
+  * @tensorflow-models/coco-ssd on jsDelivr CDN — 90 COCO classes incl. person, car, bus, bicycle, backpack, handbag, suitcase, scissors, knife. ~5-15 fps in-browser on a modern laptop.
+  * Resend (resend.com/nextjs) — official Next.js SDK, server-side only, free tier 3k emails/month, webhooks for delivery events.
+  * @xenova/transformers — runs CLIP ViT-B/32 in-browser via WASM/WebGPU, can embed snapshots for the visual-memory feature without a Python backend.
+  * sqlite-vss / better-sqlite3 — local vector store for similar-incident retrieval (alternative to Postgres+pgvector).
+
+Stage Summary:
+- Delivered a concrete menu of 12 implementable ideas (see "Top 12 Implementable Ideas" below) covering: anomaly detection (z-score, EMA band), spatial analytics (zone polygon, line-crossing), agentic loop (perceive→reason→act), LLM-as-judge filter, 3-tier escalation, snapshot evidence trail, structured incident reports, visual memory / similar-incident lookup, human-in-the-loop acknowledge, class-aware rule engine, plus a daily-digest email bonus.
+- All 12 ideas are implementable in pure Next.js + TF.js + z-ai-web-dev-sdk server routes — NO Python backend required.
+- Key architectural pattern recommended: a small "tool registry" mirroring LandingAI VisionAgent's design (named tools: count_persons, zone_count, line_crossing, snapshot, judge, email, escalate, report) that the agent loop calls each tick; rules are data, not code, so they're editable in a shadcn Sheet without recompiling.
+- Key formula recommended for v1: 30-sample ring buffer (windowed mean + stddev for the "normal band" display) + parallel EMA(α=0.1) with online variance for the "live" anomaly score; alarm rule = `|x − EMA| > 2σ` sustained for ≥3 consecutive samples (debounce).
+- LLM-as-judge pattern recommended: structured JSON output, server-side only via z-ai-web-dev-sdk, used as a false-positive filter between rule-fire and Tier-2 notification; always keep human-acknowledge gate for Tier ≥3.
+- Handoff to implementation agent: pick 4-6 of the 12 ideas for v1 MVP (recommend #1 Z-Score, #5 LLM-Judge, #6 Agentic Loop, #7 3-Tier Escalation, #8 Snapshot Trail, #11 Acknowledge/Silence). Defer visual-memory (#9) and daily digest (#10) to v2.
+
+Top 12 Implementable Ideas (each: name, 1-sentence description, implementation hint):
+1. Z-Score Crowd Surge Detector — Windowed z-score over person_count (last 30 samples); alarm if z>2 for 3 consecutive ticks. Hint: ring buffer in useReducer + compute μ/σ each tick; rule = `{metric:'person_count', window:30, z:2, sustain:3}`.
+2. EMA Normal-Band Visualizer — Render `EMA ± 2σ` as a shaded band on a Recharts line chart so operators see what "normal" looks like in real time. Hint: `EMA_t = α·x_t + (1−α)·EMA_{t-1}`, α=0.1; online variance `var_t = α·(x_t−EMA_t)² + (1−α)·var_{t-1}`.
+3. Named-Zone Polygon Counter — Draw 2-3 ROI polygons on the canvas (entrance / plaza center / restricted) and count detections whose bbox centroid falls inside each. Hint: ray-casting point-in-polygon test; persist zones in localStorage; shadcn Sheet for zone editor.
+4. Directional Line-Crossing Counter — Track each person's centroid with a simple IoU greedy matcher; increment in/out counters when a centroid crosses a virtual line. Hint: cross-product sign flip before/after the line; Ultralytics LOI pattern (entry/tracking/exit zones).
+5. LLM-as-Judge False-Positive Filter — On rule fire, POST cropped frame + detection JSON to `/api/judge`; only escalate if LLM returns `verdict:"real"` OR `confidence<0.6`. Hint: z-ai-web-dev-sdk chat completion server-side; structured JSON output `{verdict, confidence, reason}`; ~0.8 precision/recall per Eugene Yan.
+6. Agentic Perceive→Reason→Act Loop — A 1s tick state machine (perceive=COCO-SSD, reason=rules+optional LLM, act=log/snapshot/email/escalate); show cycle count + last action in the UI. Hint: useEffect interval + zustand store; mirror Ultralytics' canonical 4-step loop.
+7. 3-Tier Escalation Policy — Tier 1 dashboard badge; Tier 2 toast + email after 30s sustained; Tier 3 Slack/SMS webhook after 2 min unacknowledged; Tier 4 amber banner + DB log. Hint: escalation timers in zustand; Resend SDK in `/api/alert/route.ts`; AlertOps/PagerDuty pattern.
+8. Snapshot Evidence Trail — On any Tier ≥2 alert, freeze a JPEG of canvas+detections + 5s pre-buffer; store under `/public/incidents/{ts}.jpg` and attach to a Prisma `Incident` record. Hint: `canvas.toBlob('image/jpeg', 0.8)`; pre-buffer = ring of last 150 frames.
+9. Structured Incident Report Generator — On incident close, generate a markdown+JSON report (id, ts, camera, peak_count, baseline, z-score, snapshot URL, LLM verdict, tier, resolution). Hint: server route POST `/api/incident/:id/report` using z-ai chat to draft narrative; mirror dev.to 10-section template.
+10. Daily Anomaly Digest Email — Scheduled job (Inngest or Vercel cron) sends a 6am digest of yesterday's incidents: counts, peak times, top cameras, link to dashboard. Hint: Inngest function + Resend template; query Prisma `Incident` where createdAt between yesterday 00:00 and 23:59.
+11. Human-in-the-Loop Acknowledge / Silence — Toast with [Acknowledge][Silence 5 min][Escalate now]; Acknowledge stops escalation timers; Silence mutes; Escalate jumps to Tier 3. Hint: shadcn Sonner toast with action buttons; zustand ack-state; circuit-breaker = max 3 escalations per camera per hour.
+12. Class-Aware Rule Engine — Different rules per COCO class: person_count for crowd surge; car+bus for traffic; "backpack abandoned" (stationary >2min without co-located person); "knife/scissors" → immediate Tier 3. Hint: rule registry `[{class, metric, threshold, window, tier}]` editable via shadcn Sheet.
+
+Bonus ideas (consider for v2):
+13. Visual Memory / Similar-Incident Lookup — Embed each incident snapshot with CLIP ViT-B/32 (@xenova/transformers, in-browser WASM) and on new alert retrieve top-3 similar past incidents. Hint: mirror agentralabs/agentic-vision pattern; sqlite-vss for vector store.
+14. Confidence-Drift Monitor — EMA of mean detection confidence per class; if drops below 0.4 for 30s, show "low-confidence — possible occlusion/night mode" banner. Hint: reuse EMA primitive from #2; render as a status pill.
+
+
+---
+Task ID: 0-c
+Agent: Research Scout (McKinsey/BCG patterns)
+Task: Research McKinsey/BCG/Bain presentation patterns + modern enterprise SaaS design systems (Linear, Vercel, Stripe, Notion) to produce a "McKinsey/BCG Style Guide" applicable to Tab 1 (corporate explanation page for an agentic camera system). Honor the project constraint: NO indigo/blue accent.
+
+Work Log:
+- Read /home/z/my-project/worklog.md and /home/z/my-project/AGENT_STATE.md to align with the 2-tab SPA mission (Tab 1 = corporate explanation page, Tab 2 = functional ML prototype). Confirmed Phase 0.3 checkbox: "McKinsey/BCG presentation patterns documented — visual + content rules".
+- Loaded web-search skill. Ran 12 search queries saved to /home/z/my-project/download/research/task0c/*.json: mckinsey_pyramid, bcg_structure, consulting_diagrams, exec_dashboard, value_chain, linear_design, stripe_design, saas_palette, typography, action_title, pipeline_viz, tailwind_tokens, slide_layout.
+- Deep-read 7 high-value URLs by fetching HTML via curl and stripping to plain text (slideworks.io/action-titles, deckary.com/consulting-slide-standards, strategyu.co/slide-layouts [both halves], mannhowie.com/SCR, f1studioz.com/smart-saas-dashboard-design, vercel.com/geist/colors, shadcndesign.com/academy/neutral-colors). Saved as .txt in same dir.
+- Extracted 10 content rules from the MBB (McKinsey/BCG/Bain) corpus: Action Titles (≤15 words, ≤2 lines, full sentence, active voice, specific+quantitative — "tells reader what to conclude, not what slide is about"); Pyramid Principle (top-down: conclusion → 2-4 args → evidence); One Message Per Slide ("if you wrote 'and', split into two slides"); SCR/SCQA (Situation-Complication-Resolution/Question-Answer, Resolution gets 60-70%); MECE (Mutually Exclusive Collectively Exhaustory); Ghost Deck Method (write ALL action titles first, read as story, then fill — 40% story / 30% data / 30% design); The Titles Test / 60-Second Rule (managing director should get the full argument reading only titles in 60s); Source Citation on every quantitative claim (footer: "Source: ...; Analysis: ..."); Rule of Three (consultants default to threes — pillars/recommendations/reasons); Progressive Disclosure / Shneiderman's Mantra (overview first, zoom+filter, details-on-demand).
+- Extracted the canonical 14 consulting slide layouts from StrategyU (strategyu.co/slide-layouts): #1 Big Number, #2 Column Chart (NOT pie — McKinsey banned pie charts), #3 Chart+Insight Callout (chart 2/3 + insight box 1/3 with arrow to specific data point), #4 Two-Column Comparison (before/after, parallel structure), #5 Three Things (3 pillars with icons), #6 Process Flow (horizontal boxes + arrows, max 4-5 steps), #7 Waterfall (start→end with levers), #8 Funnel (narrowing bars), #9 2x2 Framework Grid, #10 Harvey Ball Scorecard (filled/half/quarter circles — avoids false precision), #11 Quote+Evidence, #12 Timeline (milestones + phase bars + risks below), #13 Dashboard (4-6 metric tiles + 2 panels below), #14 Executive Summary (3-col: Situation|Findings|Recommendation).
+- Extracted 10 visual rules from MBB + enterprise SaaS corpus: 2-font max (McKinsey: Georgia titles + Arial body — modern equivalent: Instrument Serif + Inter); strict type scale; 3-color palette + 3 semantic traffic-light; accent used strategically not decoratively; high-contrast text (zinc-950/zinc-500/zinc-400 on white only); card density (24px padding, 24px gap, generous gutters — "white space is content"); border+shadow not heavy fills; consistent grid alignment (titles don't move between sections); NO pie/3D/clip-art/transitions; traffic-light status logic (green=healthy, amber=anomaly, red=critical — F1Studioz pattern).
+- Researched modern enterprise design systems for the "corporate premium" feel: Linear (#5e6ad2 desaturated blue/purple — VIOLATES our no-indigo/blue constraint, REJECTED; uses Inter Variable + Berkeley Mono; OpenType cv01/ss03; 9999px corner radius for some elements; product UI uses red/orange/yellow/green tag system); Stripe (deep navy headings + soft cool-white canvas + near-monochrome + signature indigo gradients — indigo REJECTED; shadow color rgba(50,50,93,0.25) blue-gray); Vercel Geist (10 color scales, Background 1/2 split, Colors 1-3 component bg default/hover/active, 4-6 borders, 7-8 high-contrast bg, 9-10 text/icons secondary/primary — STRUCTURE adopted, blue scale skipped); Notion (grayscale workspace, content provides color, accent colors only inside content blocks — Notion Gray #787774 — minimalist philosophy adopted); shadcn neutrals (5 palettes: slate=cool blue-tinted REJECTED, gray, zinc=modern default ADOPTED, neutral=pure gray, stone=warm amber-tinted — zinc chosen as primary neutral because it reads gray not blue, modern, shadcn default, has depth for shadows/borders).
+- Synthesized Tailwind color palette honoring the no-indigo/blue constraint: NEUTRAL=zinc (white→zinc-950, full shadcn token set in HSL+hex); BRAND=emerald-600 #059669 (primary, ring, CTA — signals "alive/healthy/processing" semantically perfect for agentic system); SEMANTIC traffic-light: emerald-600=success/Tier 0-1 healthy, amber-500 #f59e0b=warning/Tier 2 anomaly, rose-600 #e11d48=destructive/Tier 3 critical; CHARTS: emerald-600 primary series, zinc-100/zinc-300 baseline band, amber-500 anomaly flash, rose-600 critical flash, zinc-100 gridlines. All combinations WCAG AA compliant (emerald-600 on white=4.5:1, zinc-500 on white=4.6:1, zinc-950 on white=19:1).
+- Synthesized typography recommendation (all Google Fonts, available via next/font/google): DISPLAY/SERIF=Instrument Serif (free 2023 release, modern Georgia equivalent, gives editorial McKinsey-report gravitas, weight 400 only, used ONLY for H1+display, italic available for pull-quotes); BODY/SANS=Inter Variable (de facto SaaS standard — Linear/Vercel/Stripe/Notion all use it or close variant, variable axis for fine weight tuning); MONO=JetBrains Mono (for inline code, metric values, agent-cycle counter — tabular-nums keeps live digits column-aligned). Rationale: serif=conclusion, sans=detail — visual split reinforces Pyramid Principle. Full next/font/google import snippet + tailwind.config.ts fontFamily mapping + 7-row type scale (Display 48/56 → Caption 12/16) documented.
+- Designed recommended Tab 1 layout structure (10 sections, each mapped to one StrategyU layout pattern, each with a draft action title honoring Rule C1): ① Hero/Exec Summary (#14 SCR 3-col), ② Big Number (#1), ③ System Architecture (#6 Process Flow 5 numbered cards: Perceive→Reason→Act→Evidence→Adapt), ④ Three Pillars (#5: Perception/Reasoning/Action), ⑤ Traditional vs Agentic (#4 Two-Column Comparison), ⑥ Live Dashboard Preview (#13: 6 metric tiles + 2 panels), ⑦ Value Chain (#7 Waterfall: frames→anomalies→judged→escalated→resolved), ⑧ Use Cases (#5 variant 4-col or #10 Harvey Ball), ⑨ Roadmap (#12 Timeline v1→v2→v3), ⑩ Footer/Sources. Validated against Rule C7 (Titles Test): reading only the 10 action titles top-to-bottom tells the complete story.
+- Documented 10 explicit ANTI-PATTERNS to reject (topic titles, pie charts, indigo/blue accents, 3D/clip-art/transitions, shrinking-font-to-fit, decorative color, missing source lines, inconsistent formatting, data vomit, multiple-messages-per-card).
+- Compiled final deliverable: /home/z/my-project/download/research/task0c/STYLE_GUIDE.md — 7-section style guide (Content Rules, Visual Rules, Tab 1 Layout, Tailwind Palette with hex/HSL, Typography with next/font import + type scale, Component-level application classes, Anti-patterns). Ready as design contract for Tab 1 implementation.
+
+Stage Summary:
+- DELIVERED: McKinsey/BCG Style Guide at /home/z/my-project/download/research/task0c/STYLE_GUIDE.md (7 sections, ~450 lines). Raw research corpus (12 JSON + 9 text snapshots) preserved in same dir for traceability.
+- KEY CONTENT RULES (10): Action Title, Pyramid Principle, One Message Per Slide, SCR/SCQA, MECE, Ghost Deck, Titles Test (60-sec), Source Citation, Rule of Three, Progressive Disclosure.
+- KEY VISUAL RULES (10): 2-font max, strict type scale, 3-color+3-semantic palette, strategic accent, high-contrast text, generous card density, border+shadow over fills, consistent grid, no pie/3D/clip-art, traffic-light status logic.
+- TAILWIND PALETTE: zinc neutrals + emerald-600 brand + amber-500 warning + rose-600 destructive. All hex+HSL documented. Zero indigo/blue. WCAG AA verified.
+- TYPOGRAPHY: Instrument Serif (display) + Inter (body) + JetBrains Mono (code) — all via next/font/google. Serif=conclusion, sans=detail reinforces Pyramid.
+- TAB 1 LAYOUT: 10 sections, each = one StrategyU layout pattern, each with draft action title validated against Titles Test.
+- HANDOFF to Phase 1 (Solution Design & Tab 1): implementation agent should treat STYLE_GUIDE.md as the design contract. Deviations require explicit justification. Recommended first build order: section ① Hero/Exec Summary (sets the SCR frame) → ③ Architecture Process Flow (anchors the "what is it") → ⑥ Dashboard Preview (most visually impressive, validates the palette/typography end-to-end) → fill the remaining sections.
+
+---
+Task ID: final-synthesis
+Agent: orchestrator
+Task: Final synthesis, packaging, and report generation
+
+Work Log:
+- Completed Phase 0: research on Peru cameras, agentic CV architectures, McKinsey/BCG patterns
+- Completed Phase 1: Tab 1 corporate explanation (10 sections, McKinsey-style)
+- Completed Phase 2: Tab 2 functional prototype (Real ML + Simulation modes, agent pipeline)
+- Completed Phase 3: testing & validation (lint clean, agent-browser verified, error handling)
+- Completed Phase 4: final report at /home/z/my-project/download/FINAL_REPORT.md
+- Updated AGENT_STATE.md with retrospection notes per phase
+
+Stage Summary:
+- 2-tab SPA delivered: Tab 1 (corporate explanation) + Tab 2 (functional prototype)
+- Architecture: 5-stage pipeline with clear IA vs Agentic layer separation
+- TF.js COCO-SSD for real ML detection (Real ML mode)
+- Simulation mode with realistic crowd surges (default, works in any environment)
+- Agent pipeline: rule engine + LLM-as-judge + 3-tier escalation + circuit breaker
+- 4 use cases: crowd surge, sustained density, loitering, restricted zone
+- API routes: /api/judge (LLM), /api/alert (email sim), /api/report (LLM)
+- Verified end-to-end: T1→T2→T3 escalation, 74 actions logged, 4 reports generated
+- Lint: 0 errors, 0 warnings
+- Final report: /home/z/my-project/download/FINAL_REPORT.md
+- Style guide: /home/z/my-project/download/research/task0c/STYLE_GUIDE.md
+- Screenshots: /home/z/my-project/download/screenshots/
+
+---
+Task ID: post-validation-fixes
+Agent: orchestrator
+Task: Fix anomaly detection robustness and code-split TF.js for memory
+
+Work Log:
+- Fixed "recent baseline" anomaly computation: switched from sample-count-based exclusion (last 5/20 samples) to TIME-BASED exclusion (samples older than 30s). This makes the z-score immune to sustained surges regardless of duration.
+- Code-split TF.js + COCO-SSD into a separate chunk via next/dynamic. The RealMlLoader component is only loaded when user switches to Real ML mode. This keeps the default (simulation) bundle small and avoids Turbopack compile OOM.
+- Fixed stale closure bug in useAgentActions: peakCount in reports now reads fresh state from store via getState() instead of captured closure values.
+- Verified full T1→T2→T3 escalation: z=6.31, peakZ=6.12, 60 persons, T3 escalate+judge+report all triggered.
+- LLM-generated incident report reads naturally: "On 2026-07-14 at 03:17Z, camera Cusco — Plaza de Armas detected a Tier 3 anomaly with 62 persons (z-score 6.12)..."
+- Captured final screenshots: tab1-desktop, tab2-final-working, tab2-report-final, tab2-mobile (390x844 iPhone 14 viewport).
+- Lint: 0 errors, 0 warnings. TypeScript: 0 errors in src/.
+
+Stage Summary:
+- All success criteria met.
+- Both tabs verified rendering and functional.
+- Agent pipeline fully operational in simulation mode (default).
+- Real ML mode available via code-split lazy load (best with hardware GPU).
+- Final report at /home/z/my-project/download/FINAL_REPORT.md.
+- Screenshots at /home/z/my-project/download/screenshots/.

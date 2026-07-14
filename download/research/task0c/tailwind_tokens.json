@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://ui.shadcn.com/colors",
+    "name": "Tailwind Colors in Every Format - Shadcn UI",
+    "snippet": "Tailwind Colors in Every Format. The complete Tailwind color palette in HEX, RGB, HSL, CSS variables, and classes. Ready to copy and paste into your project.",
+    "host_name": "ui.shadcn.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.shadcndesign.com/academy/neutral-colors",
+    "name": "Neutral colors — Academy - shadcndesign",
+    "snippet": "Tailwind CSS offers a variety of neutral color palettes (like slate, gray, zinc, neutral, and stone) because a single \"gray\" rarely fits all design needs.",
+    "host_name": "www.shadcndesign.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tailscan.com/colors",
+    "name": "Tailwind CSS Colors - Tailscan",
+    "snippet": "All the Tailwind CSS colors in a handy cheatsheet with hex, hsl and rgb values. You can bookmark this page so you'll never forget any Tailwind color again!",
+    "host_name": "tailscan.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://paletacolorpro.com/en/tailwind-color-guide",
+    "name": "Tailwind CSS Color System Guide 2025 — OKLCH, Dark Mode, v3",
+    "snippet": "Tailwind ships with five neutral palettes: slate , gray , zinc , neutral , and stone . They range from cool blue-tinted (slate) to warm amber-tinted (stone).",
+    "host_name": "paletacolorpro.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=y4DrhAz6ewI",
+    "name": "Color Palettes | Uncommon TailwindCSS - YouTube",
+    "snippet": "... TailwindCSS: https://youtu.be/MyK4TMa_jRI Chapters: 0:00 TailwindCSS Color Palettes 0:40 My Philosophy on Design & Development 2:02 The ...",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://tailwindcss.com/docs/customizing-colors",
+    "name": "Colors - Core concepts - Tailwind CSS",
+    "snippet": "Tailwind CSS includes a vast, beautiful color palette out of the box, carefully crafted by expert designers and suitable for a wide range of different design ...",
+    "host_name": "tailwindcss.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://support.pagerduty.com/main/docs/dynamic-notifications",
+    "name": "Dynamic Notifications - PagerDuty Knowledge Base",
+    "snippet": "Add severity levels to incidents to support effective incident triage. Dynamic Notifications allow you to generate alerts with severity fields. When an incident ...",
+    "host_name": "support.pagerduty.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://sdcourse.substack.com/p/day-137-pagerdutyopsgenie-integration",
+    "name": "Day 137: PagerDuty/OpsGenie Integration - Building Production",
+    "snippet": "Netflix uses multiple systems for different service tiers - streaming failures go to PagerDuty while infrastructure alerts use OpsGenie.",
+    "host_name": "sdcourse.substack.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://neubird.ai/blog/pagerduty-vs-opsgenie",
+    "name": "PagerDuty vs Opsgenie: A Practical Comparison - NeuBird AI",
+    "snippet": "$49/user/month. Opsgenie offers a free tier for up to 5 users (limited features). Significantly cheaper than PagerDuty at equivalent tiers.",
+    "host_name": "neubird.ai",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/sysadmin/comments/3lt42w/pagerduty_opsgenie_victorops_what_are_you_using",
+    "name": "PagerDuty, OpsGenie, VictorOps.. what are you using for alert  - Reddit",
+    "snippet": "If you just need whoever's on-call to get an alert, any of the three will work. Opsgenie. Less expensive than the other two, has way more ...",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.pagerduty.com/ask-a-product-question-2/opsgenie-user-so-difficult-to-manage-pagerduty-escalation-policy-etc-741",
+    "name": "OpsGenie user - so difficult to manage Pagerduty - Escalation policy etc",
+    "snippet": "I am new to pagerduty. Trying to set up alerts and escalation policy. nothing seems to work at all. I have set escalation policy repeat alert 9",
+    "host_name": "community.pagerduty.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://incident.io/blog/pagerduty-vs-opsgenie-comparison-2026",
+    "name": "PagerDuty vs. Opsgenie: Feature comparison, pricing, and migration",
+    "snippet": "This guide compares PagerDuty and Opsgenie on features, pricing, and workflow reality, then evaluates whether standalone alerting tools still ...",
+    "host_name": "incident.io",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://taskcallapp.com/blog/opsgenie-vs-pagerduty-comparison-and-alternatives",
+    "name": "Opsgenie vs PagerDuty: Comparison & Better Alternatives - TaskCall",
+    "snippet": "OpsGenie's comparable tier is less expensive by 2.3x than PagerDuty's Essentials price ($21/user/month). OpsGenie's Standard package is 2.1 ...",
+    "host_name": "taskcallapp.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://alertops.com/blogs/alertops-vs-pagerduty-opsgenie-replacement",
+    "name": "AlertOps vs PagerDuty: Better Opsgenie Replacement?",
+    "snippet": "PagerDuty has the longest enterprise track record. AlertOps operates at the orchestration layer with everything included.",
+    "host_name": "alertops.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://runframe.io/blog/best-pagerduty-alternatives",
+    "name": "PagerDuty Alternatives 2026: Compare Costs and Features",
+    "snippet": "Good alert routing and escalation. Pricing (source): Free tier includes 3 active IRM users. Pro has a $19/month platform fee that includes 3 ...",
+    "host_name": "runframe.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://trundl.com/resources/guides/pagerduty-vs-opsgenie",
+    "name": "PagerDuty vs Opsgenie [ Guide ] - Trundl",
+    "snippet": "Escalations ensure that the alert gets the necessary attention when an alert is not acknowledged within a certain amount of time. For ...",
+    "host_name": "trundl.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

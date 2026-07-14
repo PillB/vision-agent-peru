@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://resend.com/docs/webhooks/introduction",
+    "name": "Managing Webhooks - Resend",
+    "snippet": "Resend uses webhooks, which are real-time HTTPS requests that tell your application an event occurred, such as an email delivery notification or subscription ...",
+    "host_name": "resend.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://resend.com/blog/webhooks",
+    "name": "Capture email events with Webhooks - Resend",
+    "snippet": "We built a GitHub repository that shows a Slack notification being triggered from Resend webhooks using Next.js and TypeScript. Slack Webhook ...",
+    "host_name": "resend.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.inngest.com/docs/guides/resend-webhook-events",
+    "name": "Handle Resend Webhooks with Inngest | Email Event Workflows",
+    "snippet": "Resend uses webhooks to push real-time notifications to your application about the emails you're sending. Build incident or retention report for your email ...",
+    "host_name": "www.inngest.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://resend.com/docs/webhooks/ingester",
+    "name": "Webhook Ingester - Resend",
+    "snippet": "The Resend Webhook Ingester is an open-source Next.js application that receives, verifies, and stores all your webhook events in your own database.",
+    "host_name": "resend.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/resend/resend-skills/blob/main/skills/resend/references/webhooks.md",
+    "name": "webhooks.md - resend-skills - GitHub",
+    "snippet": "Webhooks Receive real-time notifications when email events occur (delivered, bounced, opened, received, etc.). Create alerts for failures or complaints. Spam ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.svix.com/blog/using-resend-webhooks-for-email-status-alerts",
+    "name": "Using Resend Webhooks to Send Email Status Alerts to Slack - Svix",
+    "snippet": "In this demo we'll show how to setup webhooks in Resend, receive them and verify the signature, and send a notification to Slack. First, we set ...",
+    "host_name": "www.svix.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://resend.com/changelog/webhook-event-visibility",
+    "name": "Webhook Event Visibility - Resend",
+    "snippet": "Webhooks are increasingly important for Resend users. announce several improvements to webhook event visibility. track the status of an email ...",
+    "host_name": "resend.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/posts/zenorocha_today-were-shipping-the-resend-cli-20-activity-7450178455494782976-FyW3",
+    "name": "Resend CLI 2.0 Released with Email Sending, Automations  - LinkedIn",
+    "snippet": "Web hooks are a powerful tool that allow you to be notified and perform actions when certain events happen. use the resend CLI to set up ...",
+    "host_name": "www.linkedin.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/mahdi_benrhouma_fe1c6005/nextjs-webhook-handling-and-event-driven-architecture-47jm",
+    "name": "Next.js Webhook Handling and Event-Driven Architecture",
+    "snippet": "This guide covers webhook security, retry mechanisms, event processing, and distributed system patterns for production applications. TL;DR.",
+    "host_name": "dev.to",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://resend.com/nextjs",
+    "name": "Send emails with Next.js - Resend",
+    "snippet": "By using Webhooks, I'm able to track email opened/clicked events via Segment and log those events in LogSnag for visibility. I highly believe in the people ...",
+    "host_name": "resend.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

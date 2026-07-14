@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://docs.ultralytics.com/guides/region-counting",
+    "name": "Region Object Counting with YOLO26 - Ultralytics YOLO",
+    "snippet": "The Ultralytics YOLO26 RegionCounter solution monitors live object counts in as many named zones as you need with a few lines of code. To go ...",
+    "host_name": "docs.ultralytics.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=fI83KlJxw7Y",
+    "name": "Real-Time People Counting using YOLO | ROI + Line Crossing",
+    "snippet": "... Applications People counting • Smart surveillance • Crowd analytics • Retail monitoring #YOLO #PeopleCounting #ComputerVision #OpenCV #AI #",
+    "host_name": "www.youtube.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/orgs/ultralytics/discussions/7900",
+    "name": "guides/region-counting/ · ultralytics · Discussion #7900 - GitHub",
+    "snippet": "To specify a counting region or box for object counting with Ultralytics YOLOv8, you can interactively set the region during video playback.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12843365",
+    "name": "Vision-Based People Counting and Tracking for Urban Environments",
+    "snippet": "This paper proposes an approach to the automatic detection and counting of people using computer vision and deep learning methods. developed architecture (YOLO ...",
+    "host_name": "pmc.ncbi.nlm.nih.gov",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=qn-hOg-Yw2E",
+    "name": "Escalator Occupancy Analytics with Ultralytics YOLO26 | AI in Retail",
+    "snippet": "Ultralytics YOLO26 enables real-time people counting and occupancy analytics using computer vision. In this video, we build an escalator ...",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/AXISCommunications/comments/1k1oly3/retail_customerperson_counting_multiple_cameras",
+    "name": "Retail Customer/Person Counting: Multiple cameras? - Reddit",
+    "snippet": "This would involve installing a camera at each entrance and setting up an AOA (Axis Object Analytics) cross-line counter. It would count ...",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ieeexplore.ieee.org/iel8/11088270/11088417/11088701.pdf",
+    "name": "Efficient Overhead People Counting via Improved Track Association and",
+    "snippet": "The LOI (line of interest) counting ap- proach divides the overhead field of view of the camera into three zones: an entry zone, a tracking zone, and an exit ...",
+    "host_name": "ieeexplore.ieee.org",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.ultralytics.com/guides/object-counting",
+    "name": "Real-Time Object Counting with YOLO26 - Ultralytics YOLO",
+    "snippet": "Count objects crossing a line or inside a region in real time with Ultralytics YOLO26. Track and tally specific classes for crowd analysis, ...",
+    "host_name": "docs.ultralytics.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

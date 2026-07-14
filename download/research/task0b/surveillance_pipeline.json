@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://getdx.com/blog/incident-response-automation",
+    "name": "Incident response automation: how it works and best practices for 2025",
+    "snippet": "Learn how incident response automation works, proven implementation strategies, and tools to reduce MTTR while preventing engineer burnout.",
+    "host_name": "getdx.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://swimlane.com/blog/automated-incident-response",
+    "name": "Automated Incident Response: How It Works & Expert Tips - Swimlane",
+    "snippet": "Automated incident response uses automation to monitor security alerts and automatically respond with pre-defined IR processes from your incident response plan.",
+    "host_name": "swimlane.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/microsoft-sentinel-automated-response",
+    "name": "Microsoft Sentinel automated responses - Azure Architecture Center",
+    "snippet": "Microsoft Sentinel is a cloud-native SIEM and SOAR solution. It uses advanced AI and security analytics to detect and respond to threats across the enterprise.",
+    "host_name": "learn.microsoft.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://alertops.com/blogs/alert-escalation",
+    "name": "Alert Escalation: How It Works & Best Practices | AlertOps",
+    "snippet": "Alert escalation routes unacknowledged incidents to the next responder automatically. Learn how escalation policies work and best practices ...",
+    "host_name": "alertops.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pubmed.ncbi.nlm.nih.gov/21290402",
+    "name": "Optimizing the response to surveillance alerts in automated",
+    "snippet": "This study evaluates the application of dynamic decision making models to the problem of responding to outbreak detection methods, using anthrax surveillance ...",
+    "host_name": "pubmed.ncbi.nlm.nih.gov",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.cortex.io/post/incident-response-automation",
+    "name": "Incident Response Automation: How It Works & Best Practices - Cortex",
+    "snippet": "Learn how incident response automation can improve efficiency and accelerate resolution times for security teams and developers.",
+    "host_name": "www.cortex.io",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=7z-wlQskX84",
+    "name": "Building an Intelligent Alert Processing Pipeline - YouTube",
+    "snippet": "Share your videos with friends, family, and the world.",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.zscaler.com/blogs/product-insights/beyond-alert-fatigue-architecting-next-gen-data-security-zscaler-workflow",
+    "name": "Architecting Next-Gen Data Security with Zscaler Workflow Automation",
+    "snippet": "By leveraging Zscaler Workflow Automation, security architects can build a highly responsive, self-remediating DLP architecture.",
+    "host_name": "www.zscaler.com",
+    "rank": 7,
+    "date": "Jul 9, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/pulse/automating-alert-responses-how-sres-conquer-daily-tech-challenges",
+    "name": "Automating Alert Responses How SREs Conquer Daily Tech",
+    "snippet": "Automating alert responses refers to the process of using automated systems, scripts, or tools to handle various alerts or notifications ...",
+    "host_name": "www.linkedin.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cybersierra.co/blog/alert-escalation-paths",
+    "name": "Escalation Paths That Work: Stop Missing Critical Network Alerts",
+    "snippet": "Learn to implement effective network alert escalation paths using tools like OpsGenie, PagerDuty & Zabbix.",
+    "host_name": "cybersierra.co",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

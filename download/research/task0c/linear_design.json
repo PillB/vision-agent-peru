@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://github.com/voltagent/awesome-design-md/blob/main/design-md/linear.app/DESIGN.md",
+    "name": "DESIGN.md - linear.app - GitHub",
+    "snippet": "Light mode is not documented because the marketing site does not ship a light theme. Linear's actual product UI uses a richer color-tag palette (red, orange, ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://getdesign.md/linear.app/design-md",
+    "name": "Design System Analysis: Linear - getdesign.md",
+    "snippet": "Linear takes project management as its base, then sharpens it through ultra-minimal, precise, purple accent. You will get the best results in project ...",
+    "host_name": "getdesign.md",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.figma.com/community/file/1222872653732371433/linear-design-system",
+    "name": "Linear Design System - Figma",
+    "snippet": "Took on the daunting task of replicating the design system of Linear's app. From this, I also recreated some templates for some of the main screens of the app.",
+    "host_name": "www.figma.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://linear.app/brand",
+    "name": "Linear Brand Guidelines",
+    "snippet": "Comfortable against light and dark backgrounds, Linear's primary brand color is a subtle desaturated blue. The following light and dark accents are preferred ...",
+    "host_name": "linear.app",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://oh-my-design.kr/design-systems/linear.app",
+    "name": "Linear Design System — Colors, Typography & Tokens",
+    "snippet": "Linear's design system uses #5e6ad2 as its primary color and Inter Variable for typography and Berkeley Mono for code, with 9999px corner radius.",
+    "host_name": "oh-my-design.kr",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://opendesigner.io/tr/design-systems/linear-app",
+    "name": "Linear design system — DESIGN.md + live preview - Open Design",
+    "snippet": "The typography system is built entirely on Inter Variable with OpenType features \"cv01\" and \"ss03\" enabled globally, giving the typeface a cleaner, more ...",
+    "host_name": "opendesigner.io",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://styles.refero.design/style/90ce5883-bb24-4466-93f7-801cd617b0d1",
+    "name": "Linear design system - Refero Styles",
+    "snippet": "Linear's design system is a midnight command center built on near-black surfaces (#08090a) with paper-white type and one electric acid-lime accent (#e4f222) ...",
+    "host_name": "styles.refero.design",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/design_critiques/comments/1mj3obg/hello_looking_for_feedback_on_this_redesigned",
+    "name": "Hello, looking for feedback on this redesigned font pairings for Linear",
+    "snippet": "Hey everyone! I redesigned the hero section of Linear's homepage with a focus on typography direction. I replaced the original Inter-based ...",
+    "host_name": "www.reddit.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

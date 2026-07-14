@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=uTdUUpfA83s",
+    "name": "Building an Object Detection App with Tensorflow.JS and React.JS in 15 Minutes - YouTube",
+    "snippet": "Building an Object Detection App with Tensorflow.JS and React.JS in 15 Minutes | COCO SSD. @NicholasRenotte2.6K likes131K views5 years ago more.",
+    "host_name": "www.youtube.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://harryli0088.github.io/tfjs-test",
+    "name": "TensorFlow.js - In-Browser Object Detection with SSD Mobilenet",
+    "snippet": "COCO-SSD is an object detection model trained on the Common Objects in Context (aka COCO) dataset. SSD stands for Single Shot MultiBox Detection",
+    "host_name": "harryli0088.github.io",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/384579824_Browser-Based_Object_Detection_System_for_Isolating_Plastic_Bottles_using_the_COCO-SSD_Model",
+    "name": "Browser-Based Object Detection System for Isolating Plastic Bottles using the COCO-SSD Model - ResearchGate",
+    "snippet": "This paper presents a browser-based object detection system for identifying and isolating plastic bottles using state-of-the-art machine ...",
+    "host_name": "www.researchgate.net",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/ekemini_thompson/harnessing-real-time-object-detection-in-the-browser-with-tensorflowjs-and-coco-ssd-23hp",
+    "name": "Harnessing Real-Time Object Detection in the Browser with TensorFlow.js and COCO-SSD",
+    "snippet": "This article explores how developers can leverage these tools to create interactive applications that detect objects in live webcam streams, uploaded images, ...",
+    "host_name": "dev.to",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mmla.gse.harvard.edu/tools/coco-ssd-object-detector",
+    "name": "Coco SSD Object Detector - EZ-MMLA Toolkit",
+    "snippet": "The multimodal toolkit contains an implementation of real time object detection using the COCO SSD model from tensorflow.",
+    "host_name": "mmla.gse.harvard.edu",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Surbhit-14/object-recognition-system",
+    "name": "Surbhit-14/object-recognition-system: This project demonstrates real-time object detection using a webcam, powered by TensorFlow.js and the COCO-SSD (Common Objects in Context",
+    "snippet": "This project demonstrates real-time object detection using a webcam, powered by TensorFlow.js and the COCO-SSD. It allows users to see live predictions of ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=QEzRxnuaZCk",
+    "name": "ml5.js: Object Detection with COCO-SSD - YouTube",
+    "snippet": "... detection Watch this video ad-free on Nebula https://nebula.tv/videos/the-coding-train-ml5-js-object-detection-with-coco-ssd p5.js Web ...",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.jsdelivr.com/package/npm/@tensorflow-models/coco-ssd",
+    "name": "@tensorflow-models/coco-ssd CDN by jsDelivr - A CDN for npm and GitHub",
+    "snippet": "This model detects objects defined in the COCO dataset, which is a large-scale object detection, segmentation, and captioning dataset.",
+    "host_name": "www.jsdelivr.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.tensorflow.org/2021/01/custom-object-detection-in-browser.html",
+    "name": "Custom object detection in the browser using TensorFlow.js",
+    "snippet": "In this post, we are going to develop an end-to-end solution using TensorFlow to train a custom object-detection model in Python, then put it into production.",
+    "host_name": "blog.tensorflow.org",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@orfeas_erevos/face-detection-with-react-tensorflow-js-and-webcam-372d5675c42a",
+    "name": "Face Detection with React, TensorFlow.js, and Webcam | by Orfeas Voutsaridis - Medium",
+    "snippet": "CocoSSD is a pre-trained object detection model trained on the COCO dataset, which includes 90 classes like: Person; Bicycle; Car; Dog; Chair.",
+    "host_name": "medium.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

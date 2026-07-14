@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/2068344/how-do-i-get-a-youtube-video-thumbnail-from-the-youtube-api",
+    "name": "How do I get a YouTube video thumbnail from the YouTube API?",
+    "snippet": "You can use YouTube Data API to retrieve video thumbnails, caption, description, rating, statistics and more. API version 3 requires a key. Finding the URL for live snapshot on Honeywell HBL6GR2 Capture high-resolution image snapshots from webcam, in Java More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://sync.wavevms.com/docs/developers/knowledgebase/276-how-to-download-thumbnails-using-api",
+    "name": "How to Download Thumbnails using API? - WAVE Sync",
+    "snippet": "Wisenet WAVE allows you to retrieve a thumbnail from the camera, in the form of a static image, through the API. cameraThumbnail under the System API section.",
+    "host_name": "sync.wavevms.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/apis-with-valentine/how-to-download-a-youtube-video-thumbnail-fedb511c88a1",
+    "name": "How to Download a YouTube Video Thumbnail with NO Software",
+    "snippet": "How to Download a YouTube Video Thumbnail with NO Software · Step 1: Getting the video id · Step 2: Build your download URL · Step 3: Download the ...",
+    "host_name": "medium.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.reolink.com/articles/360007011233-How-to-Capture-Live-JPEG-Image-of-Reolink-Cameras-via-Web-Browsers",
+    "name": "How to Capture Live JPEG Image of Reolink Cameras via Web Browsers",
+    "snippet": "This article intends to instruct you on how to capture a live JPEG image of Reolink cameras via a web browser.Applies. Step 1. Open Port Settings Enable. Step ...",
+    "host_name": "support.reolink.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://apify.com/parsebird/youtube-thumbnail-downloader",
+    "name": "YouTube Thumbnail Downloader - Apify",
+    "snippet": "Choose the thumbnail resolution, use automatic quality fallback, and save full-size JPG images to the Apify key-value store for direct download.",
+    "host_name": "apify.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/learnprogramming/comments/1hfj5ae/how_to_periodically_take_screenshots_of_live",
+    "name": "How to periodically take screenshots of live webcams websites  - Reddit",
+    "snippet": "I'm thinking of using the live webcams on SkylineWebcams, EarthCam, or even Youtube and pair the screenshots with air quality data from nearby stations.",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.mdpi.com/2076-3417/15/19/10384",
+    "name": "Exploring the Potential of Anomaly Detection Through Reasoning with Large Language Models - MDPI",
+    "snippet": "These experiments were conducted using the GPT-3.5-Turbo and GPT-4o models across tasks such as SMS spam detection, fake news detection, and toxic comment ...",
+    "host_name": "www.mdpi.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/caoyunkang/GPT4V-for-Generic-Anomaly-Detection",
+    "name": "Towards Generic Anomaly Detection and Understanding: Large-scale Visual-linguistic Model (GPT-4V) Takes the Lead. - GitHub",
+    "snippet": "GPT-4V can automatically reason for anomaly detection. GPT-4V automatically reasons complex normal standards and provides explanations for detected anomalies.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://openaccess.thecvf.com/content/CVPR2025/papers/Xu_Towards_Zero-Shot_Anomaly_Detection_and_Reasoning_with_Multimodal_Large_Language_CVPR_2025_paper.pdf",
+    "name": "[PDF] Towards Zero-Shot Anomaly Detection and Reasoning with Multimodal Large Language Models - CVF Open Access",
+    "snippet": "To scale up the instruction data, we introduce an automatic anomaly data collection pipeline combining GPT-. 4o [72] and Google Image Search [26] for image ...",
+    "host_name": "openaccess.thecvf.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://sodevelopment.medium.com/fine-tuning-yolo-models-with-an-automated-data-labeling-pipeline-3704b6472aa1",
+    "name": "Fine-Tuning YOLO Models with an Automated Data-Labeling Pipeline | by SO Development",
+    "snippet": "This guide shows why that pipeline matters, how its stages fit together, and which controls and metrics keep the loop reliable so you can move ...",
+    "host_name": "sodevelopment.medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.metamirror.io/gpt4-vision-performance-analysis-01c08801a2c5",
+    "name": "GPT4-Vision Performance Analysis. Is it or isn't it a cow? | by Steve Jones | Medium",
+    "snippet": "GPT4-Vision is a powerful tool that has a reasonable, but variable, success rate as a general purpose animal identifier.",
+    "host_name": "blog.metamirror.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/abs/2311.02782",
+    "name": "[2311.02782] Towards Generic Anomaly Detection and Understanding: Large-scale Visual-linguistic Model (GPT-4V) Takes the Lead - arXiv",
+    "snippet": "This study explores the use of GPT-4V(ision), a powerful visual-linguistic model, to address anomaly detection tasks in a generic manner.",
+    "host_name": "arxiv.org",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.ultralytics.com",
+    "name": "YOLO Object Detection & Segmentation | Ultralytics",
+    "snippet": "YOLO's unique approach treats object detection as a single regression problem, predicting bounding boxes and class probabilities directly from ...",
+    "host_name": "docs.ultralytics.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.geeksforgeeks.org/machine-learning/yolo-you-only-look-once-real-time-object-detection",
+    "name": "YOLO : You Only Look Once - Real Time Object Detection - GeeksforGeeks",
+    "snippet": "YOLO (You Only Look Once) is a deep learning-based object detection algorithm that identifies and localizes objects within an image in a single ...",
+    "host_name": "www.geeksforgeeks.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/375698145_Towards_Generic_Anomaly_Detection_and_Understanding_Large-scale_Visual-linguistic_Model_GPT-4V_Takes_the_Lead",
+    "name": "(PDF) Towards Generic Anomaly Detection and Understanding: Large-scale Visual-linguistic Model (GPT-4V) Takes the Lead - ResearchGate",
+    "snippet": "We investigate the application of GPT-4V in multi-modality, multi-domain anomaly detection tasks, including image, video, point cloud, and time ...",
+    "host_name": "www.researchgate.net",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mdpi.com/2079-9292/14/1/208",
+    "name": "PDS-YOLO: A Real-Time Detection Algorithm for Pipeline Defect Detection - MDPI",
+    "snippet": "While its detection accuracy is relatively lower, it offers the fastest detection speed, making it well suited for the requirements of underground pipeline ...",
+    "host_name": "www.mdpi.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
