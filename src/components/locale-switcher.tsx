@@ -5,15 +5,20 @@ import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { Languages } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { setLocale } from '@/app/actions/set-locale'
 import { localeLabels, type Locale, getOtherLocale } from '@/i18n/locale'
 
 /**
  * Language toggle — switches between English (en) and Peruvian Spanish (es-PE).
  *
- * Uses a Server Action to set the NEXT_LOCALE cookie, then `router.refresh()`
- * to re-render server components with the new locale. No full page reload —
- * client state (active tab, live ML feed, agent loop) is preserved.
+ * Uses a plain API route (POST /api/set-locale) to set the NEXT_LOCALE cookie,
+ * then `router.refresh()` to re-render server components with the new locale.
+ *
+ * We use an API route instead of a Server Action because Server Actions
+ * require the `Next-Action` header which is stripped by some preview gateways,
+ * causing "Invalid Server Actions request" crashes. API routes are robust.
+ *
+ * No full page reload — client state (active tab, live ML feed, agent loop)
+ * is preserved via router.refresh() which only re-runs Server Components.
  */
 export function LocaleSwitcher() {
   const t = useTranslations('LocaleSwitcher')
@@ -22,10 +27,22 @@ export function LocaleSwitcher() {
   const [isPending, startTransition] = useTransition()
   const next = getOtherLocale(current)
 
-  function onToggle() {
+  async function onToggle() {
     startTransition(async () => {
-      await setLocale(next)
-      router.refresh()
+      try {
+        const res = await fetch('/api/set-locale', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ locale: next }),
+        })
+        if (!res.ok) {
+          console.error('[LocaleSwitcher] failed to set locale:', await res.text())
+          return
+        }
+        router.refresh()
+      } catch (err) {
+        console.error('[LocaleSwitcher] error:', err)
+      }
     })
   }
 

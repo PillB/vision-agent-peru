@@ -45,23 +45,29 @@ const TOTAL_SLIDES = 10
 export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
   const t = useTranslations()
   const [downloading, setDownloading] = useState(false)
+  const [downloadingV2, setDownloadingV2] = useState(false)
 
-  const handleDownloadPptx = useCallback(async () => {
-    setDownloading(true)
+  const handleDownloadPptx = useCallback(async (version: 'v1' | 'v2' = 'v1') => {
+    const setter = version === 'v2' ? setDownloadingV2 : setDownloading
+    setter(true)
     try {
-      const res = await fetch('/api/export-pptx')
+      const endpoint = version === 'v2' ? '/api/export-pptx-v2' : '/api/export-pptx'
+      const filename = version === 'v2' ? 'vision-agent-infographic.pptx' : 'vision-agent-strategic-brief.pptx'
+      const res = await fetch(endpoint)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'vision-agent-strategic-brief.pptx'
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
       toast.success(t('Tab3.download.toastTitle'), {
-        description: t('Tab3.download.toastDesc'),
+        description: version === 'v2'
+          ? `${t('Tab3.download.toastDesc')} · Infografía`
+          : t('Tab3.download.toastDesc'),
         duration: 5000,
       })
     } catch (err) {
@@ -70,7 +76,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
         description: err instanceof Error ? err.message : 'Unknown error',
       })
     } finally {
-      setDownloading(false)
+      setter(false)
     }
   }, [t])
 
@@ -94,8 +100,11 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               <Button onClick={onSeeOverview} variant="outline">
                 {t('Tab3.slide1.ctaArchitecture')}
               </Button>
-              <Button onClick={handleDownloadPptx} disabled={downloading} variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
+              <Button onClick={() => handleDownloadPptx('v1')} disabled={downloading} variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
                 {downloading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Download className="mr-2 h-4 w-4" />{t('Tab3.download.button')}</>}
+              </Button>
+              <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2} variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
+                {downloadingV2 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Sparkles className="mr-2 h-4 w-4" />{t('Tab3.download.button')} V2</>}
               </Button>
             </div>
             <p className="mt-3 text-xs text-zinc-400 flex items-center gap-1.5">
@@ -468,9 +477,13 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button onClick={onTryPrototype} size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50"><Zap className="mr-2 h-4 w-4" />{t('Tab3.cta.buttonPrototype')}</Button>
-            <Button onClick={handleDownloadPptx} disabled={downloading} size="lg" variant="outline" className="border-white text-white hover:bg-emerald-800 hover:text-white bg-transparent">
+            <Button onClick={() => handleDownloadPptx('v1')} disabled={downloading} size="lg" variant="outline" className="border-white text-white hover:bg-emerald-800 hover:text-white bg-transparent">
               {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
               {downloading ? t('Tab3.download.generating') : t('Tab3.download.ctaButton')}
+            </Button>
+            <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2} size="lg" variant="outline" className="border-amber-300 text-amber-200 hover:bg-amber-900/30 hover:text-white bg-transparent">
+              {downloadingV2 ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+              {downloadingV2 ? t('Tab3.download.generating') : `${t('Tab3.download.ctaButton')} V2`}
             </Button>
             <Button onClick={onSeeOverview} size="lg" variant="outline" className="border-white text-white hover:bg-emerald-800 hover:text-white bg-transparent">{t('Tab3.cta.buttonArchitecture')}</Button>
           </div>

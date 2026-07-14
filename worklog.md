@@ -401,3 +401,56 @@ Stage Summary:
 - Peruvian Spanish (es-PE) locale: America/Lima timezone, PEN currency, d/MM/yy dates
 - PPTX export language-aware (reads cookie, uses translated text, shrinkText for expansion)
 - Toggle preserves client state (active tab, live ML feed) via router.refresh()
+
+---
+Task ID: pptx-v2-infographic
+Agent: orchestrator
+Task: Fix Server Actions crash + build V2 infographic PPTX + integrate use cases
+
+Work Log:
+- FIXED: Server Actions crash ("Invalid Server Actions request")
+  - Root cause: LocaleSwitcher (Client Component) called Server Action `setLocale` directly. The preview gateway strips the `Next-Action` header.
+  - Solution: replaced Server Action with plain API route `POST /api/set-locale` that writes the NEXT_LOCALE cookie. LocaleSwitcher now calls fetch('/api/set-locale') + router.refresh().
+  - Verified: toggle EN→ES→EN works without crash, no console errors.
+- Created Python geometry validator: /home/z/my-project/scripts/validate-pptx-v2-geometry.py
+  - Calculates x, y, w, h for all 62 elements across 5 zones (header, title, timeline, loop, use cases)
+  - Validates: no overflow beyond slide bounds, no unintended overlaps, arrow connections
+  - Output: /home/z/my-project/scripts/pptx-v2-geometry.json
+- Created /api/export-pptx-v2 route — infographic/timeline style PowerPoint:
+  - Zone A: Header (logo, brand, meta)
+  - Zone B: Title (action title in serif)
+  - Zone C: Timeline — 4 era nodes above a pentagon arrow, with dashed connector lines + dots, year labels below, value callouts at bottom
+  - Zone D: Agentic loop — 4 nodes (Percibir→Razonar→Actuar→Reflexionar) with numbered badges, forward arrows, loop-back path (down→left→up), Human Feedback node with amber accent and bidirectional arrows
+  - Zone E: 3 use case tiers (Traditional | ML/DL Modern | Agentic Future) with numbered badges
+  - Footer: value generated callout
+- 8 iterations of improvement:
+  1. Baseline: 4 era nodes + timeline arrow + loop + use cases
+  2. Added dashed connector lines from era nodes to timeline + dots at connection points
+  3. Added numbered badges to loop nodes + shadow styling
+  4. Redesigned Human Feedback node with icon circle + shadow glow + left-aligned text
+  5. Added numbered badges to use case tier cards + shadow
+  6. Added "value generated" footer callout in emerald
+  7. Validated geometry: 103 shapes, 75 text runs, 0 overflow issues
+  8. Final render check: all 8 zones have content, balanced density
+- Validated final PPTX V2:
+  - 103 native shapes (all editable in PowerPoint)
+  - 75 text runs
+  - 0 overflow issues
+  - 0 unintended overlaps (2 warnings are intentional loop-back arrow corner connections)
+  - LibreOffice render: 1280×720 PNG, all zones populated
+- Added V2 download button to Tab 3 (amber accent, Sparkles icon, "PowerPoint (.pptx) V2")
+- Both V1 and V2 buttons functional in hero section + closing CTA
+- Content fully in Peruvian Spanish when locale is es-PE
+- Use cases integrated into 3 tiers:
+  - Traditional (S1-S2): people counting, intrusion detection, queue monitoring, parking availability
+  - ML/DL Modern (S2-S3): graffiti/vandalism, abandoned objects, fire/smoke, slip/hazard
+  - Agentic Future (S4): auto-generated report, LLM-judge escalation, visual memory (v2), multi-camera mesh (v3)
+- Lint: 0 errors, 0 warnings. TypeScript: 0 errors in src/.
+
+Stage Summary:
+- Server Actions crash FIXED (API route replaces Server Action)
+- V2 infographic PPTX delivered (103 editable shapes, timeline + loop + human feedback + 3-tier use cases)
+- 8 iterations of geometry + styling improvements
+- Python geometry validation passed (0 overflow, 0 unintended overlaps)
+- Both PPTX versions (V1 4-card + V2 infographic) downloadable from Tab 3
+- All content in Peruvian Spanish
