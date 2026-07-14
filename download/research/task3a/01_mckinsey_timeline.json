@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.mckinsey.com/featured-insights/mckinsey-explainers/what-is-machine-learning",
+    "name": "What is machine learning (ML)? - McKinsey",
+    "snippet": "Machine learning as a discipline was first introduced in 1959, building on formulas and hypotheses dating back to the 1930s.\nHow did machine learning evolve into generative AI? Machine learning as a discipline was first introduced in 1959, building on formulas and ...",
+    "host_name": "www.mckinsey.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mckinsey.com/featured-insights/mckinsey-explainers/what-is-ai",
+    "name": "What is AI (artificial intelligence)? - McKinsey",
+    "snippet": "In this McKinsey Explainer, we define what AI is, and look at how rapid advances in Artificial Intelligence are reshaping almost every ...\nDeep learning is a more advanced version of machine learning ・ was coined in 1956 ・ four previous stages of AI: Symbolic AI (1956). until the ...",
+    "host_name": "www.mckinsey.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mckinsey.com/~/media/mckinsey/industries/industrials/our%20insights/how%20artificial%20intelligence%20can%20deliver%20real%20value%20to%20companies/mgi-artificial-intelligence-discussion-paper.pdf",
+    "name": "[PDF] ARTIFICIAL INTELLIGENCE THE NEXT DIGITAL FRONTIER?",
+    "snippet": "Machine learning and a subfield called deep learning are at the heart of many recent advances in artificial intelligence applications",
+    "host_name": "www.mckinsey.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://swisscyberinstitute.com/blog/history-artificial-intelligence",
+    "name": "The History of Artificial Intelligence - Swiss Cyber Institute",
+    "snippet": "The history of artificial intelligence. From Alan Turing and early AI research to modern generative AI, foundation models, and governance.",
+    "host_name": "swisscyberinstitute.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/pulse/5-levels-ai-evolution-charting-course-from-initial-age-pawar-phd--cjdwc",
+    "name": "The 5 Levels of AI Evolution: Charting the Course from Initial Spark",
+    "snippet": "This article introduces a five-level framework—AI Spark, AI Ignition, AI Integration, AI Amplification, and AI Transformation—designed",
+    "host_name": "www.linkedin.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/388035967_The_Evolution_of_AI_From_Rule-Based_Systems_to_Data-Driven_Intelligence",
+    "name": "(PDF) The Evolution of AI: From Rule-Based Systems to Data-Driven",
+    "snippet": "Deep learning in the 2010s enabled AI to exceed human performance in tasks such as image recognition, natural language processing, and ...",
+    "host_name": "www.researchgate.net",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mehmetozkaya.medium.com/evolution-of-ai-ai-machine-learning-deep-learning-and-generative-ai-d3266cd72a7e",
+    "name": "Evolution of AI: AI, Machine Learning, Deep Learning, and",
+    "snippet": "Artificial Intelligence (AI) has undergone a remarkable journey, evolving from simple rule-based systems to complex models capable of generating new content.",
+    "host_name": "mehmetozkaya.medium.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mckinsey.com/featured-insights/mckinsey-explainers/what-is-deep-learning",
+    "name": "What is deep learning? - McKinsey",
+    "snippet": "Deep learning is a type of machine learning that is more capable, autonomous, and accurate than traditional machine learning.",
+    "host_name": "www.mckinsey.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.coursera.org/articles/history-of-ai",
+    "name": "The History of AI: A Timeline of Artificial Intelligence - Coursera",
+    "snippet": "AI has a long history stretching back to the 1950s, with significant milestones at nearly every decade. In this article, we'll review some of the major events ...",
+    "host_name": "www.coursera.org",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://lanternstudios.com/insights/blog/the-history-of-ai-from-rules-based-algorithms-to-generative-models",
+    "name": "The History of AI: From Rules-based Algorithms to Generative Models",
+    "snippet": "We'll delve into the origins of AI, the rise of machine learning, deep learning, and the emergence of generative AI.",
+    "host_name": "lanternstudios.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

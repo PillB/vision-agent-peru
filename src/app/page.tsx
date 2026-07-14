@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { Camera, FileText, Activity } from 'lucide-react'
+import { Camera, FileText, Activity, Presentation } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Tab1Overview } from '@/components/tab1-overview'
 import { Tab2Prototype } from '@/components/tab2-prototype'
+import { Tab3StrategicBrief } from '@/components/tab3-strategic-brief'
+
+type TabId = 'overview' | 'prototype' | 'brief'
 
 export default function Home() {
-  const [tab, setTab] = useState<'overview' | 'prototype'>('overview')
+  const [tab, setTab] = useState<TabId>('overview')
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -43,7 +46,7 @@ export default function Home() {
       {/* Tab Nav */}
       <div className="border-b border-zinc-200 bg-white">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as 'overview' | 'prototype')}>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)}>
             <TabsList className="bg-transparent h-12 p-0 gap-6">
               <TabsTrigger
                 value="overview"
@@ -51,6 +54,13 @@ export default function Home() {
               >
                 <FileText className="h-4 w-4 mr-2" />
                 <span className="text-sm font-medium">Solution Overview</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="brief"
+                className="bg-transparent px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-600 data-[state=active]:text-zinc-950 text-zinc-500 hover:text-zinc-900 transition"
+              >
+                <Presentation className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">Strategic Brief</span>
               </TabsTrigger>
               <TabsTrigger
                 value="prototype"
@@ -61,7 +71,15 @@ export default function Home() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="mt-0 focus-visible:outline-none">
-              <Tab1Overview onTryPrototype={() => setTab('prototype')} />
+              <Tab1Overview
+                onTryPrototype={() => setTab('prototype')}
+              />
+            </TabsContent>
+            <TabsContent value="brief" className="mt-0 focus-visible:outline-none">
+              <Tab3StrategicBrief
+                onTryPrototype={() => setTab('prototype')}
+                onSeeOverview={() => setTab('overview')}
+              />
             </TabsContent>
             <TabsContent value="prototype" className="mt-0 focus-visible:outline-none">
               <Tab2Prototype />

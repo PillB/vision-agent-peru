@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://mitsloan.mit.edu/ideas-made-to-matter/agentic-ai-explained",
+    "name": "Agentic AI, explained | MIT Sloan",
+    "snippet": "“They can execute multi-step plans, use external tools, and interact with digital environments to function as powerful components within larger ...\nAI agents or agentic AI, a new breed of AI systems that are semi- or fully autonomous and thus able to perceive, reason, and act on their own.",
+    "host_name": "mitsloan.mit.edu",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sciopen.com/article/10.1016/j.jai.2025.08.003",
+    "name": "Agentic AI: The age of reasoning—A review - SciOpen",
+    "snippet": "Agentic AI has revolutionized systems through autonomous decision making and resource optimization, yet challenges persist in aligning AI with ...",
+    "host_name": "www.sciopen.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://fedresources.com/agentic-ai-the-next-leap-in-artificial-intelligence",
+    "name": "Agentic AI is the next logical and powerful step.",
+    "snippet": "Agentic AI is the autonomous reasoning loop: a cycle where the AI perceives, plans, acts, and reflects repeatedly until it achieves a goal.\nAgentic AI refers to AI systems that can independently/autonomously make decisions, set goals, and take actions to achieve those goals.",
+    "host_name": "fedresources.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://unstructured.io/blog/defining-the-autonomous-enterprise-reasoning-memory-and-the-core-capabilities-of-agentic-ai",
+    "name": "Agentic AI Architecture: Defining the Autonomous Enterprise | Unstructured",
+    "snippet": "Agentic AI architecture is a system design combining LLM reasoning, planning, memory, and tool use to build autonomous agents\nAgentic AI architecture is a system design combining LLM reasoning, planning, memory, and tool use to build autonomous agents that act on ...",
+    "host_name": "unstructured.io",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2505.09970v2",
+    "name": "Multi-Step Planning and Reasoning Improves Acting in LLM Agents - arXiv",
+    "snippet": "Pre-Act, a novel approach that enhances the agent's performance by creating a multi-step execution plan along with the detailed reasoning for ...",
+    "host_name": "arxiv.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@anandvlinkedin/build-an-agentic-ai-workflow-that-plans-and-executes-multi-step-tasks-c0c902ee7607",
+    "name": "Build an Agentic AI Workflow That Plans and Executes Multi-Step Tasks",
+    "snippet": "Agentic systems are designed to plan tasks, execute multiple actions, evaluate results, and retry when something fails. Instead of functioning ...",
+    "host_name": "medium.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.botonomy.ai/blog/automation/agentic-workflows",
+    "name": "Agentic Workflows: AI Agents That Execute Multi-Step Tasks - Botonomy",
+    "snippet": "Agentic workflows are autonomous, multi-step AI systems that receive a goal, decompose it into subtasks, execute using tools, self-evaluate ...",
+    "host_name": "www.botonomy.ai",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.emergentmind.com/topics/agentic-planning",
+    "name": "Agentic Planning in AI - Emergent Mind",
+    "snippet": "Agentic planning empowers autonomous systems to decompose, plan, and optimize complex tasks through modular, iterative reasoning inspired by ...",
+    "host_name": "www.emergentmind.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.facebook.com/TheStraitsTimes/posts/unlike-traditional-ai-ai-agents-can-independently-plan-and-carry-out-multi-step-/1293241762962981",
+    "name": "Unlike traditional AI, AI agents can independently plan and carry out",
+    "snippet": "AI agents can plan and carry out multi-step tasks to achieve a goal. It's just a perfect replacement of our ministers who don't even want to ...",
+    "host_name": "www.facebook.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=17AvXhHXBPQ",
+    "name": "Understanding Agentic AI: From Workflows to Autonomous Reasoning - YouTube",
+    "snippet": "retrieve data or use single tools, these agents can independently ... Ultimately, Agentic AI functions as a proactive system that uses ...",
+    "host_name": "www.youtube.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
