@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import {
   ArrowRight,
   Eye,
@@ -16,8 +17,12 @@ import {
   ArrowUpRight,
   Cpu,
   Sparkles,
+  Download,
+  FileText,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import {
   STAGES,
@@ -39,6 +44,36 @@ interface Props {
 const TOTAL_SLIDES = 10
 
 export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownloadPptx = useCallback(async () => {
+    setDownloading(true)
+    try {
+      const res = await fetch('/api/export-pptx')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'cusco-vision-agent-strategic-brief.pptx'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success('PowerPoint downloaded', {
+        description: 'Single-slide .pptx with native editable objects · 13.333" × 7.5"',
+        duration: 5000,
+      })
+    } catch (err) {
+      console.error('[download-pptx] error:', err)
+      toast.error('Download failed', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      })
+    } finally {
+      setDownloading(false)
+    }
+  }, [])
+
   return (
     <main className="bg-white text-zinc-950">
       {/* ============================================================
@@ -64,7 +99,29 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               <Button onClick={onSeeOverview} variant="outline">
                 Read the architecture
               </Button>
+              <Button
+                onClick={handleDownloadPptx}
+                disabled={downloading}
+                variant="outline"
+                className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+              >
+                {downloading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    PowerPoint (.pptx)
+                  </>
+                )}
+              </Button>
             </div>
+            <p className="mt-3 text-xs text-zinc-400 flex items-center gap-1.5">
+              <FileText className="h-3 w-3" />
+              Single-slide brief with native, fully-editable PowerPoint objects
+            </p>
           </div>
           <div className="lg:col-span-5">
             <div className="grid grid-cols-3 gap-px bg-zinc-200 rounded-xl overflow-hidden border border-zinc-200">
@@ -609,6 +666,20 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
             <Button onClick={onTryPrototype} size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50">
               <Zap className="mr-2 h-4 w-4" />
               Live prototype
+            </Button>
+            <Button
+              onClick={handleDownloadPptx}
+              disabled={downloading}
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-emerald-800 hover:text-white bg-transparent"
+            >
+              {downloading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              {downloading ? 'Generating...' : 'Download .pptx'}
             </Button>
             <Button onClick={onSeeOverview} size="lg" variant="outline" className="border-white text-white hover:bg-emerald-800 hover:text-white bg-transparent">
               Architecture

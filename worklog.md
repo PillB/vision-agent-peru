@@ -254,3 +254,32 @@ Stage Summary:
 - Stage color coding: zinc-400 (static) → zinc-600 (ML) → amber-500 (cognitive) → emerald-600 (agentic).
 - Reusable components: SlideSection, ActionTitle, OrientingParagraph, SourceLine, StageCard, LoopDiagram, HypeCycleDiagram, StatCallout, NextActionCard.
 - Cross-links: Tab 3 CTAs navigate to Tab 1 (architecture) and Tab 2 (live prototype).
+
+---
+Task ID: pptx-export
+Agent: orchestrator
+Task: Add PowerPoint (.pptx) download for Tab 3 — single slide with native editable objects
+
+Work Log:
+- Installed pptxgenjs@4.0.1
+- Created /api/export-pptx/route.ts — generates a SINGLE PowerPoint slide (13.333" × 7.5" widescreen)
+- Layout: Header (logo+brand) → Main title → 4 stage cards → Timeline arrow → Insight callout → Footer
+- All 42 shapes are NATIVE PowerPoint objects (rect, roundRect, line, rightArrow, text) — fully editable
+- 53 text runs with Georgia (serif headings), Calibri (body), Consolas (mono) fonts
+- Color palette: emerald-600 (brand), zinc (neutral), amber-500 (stage 3), rose-600 (threshold)
+- Verified: 0 overflow issues, 0 occlusion issues, all shapes within slide bounds
+- Card geometry: 4 cards × 3.056" wide, gap 0.17", x positions: [0.30, 3.53, 6.75, 9.98]
+- Added download button to Tab 3 hero section + closing CTA (2 buttons)
+- Added Sonner Toaster to layout.tsx for toast notifications
+- Toast feedback: "PowerPoint downloaded · Single-slide .pptx with native editable objects · 13.333" × 7.5""
+- API: GET /api/export-pptx → returns .pptx (85KB, 39 internal files)
+- LibreOffice render verified: 1280×720 PNG, correct layout
+- Lint: 0 errors, 0 warnings
+
+Stage Summary:
+- Single-slide PowerPoint (.pptx) download fully functional
+- Every element is a native, editable PowerPoint object (no raster images)
+- Precise x/y/w/h measurements verified via XML extraction
+- No overflow, no occlusion — clean geometric placement
+- Button visible on Tab 3 (hero + closing CTA)
+- File: cusco-vision-agent-strategic-brief.pptx
