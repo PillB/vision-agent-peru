@@ -761,3 +761,54 @@ PHASE 5 — FINAL VALIDATION (all pass):
 ISSUES FOUND: 5
 FIXES APPLIED: 5
 REMAINING ISSUES: 0
+
+---
+Task ID: reid-identity-explainability
+Agent: orchestrator
+Task: Implement persistent identity tracking + ELI5 explainability hints
+
+PHASES 0-6 (Research): Already complete via uploaded MD (857 lines, 6 rounds covering MOT, person ReID, vehicle/LPR, multi-camera, optimization, production).
+
+PHASE 7 — Identity Management System:
+- Created /src/lib/identity.ts with:
+  - WithinFeedTracker: IoU-based tracker with lost_track_buffer=60 (simplified ByteTrack)
+  - GlobalIdentityManager: centroid-based gallery with cosine similarity matching, TTL expiry
+  - AppearanceFeatures: lightweight (aspect ratio, relative size, dominant color, 24-bin color histogram)
+  - extractAppearanceFeatures: extracts features from canvas ImageData without ML models
+  - TrackedIdentity: persistent identity with observations log, first/last seen, TTL
+  - Point-in-polygon not needed here (in agent.ts)
+
+PHASE 8 — Integration:
+- camera-view.tsx: tracker and identity manager integrated into detection loop
+  - Every frame: detections → tracker.update() → extractAppearanceFeatures → identityMgr.matchOrCreate
+  - Throttled identity store update (every 5 frames)
+  - Tracker resets on camera switch
+- store.ts: added trackedIdentities state + setTrackedIdentities action
+- identity-panel.tsx: new UI component showing tracked persons/vehicles with:
+  - Color swatch (dominant color)
+  - Type icon (person/vehicle)
+  - Global ID + plate string (if available)
+  - Observation count + last seen time
+  - Legend explaining each field
+
+PHASE 9 — ELI5 Explainability:
+Added ELI5 hints (💡) to 5 prototype panels:
+1. Agent reasoning: "¿Qué hace el agente? Percibe → razona → actúa → reflexiona. Tier 0-3 = severidad."
+2. Alerts & incidents: "¿Qué es esto? Alertas cuando el agente detecta algo inusual. Reconocer/Silenciar."
+3. Action audit trail: "¿Qué es esto? Registro de cada acción automática con hora y resultado."
+4. Count chart: "¿Cómo leerlo? Línea verde = detecciones, banda gris = promedio ± σ, puntos ámbar = anomalías."
+5. Identity panel: "¿Qué es esto? ID único por persona/vehículo, como lista de visitantes con horarios."
+
+VALIDATION:
+- Lint: 0 errors, 0 warnings
+- TypeScript: 0 errors
+- Stub check: 0 hits in production code
+- Identity module: 7 exports
+- ELI5 hints: 11 instances across 5 panels
+- No stubs, no placeholders, no simulation code
+
+ARCHITECTURE NOTE:
+Full face/gait/clothing embeddings (OSNet, ArcFace) require ONNX models too heavy for browser.
+This implementation uses lightweight appearance features (bbox geometry + color histogram) as proxy.
+The architecture is designed to swap in deep embeddings when available — the GlobalIdentityManager
+interface is embedding-agnostic (uses AppearanceFeatures which can be extended).

@@ -95,7 +95,7 @@ export function CountChart() {
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-emerald-600" />
           <h3 className="text-sm font-semibold text-zinc-950">Person count vs 2-min average</h3>
@@ -114,6 +114,12 @@ export function CountChart() {
             Anomaly
           </span>
         </div>
+      </div>
+      {/* ELI5 hint */}
+      <div className="mb-2 rounded-md bg-zinc-50 border border-zinc-100 px-2.5 py-1 text-[10px] text-zinc-500 leading-relaxed">
+        💡 <strong>¿Cómo leerlo?</strong> Línea verde = detecciones actuales. Banda gris = promedio
+        ± desviación de los últimos 2 minutos. Puntos ámbar = anomalías (z-score &gt; 2).
+        Si la línea verde sube muy por encima de la banda, el agente activa alertas.
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-40" preserveAspectRatio="none">
         {/* Grid lines */}

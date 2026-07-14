@@ -13,7 +13,7 @@ export function AlertsPanel() {
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <h3 className="text-sm font-semibold text-zinc-950">Alerts & incidents</h3>
@@ -32,7 +32,13 @@ export function AlertsPanel() {
           </Button>
         </div>
       </div>
-      <ScrollArea className="flex-1 max-h-[420px] pr-2">
+      {/* ELI5 hint */}
+      <div className="mb-3 rounded-md bg-amber-50 border border-amber-100 px-2.5 py-1.5 text-[10px] text-zinc-600 leading-relaxed">
+        💡 <strong>¿Qué es esto?</strong> Cuando el agente detecta algo inusual (demasiadas personas,
+        intrusión, objeto abandonado), crea una alerta aquí. <strong>Reconocer</strong> = "ya lo vi".
+        <strong>Silenciar</strong> = "no me avises por 5 minutos".
+      </div>
+      <ScrollArea className="flex-1 max-h-[380px] pr-2">
         {hits.length === 0 ? (
           <div className="text-center py-10 text-xs text-zinc-400">
             <Bell className="h-6 w-6 mx-auto mb-2 text-zinc-300" />

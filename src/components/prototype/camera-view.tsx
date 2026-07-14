@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
+import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
 
@@ -38,6 +39,8 @@ export function CameraView() {
   const rafRef = useRef<number | null>(null)
   const lastDetectRef = useRef<number>(0)
   const lastFpsTickRef = useRef<{ t: number; n: number }>({ t: Date.now(), n: 0 })
+  const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
+  const identityMgrRef = useRef<GlobalIdentityManager>(new GlobalIdentityManager(0.6, 24))
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
 
@@ -61,6 +64,7 @@ export function CameraView() {
   const setAgentState = usePrototypeStore((s) => s.setAgentState)
   const pushTrace = usePrototypeStore((s) => s.pushTrace)
   const pushHit = usePrototypeStore((s) => s.pushHit)
+  const setTrackedIdentities = usePrototypeStore((s) => s.setTrackedIdentities)
 
   const agentActions = useAgentActions()
 
@@ -144,6 +148,8 @@ export function CameraView() {
   useEffect(() => {
     // Clear baseline when switching cameras
     clearSamples()
+    // Reset tracker and identity gallery on camera switch
+    trackerRef.current.reset()
   }, [activeCameraId, clearSamples])
 
   // ===== Real ML detection loop =====
@@ -180,6 +186,40 @@ export function CameraView() {
         const ctx = canvas.getContext('2d')
         if (ctx) {
           drawBoxes(ctx, canvas, dets)
+
+          // ===== TRACKING + IDENTITY MANAGEMENT =====
+          // Update within-feed tracker with new detections
+          const tracked = trackerRef.current.update(dets)
+          const identityMgr = identityMgrRef.current
+
+          // Match or create global identities for each tracked object
+          for (const track of tracked) {
+            const appearance = extractAppearanceFeatures(ctx, track.bbox, canvas.width, canvas.height)
+            const type = track.class === 'person' ? 'person' : 'vehicle'
+            const globalId = identityMgr.matchOrCreate(
+              track.localTrackId,
+              type,
+              appearance,
+              activeCamera.id,
+              track.bbox,
+              track.score
+            )
+          }
+
+          // Update store with current identities (throttled — every 5 frames)
+          const fpsTick = lastFpsTickRef.current
+          if (fpsTick.n % 5 === 0) {
+            const identities = identityMgr.getIdentities().map((id) => ({
+              globalId: id.globalId,
+              type: id.type,
+              firstSeen: id.firstSeen,
+              lastSeen: id.lastSeen,
+              observations: id.observations.length,
+              plateString: id.plateString,
+              dominantColor: id.appearance.dominantColor,
+            }))
+            setTrackedIdentities(identities.slice(0, 50))
+          }
         }
 
         const fpsTick = lastFpsTickRef.current

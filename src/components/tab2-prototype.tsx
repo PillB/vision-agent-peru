@@ -9,6 +9,7 @@ import { AgentTrace } from './prototype/agent-trace'
 import { ActionsPanel } from './prototype/actions-panel'
 import { ReportsPanel } from './prototype/reports-panel'
 import { UseCaseSelector } from './prototype/use-case-selector'
+import { IdentityPanel } from './prototype/identity-panel'
 import { usePrototypeStore } from '@/lib/store'
 import { Badge } from '@/components/ui/badge'
 import { Info } from 'lucide-react'
@@ -49,8 +50,9 @@ export function Tab2Prototype() {
           </div>
         </div>
 
-        {/* Bottom row — actions + reports */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+        {/* Bottom row — identities + actions + reports */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+          <IdentityPanel />
           <ActionsPanel />
           <ReportsPanel />
         </div>

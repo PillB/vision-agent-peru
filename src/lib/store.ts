@@ -136,6 +136,17 @@ interface PrototypeState {
   reports: IncidentReport[]
   agentTrace: string[]   // last N reasoning strings
 
+  // Identity tracking
+  trackedIdentities: Array<{
+    globalId: string
+    type: 'person' | 'vehicle'
+    firstSeen: number
+    lastSeen: number
+    observations: number
+    plateString?: string
+    dominantColor: [number, number, number]
+  }>
+
   // Actions
   setActiveCamera: (id: string) => void
   setModelStatus: (s: PrototypeState['modelStatus'], err?: string | null) => void
@@ -163,6 +174,7 @@ interface PrototypeState {
     escalationHistory?: number[]
   }) => void
   pushTrace: (line: string) => void
+  setTrackedIdentities: (identities: PrototypeState['trackedIdentities']) => void
 }
 
 const MAX_SAMPLES = 600    // 10 min at 1 fps
@@ -200,6 +212,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   actionLog: [],
   reports: [],
   agentTrace: [],
+  trackedIdentities: [],
 
   setActiveCamera: (id) => set({ activeCameraId: id, samples: [], stats: null, sustainCount: 0, currentTier: 0 }),
   setModelStatus: (s, err = null) => set({ modelStatus: s, modelError: err }),
@@ -280,4 +293,6 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
       const ts = new Date().toLocaleTimeString('en-US', { hour12: false })
       return { agentTrace: [`[${ts}] ${line}`, ...state.agentTrace].slice(0, MAX_TRACE) }
     }),
+
+  setTrackedIdentities: (identities) => set({ trackedIdentities: identities }),
 }))

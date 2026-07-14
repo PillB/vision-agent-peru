@@ -23,7 +23,7 @@ export function AgentTrace() {
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Brain className="h-4 w-4 text-emerald-600" />
           <h3 className="text-sm font-semibold text-zinc-950">Agent reasoning</h3>
@@ -31,6 +31,12 @@ export function AgentTrace() {
         <div className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded text-white ${tierColor}`}>
           Tier {currentTier} · {tierLabel}
         </div>
+      </div>
+      {/* ELI5 hint */}
+      <div className="mb-3 rounded-md bg-zinc-50 border border-zinc-100 px-2.5 py-1.5 text-[10px] text-zinc-500 leading-relaxed">
+        💡 <strong>¿Qué hace el agente?</strong> En cada ciclo: percibe (detecta), razona (decide si es anomalía),
+        actúa (snapshot/email/reporte) y reflexiona (juez LLM filtra falsos positivos).
+        El <strong>Tier</strong> indica la severidad: 0=normal, 1=vigilancia, 2=anomalía, 3=crítico.
       </div>
 
       {/* Live status line */}
