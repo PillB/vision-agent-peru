@@ -9,11 +9,22 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { decide } from '@/lib/agent'
 import { useAgentActions } from './use-agent-actions'
-import { createSimulationState, nextSimulatedCount, syntheticBboxes } from '@/lib/simulation'
 import type { RealMlHandle } from './real-ml-loader'
 
-// Code-split TF.js + COCO-SSD into a separate chunk loaded only on demand.
-// This keeps the default (simulation) bundle small and avoids dev-server OOM.
+/**
+ * CameraView — Real ML only, no simulation.
+ *
+ * This component runs REAL COCO-SSD object detection on REAL video frames.
+ * There is NO simulation mode, NO synthetic bounding boxes, NO fake counts.
+ * Every detection you see on screen comes from the TensorFlow.js model
+ * running inference on the actual video frame.
+ *
+ * The model is code-split via next/dynamic so TF.js only loads when this
+ * component mounts. The RealMlLoader component handles model loading and
+ * provides a `detect()` handle that draws the video frame to canvas and
+ * runs inference.
+ */
+
 const RealMlLoader = dynamic(
   () => import('./real-ml-loader').then((m) => m.RealMlLoader),
   { ssr: false, loading: () => null }
@@ -26,7 +37,6 @@ export function CameraView() {
   const rafRef = useRef<number | null>(null)
   const lastDetectRef = useRef<number>(0)
   const lastFpsTickRef = useRef<{ t: number; n: number }>({ t: Date.now(), n: 0 })
-  const simStateRef = useRef(createSimulationState())
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
 
@@ -39,7 +49,6 @@ export function CameraView() {
   const personCount = usePrototypeStore((s) => s.personCount)
   const stats = usePrototypeStore((s) => s.stats)
   const currentTier = usePrototypeStore((s) => s.currentTier)
-  const detectionMode = usePrototypeStore((s) => s.detectionMode)
 
   const setActiveCamera = usePrototypeStore((s) => s.setActiveCamera)
   const setModelStatus = usePrototypeStore((s) => s.setModelStatus)
@@ -47,9 +56,7 @@ export function CameraView() {
   const setFps = usePrototypeStore((s) => s.setFps)
   const setLatency = usePrototypeStore((s) => s.setLatency)
   const pushDetections = usePrototypeStore((s) => s.pushDetections)
-  const pushSimulatedCount = usePrototypeStore((s) => s.pushSimulatedCount)
   const clearSamples = usePrototypeStore((s) => s.clearSamples)
-  const setDetectionMode = usePrototypeStore((s) => s.setDetectionMode)
   const setAgentState = usePrototypeStore((s) => s.setAgentState)
   const pushTrace = usePrototypeStore((s) => s.pushTrace)
   const pushHit = usePrototypeStore((s) => s.pushHit)
@@ -58,7 +65,7 @@ export function CameraView() {
 
   const activeCamera = CAMERA_SOURCES.find((c) => c.id === activeCameraId) ?? CAMERA_SOURCES[0]
 
-  // ===== Agent loop (shared by both modes) =====
+  // ===== Agent loop (shared) =====
   const runAgentLoop = (canvas: HTMLCanvasElement | null, dets: Detection[]) => {
     const state = usePrototypeStore.getState()
     if (!state.stats) return
@@ -123,14 +130,15 @@ export function CameraView() {
     }
   }
 
-  // Reset simulation state on mode/camera switch
+  // Reset on camera switch
   useEffect(() => {
-    simStateRef.current = createSimulationState()
-  }, [detectionMode, activeCameraId])
+    // Clear baseline when switching cameras
+    clearSamples()
+  }, [activeCameraId, clearSamples])
 
   // ===== Real ML detection loop =====
   useEffect(() => {
-    if (detectionMode !== 'real' || !isRunning) return
+    if (!isRunning) return
     let cancelled = false
 
     const loop = async () => {
@@ -143,6 +151,7 @@ export function CameraView() {
       }
 
       const now = Date.now()
+      // Throttle to ~0.66 Hz (every 1.5s) to keep CPU/GPU reasonable
       if (now - lastDetectRef.current < 1500) {
         rafRef.current = requestAnimationFrame(loop)
         return
@@ -185,81 +194,7 @@ export function CameraView() {
       cancelled = true
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [detectionMode, isRunning, pushDetections, setLatency, setFps, pushTrace])
-
-  // ===== Simulation loop =====
-  useEffect(() => {
-    if (detectionMode !== 'simulation' || !isRunning) return
-    let cancelled = false
-
-    const tick = () => {
-      if (cancelled) return
-      const now = Date.now()
-      if (now - lastDetectRef.current >= 1000) {
-        lastDetectRef.current = now
-
-        const canvas = canvasRef.current
-        const video = videoRef.current
-        const cw = canvas?.width ?? 480
-        const ch = canvas?.height ?? 270
-
-        const t0 = performance.now()
-        const count = nextSimulatedCount(simStateRef.current)
-        const latency = performance.now() - t0
-
-        const synthDets: Detection[] = syntheticBboxes(count, cw, ch)
-        pushSimulatedCount(count)
-        setLatency(latency)
-        setFps(1)
-
-        if (canvas && video && video.readyState >= 2) {
-          const targetW = 480
-          const targetH = Math.round((video.videoHeight / video.videoWidth) * targetW)
-          if (canvas.width !== targetW || canvas.height !== targetH) {
-            canvas.width = targetW
-            canvas.height = targetH
-          }
-          const ctx = canvas.getContext('2d')
-          if (ctx) drawBoxes(ctx, canvas, synthDets, video)
-        }
-
-        runAgentLoop(canvas, synthDets)
-      }
-      if (!cancelled) setTimeout(tick, 200)
-    }
-
-    tick()
-    return () => {
-      cancelled = true
-    }
-  }, [detectionMode, isRunning, pushSimulatedCount, setLatency, setFps])
-
-  // ===== Continuous box redraw (simulation mode, between ticks) =====
-  useEffect(() => {
-    if (detectionMode !== 'simulation' || !isRunning) return
-    let raf: number
-    const draw = () => {
-      const canvas = canvasRef.current
-      const video = videoRef.current
-      if (canvas && video && video.readyState >= 2) {
-        const targetW = 480
-        const targetH = Math.round((video.videoHeight / video.videoWidth) * targetW)
-        if (canvas.width !== targetW || canvas.height !== targetH) {
-          canvas.width = targetW
-          canvas.height = targetH
-        }
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          const state = usePrototypeStore.getState()
-          const dets = syntheticBboxes(state.personCount, canvas.width, canvas.height)
-          drawBoxes(ctx, canvas, dets, video)
-        }
-      }
-      raf = requestAnimationFrame(draw)
-    }
-    raf = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(raf)
-  }, [detectionMode, isRunning])
+  }, [isRunning, pushDetections, setLatency, setFps, pushTrace])
 
   // Pause/play video
   useEffect(() => {
@@ -270,7 +205,7 @@ export function CameraView() {
     } else {
       v.pause()
     }
-  }, [isRunning, activeCameraId, detectionMode])
+  }, [isRunning, activeCameraId])
 
   const handleSnapshot = () => {
     if (!canvasRef.current) return
@@ -285,17 +220,15 @@ export function CameraView() {
 
   return (
     <div className="space-y-3">
-      {/* Code-split Real ML loader — only loaded in Real ML mode */}
-      {detectionMode === 'real' && (
-        <RealMlLoader
-          videoRef={videoRef}
-          canvasRef={canvasRef}
-          onModelStatus={(s, err = null) => setModelStatus(s, err)}
-          onModelReady={(handle) => {
-            realMlHandleRef.current = handle
-          }}
-        />
-      )}
+      {/* Real ML loader — always loaded */}
+      <RealMlLoader
+        videoRef={videoRef}
+        canvasRef={canvasRef}
+        onModelStatus={(s, err = null) => setModelStatus(s, err)}
+        onModelReady={(handle) => {
+          realMlHandleRef.current = handle
+        }}
+      />
 
       {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-2">
@@ -313,8 +246,7 @@ export function CameraView() {
           </SelectContent>
         </Select>
 
-        {/* Real ML badge — simulation mode removed to eliminate fake annotations.
-            The prototype now runs real COCO-SSD on real video frames only. */}
+        {/* Real ML badge — no simulation option available */}
         <div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5">
           <Cpu className="h-3 w-3 text-emerald-600" />
           <span className="text-xs font-medium text-emerald-700">Real ML (COCO-SSD)</span>
@@ -341,22 +273,22 @@ export function CameraView() {
         </Button>
 
         <div className="ml-auto flex items-center gap-3 text-xs text-zinc-500">
-          {detectionMode === 'real' && modelStatus === 'loading' && (
+          {modelStatus === 'loading' && (
             <span className="flex items-center gap-1.5">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Loading model...
+              Loading COCO-SSD model...
             </span>
           )}
-          {detectionMode === 'real' && modelStatus === 'ready' && (
+          {modelStatus === 'ready' && (
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="font-mono">COCO-SSD ready</span>
+              <span className="font-mono">COCO-SSD ready · WebGL</span>
             </span>
           )}
-          {detectionMode === 'real' && modelStatus === 'error' && (
+          {modelStatus === 'error' && (
             <span className="flex items-center gap-1.5 text-rose-600">
               <AlertCircle className="h-3.5 w-3.5" />
-              <span>Model load failed</span>
+              <span>Model load failed — refresh to retry</span>
             </span>
           )}
           {isRunning && (
@@ -388,7 +320,7 @@ export function CameraView() {
           className="absolute inset-0 w-full h-full pointer-events-none"
         />
 
-        {/* Overlay UI — camera label + tier badge */}
+        {/* Overlay UI — camera label + Live ML badge */}
         <div className="absolute top-3 left-3 flex items-center gap-2">
           <div className="bg-black/70 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-md font-mono flex items-center gap-1.5">
             <span className={`h-1.5 w-1.5 rounded-full ${isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-400'}`} />
@@ -407,7 +339,7 @@ export function CameraView() {
 
         {/* Person count overlay */}
         <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-md">
-          <div className="text-[10px] uppercase tracking-wide text-white/60">Persons now</div>
+          <div className="text-[10px] uppercase tracking-wide text-white/60">Persons detected</div>
           <div className="font-mono text-2xl font-medium tabular-nums leading-none">{personCount}</div>
         </div>
         {stats && (
@@ -423,11 +355,11 @@ export function CameraView() {
         {!isRunning && canStart && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
             <div className="bg-white/95 px-4 py-2 rounded-lg text-sm font-medium text-zinc-950">
-              Press &ldquo;Start analysis&rdquo; to begin
+              Press "Start analysis" to begin real ML detection
             </div>
           </div>
         )}
-        {detectionMode === 'real' && modelStatus === 'loading' && (
+        {modelStatus === 'loading' && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <div className="bg-white/95 px-4 py-3 rounded-lg text-sm text-zinc-950 flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
@@ -435,7 +367,7 @@ export function CameraView() {
             </div>
           </div>
         )}
-        {detectionMode === 'real' && modelStatus === 'error' && (
+        {modelStatus === 'error' && (
           <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-6">
             <div className="bg-white/95 px-4 py-3 rounded-lg text-sm text-rose-700 max-w-md">
               <div className="font-semibold mb-1">Model failed to load</div>
