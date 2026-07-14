@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.youtube.com/watch?v=QEzRxnuaZCk",
+    "name": "ml5.js: Object Detection with COCO-SSD - YouTube",
+    "snippet": "... object-detection Watch this video ad-free on Nebula https://nebula.tv/videos/the-coding-train-ml5-js-object-detection-with-coco-ssd p5.js ...",
+    "host_name": "www.youtube.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@orfeas_erevos/face-detection-with-react-tensorflow-js-and-webcam-372d5675c42a",
+    "name": "Face Detection with React, TensorFlow.js, and Webcam",
+    "snippet": "CocoSSD is a pre-trained object detection model trained on the COCO dataset, which includes 90 classes like: Person; Bicycle; Car; Dog; Chair.",
+    "host_name": "medium.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/66359380/object-detection-coco-ssd-node-js-error-pixels-passed-to-tf-browser-frompixe",
+    "name": "Object Detection (coco-ssd) Node.js: Error: pixels passed to tf.browser",
+    "snippet": "The issue is that model.detect() is actually expecting an HTML image/video/canvas element. Per the @tensorflow-models/coco-ssd Object detection ...",
+    "host_name": "stackoverflow.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=uTdUUpfA83s",
+    "name": "Building an Object Detection App with Tensorflow.JS and React.JS in 15",
+    "snippet": "... COCO SSD model. In this video you'll learn how to: 1. Accessing the React.JS and Tensorflow.JS Computer Vision Template 2. Install ...",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nickortiz.com/getting-started-with-tensorflow-js-real-time-object-detection",
+    "name": "Getting Started with TensorFlow.js - Real-Time Object Detection",
+    "snippet": "In this guide, I'll walk you through creating a real-time object detection app using TensorFlow.js and the pre-trained Coco-SSD model.",
+    "host_name": "nickortiz.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/ekemini_thompson/harnessing-real-time-object-detection-in-the-browser-with-tensorflowjs-and-coco-ssd-23hp",
+    "name": "Harnessing Real-Time Object Detection in the Browser with",
+    "snippet": "Harnessing Real-Time Object Detection in the Browser with TensorFlow.js and COCO-SSD · 1. Handling User Input · 2. Displaying Input and Results · 3 ...",
+    "host_name": "dev.to",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tensorflow.org/js/models",
+    "name": "TensorFlow.js models",
+    "snippet": "Analyze features in images and videos. Object detection Localize and identify multiple objects in a single image (Coco SSD). optimized for JavaScript and Node. ...",
+    "host_name": "www.tensorflow.org",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/tensorflow/tfjs-models/blob/master/coco-ssd/README.md",
+    "name": "Object Detection (coco-ssd) - tensorflow/tfjs-models - GitHub",
+    "snippet": "Object detection model that aims to localize and identify multiple objects in a single image. This model is a TensorFlow.js port of the COCO-SSD model.",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=jHmqKbf3YCQ",
+    "name": "Make a web-based smart camera with the COCO-SSD machine  - YouTube",
+    "snippet": "Finally learn how to add and use the COCO-SSD machine learning model to your JavaScript code and utilize its output to draw custom bounding ...",
+    "host_name": "www.youtube.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://harryli0088.github.io/tfjs-test",
+    "name": "TensorFlow.js - In-Browser Object Detection with SSD Mobilenet",
+    "snippet": "I made this website based off the Tensorflow.js COCO-SSD demo. The model is ported into Tensorflow.js and runs completely in your browser with no backend ...",
+    "host_name": "harryli0088.github.io",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

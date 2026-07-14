@@ -46,10 +46,19 @@
  */
 
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import pptxgen from 'pptxgenjs'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+// ─── i18n: read locale from cookie, load messages ──────────────────────────
+async function getMessages() {
+  const store = await cookies()
+  const locale = store.get('NEXT_LOCALE')?.value === 'es-PE' ? 'es-PE' : 'en'
+  const messages = (await import(`../../../../messages/${locale}.json`)).default
+  return { locale, messages }
+}
 
 // ─── Color palette (hex without #, per pptxgenjs convention) ───────────────
 const C = {
@@ -67,54 +76,12 @@ const C = {
   white: 'FFFFFF',
 }
 
-// ─── Stage data (trimmed for PPTX text-fitting) ─────────────────────────────
-interface PptxStage {
-  n: number
-  name: string
-  era: string
-  def: string
-  can: string[]
-  value: string
-  color: string // hex
-}
-
-const STAGES: PptxStage[] = [
-  {
-    n: 1,
-    name: 'Static Programs',
-    era: '1956 – 1980s',
-    def: 'Humans encode rules; system executes deterministic logic.',
-    can: ['Audit every step', 'Machine speed', 'Never drifts'],
-    value: 'Scalable bounded automation',
-    color: C.zinc400,
-  },
-  {
-    n: 2,
-    name: 'ML / Deep Learning',
-    era: '1986 – 2017',
-    def: 'Models learn patterns from data — no human writes rules.',
-    can: ['Perceive images, speech', 'Detect anomalies', 'Improve with data'],
-    value: 'Perception at scale — 2010s AI economy',
-    color: C.zinc600,
-  },
-  {
-    n: 3,
-    name: 'Cognitive / GenAI',
-    era: '2017 – 2023',
-    def: 'Models synthesize content from internet-scale training.',
-    can: ['Generate text, code, images', 'Summarize & translate', 'Reason shallowly'],
-    value: '$33.9B invested 2024; 78% orgs use AI',
-    color: C.amber500,
-  },
-  {
-    n: 4,
-    name: 'Agentic AI',
-    era: '2024 – present',
-    def: 'Systems that perceive, reason, act, self-correct in a loop.',
-    can: ['Plan multi-step workflows', 'Use tools & APIs', 'Self-correct on failure'],
-    value: 'End-to-end process execution',
-    color: C.emerald600,
-  },
+// ─── Stage data — text comes from i18n messages, structure is static ───────
+const STAGE_KEYS = [
+  { n: 1, keyPrefix: 'stage1', color: C.zinc400 },
+  { n: 2, keyPrefix: 'stage2', color: C.zinc600 },
+  { n: 3, keyPrefix: 'stage3', color: C.amber500 },
+  { n: 4, keyPrefix: 'stage4', color: C.emerald600 },
 ]
 
 // ─── Layout constants (inches) ──────────────────────────────────────────────
@@ -132,11 +99,20 @@ const CARD_XS = [0, 1, 2, 3].map((i) => MARGIN + i * (CARD_W + CARD_GAP))
 // = [0.30, 3.525, 6.750, 9.975]
 
 export async function GET() {
+  const { locale, messages } = await getMessages()
+  const m = messages as Record<string, any>
+  const t = (key: string): string => {
+    const parts = key.split('.')
+    let val: any = m
+    for (const p of parts) val = val?.[p]
+    return typeof val === 'string' ? val : key
+  }
+
   const pres = new pptxgen()
   pres.defineLayout({ name: 'CUSTOM_WIDE', width: SLIDE_W, height: SLIDE_H })
   pres.layout = 'CUSTOM_WIDE'
-  pres.title = 'Cusco Vision Agent — Strategic Brief'
-  pres.author = 'Cusco Vision Agent'
+  pres.title = 'Vision Agent — Strategic Brief'
+  pres.author = 'Vision Agent'
   pres.company = 'Z.ai'
 
   const slide = pres.addSlide()
@@ -170,7 +146,7 @@ export async function GET() {
   })
 
   // Brand title
-  slide.addText('Cusco Vision Agent — Strategic Brief', {
+  slide.addText(`${t('Header.brand')} — ${t('Nav.brief')}`, {
     x: MARGIN + 0.65,
     y: 0.15,
     w: 8.5,
@@ -184,7 +160,7 @@ export async function GET() {
   })
 
   // Meta tag (right-aligned)
-  slide.addText('v1.0  ·  2026-07-14  ·  Peru', {
+  slide.addText(`${t('Header.version')}  ·  ${locale === 'es-PE' ? '14/07/2026' : '2026-07-14'}  ·  ${locale === 'es-PE' ? 'Perú' : 'Peru'}`, {
     x: SLIDE_W - MARGIN - 3.0,
     y: 0.15,
     w: 3.0,
@@ -209,26 +185,28 @@ export async function GET() {
   // MAIN TITLE (y: 0.80" – 1.40")
   // ════════════════════════════════════════════════════════════════════════
   slide.addText(
-    'AI has crossed four thresholds in 70 years — and the fourth, agentic systems, finally acts on the world.',
+    t('Tab3.slide1.title'),
     {
       x: MARGIN,
       y: 0.80,
       w: CONTENT_W,
       h: 0.60,
-      fontSize: 20,
+      fontSize: 18,
       bold: true,
       color: C.zinc950,
       align: 'left',
       valign: 'middle',
       fontFace: 'Georgia',
+      shrinkText: true,
     }
   )
 
   // ════════════════════════════════════════════════════════════════════════
   // 4 STAGE CARDS (y: 1.50" – 5.00")
   // ════════════════════════════════════════════════════════════════════════
-  STAGES.forEach((stage, i) => {
+  STAGE_KEYS.forEach((stage, i) => {
     const cx = CARD_XS[i]
+    const kp = stage.keyPrefix
 
     // — Card background (white with border) —
     slide.addShape(pres.ShapeType.rect, {
@@ -252,35 +230,19 @@ export async function GET() {
     })
 
     // — Stage number + name + era (header block) —
-    // Internal y offsets: 0.15 → 0.85 (h=0.70)
     slide.addText(
       [
         {
-          text: `STAGE ${stage.n}`,
-          options: {
-            fontSize: 8,
-            color: C.zinc400,
-            fontFace: 'Consolas',
-            breakLine: true,
-          },
+          text: `${t('Tab3.slide3.stage')} ${stage.n}`,
+          options: { fontSize: 8, color: C.zinc400, fontFace: 'Consolas', breakLine: true },
         },
         {
-          text: stage.name,
-          options: {
-            fontSize: 13,
-            bold: true,
-            color: C.zinc950,
-            fontFace: 'Georgia',
-            breakLine: true,
-          },
+          text: t(`Stages.${kp}Name`),
+          options: { fontSize: 13, bold: true, color: C.zinc950, fontFace: 'Georgia', breakLine: true },
         },
         {
-          text: stage.era,
-          options: {
-            fontSize: 8,
-            color: C.zinc500,
-            fontFace: 'Consolas',
-          },
+          text: t(`Stages.${kp}Era`),
+          options: { fontSize: 8, color: C.zinc500, fontFace: 'Consolas' },
         },
       ],
       {
@@ -293,8 +255,8 @@ export async function GET() {
       }
     )
 
-    // — Definition (y offset: 0.95 → 1.55, h=0.60) —
-    slide.addText(stage.def, {
+    // — Definition —
+    slide.addText(t(`Stages.${kp}Def`), {
       x: cx + 0.15,
       y: CARD_Y + 0.95,
       w: CARD_W - 0.30,
@@ -304,29 +266,19 @@ export async function GET() {
       align: 'left',
       valign: 'top',
       fontFace: 'Calibri',
+      shrinkText: true,
     })
 
-    // — "Can do" label + bullets (y offset: 1.60 → 2.55, h=0.95) —
+    // — "Can do" label + bullets —
     slide.addText(
       [
         {
-          text: 'CAN DO',
-          options: {
-            fontSize: 7,
-            bold: true,
-            color: C.emerald600,
-            fontFace: 'Consolas',
-            breakLine: true,
-          },
+          text: t('Tab3.slide3.canDo'),
+          options: { fontSize: 7, bold: true, color: C.emerald600, fontFace: 'Consolas', breakLine: true },
         },
-        ...stage.can.map((c) => ({
-          text: `✓  ${c}`,
-          options: {
-            fontSize: 9,
-            color: C.zinc700,
-            fontFace: 'Calibri',
-            breakLine: true,
-          },
+        ...[1, 2, 3].map((ci) => ({
+          text: `✓  ${t(`Stages.${kp}Can${ci}`)}`,
+          options: { fontSize: 9, color: C.zinc700, fontFace: 'Calibri', breakLine: true },
         })),
       ],
       {
@@ -337,6 +289,7 @@ export async function GET() {
         align: 'left',
         valign: 'top',
         lineSpacingMultiple: 1.15,
+        shrinkText: true,
       }
     )
 
@@ -354,22 +307,12 @@ export async function GET() {
     slide.addText(
       [
         {
-          text: 'VALUE CREATED',
-          options: {
-            fontSize: 7,
-            bold: true,
-            color: C.zinc400,
-            fontFace: 'Consolas',
-            breakLine: true,
-          },
+          text: t('Tab3.slide3.valueCreated'),
+          options: { fontSize: 7, bold: true, color: C.zinc400, fontFace: 'Consolas', breakLine: true },
         },
         {
-          text: stage.value,
-          options: {
-            fontSize: 9,
-            color: C.zinc950,
-            fontFace: 'Calibri',
-          },
+          text: t(`Stages.${kp}Value`),
+          options: { fontSize: 9, color: C.zinc950, fontFace: 'Calibri' },
         },
       ],
       {
@@ -379,6 +322,7 @@ export async function GET() {
         h: valueBoxH - 0.12,
         align: 'left',
         valign: 'top',
+        shrinkText: true,
       }
     )
   })
@@ -395,7 +339,7 @@ export async function GET() {
     line: { color: C.zinc200, width: 1 },
   })
   slide.addText(
-    '1956 — Dartmouth Workshop     ────  70 years  ────     2025 — Agentic AI at Peak of Expectations',
+    `${t('Tab3.slide2.timelineStart')}     ────  70 ${locale === 'es-PE' ? 'años' : 'years'}  ────     ${t('Tab3.slide2.timelineEnd')}`,
     {
       x: MARGIN,
       y: 5.12,
@@ -406,6 +350,7 @@ export async function GET() {
       align: 'center',
       valign: 'middle',
       fontFace: 'Consolas',
+      shrinkText: true,
     }
   )
 
@@ -439,57 +384,28 @@ export async function GET() {
   slide.addText(
     [
       {
-        text: 'THE LEAP:  ',
-        options: {
-          fontSize: 11,
-          bold: true,
-          color: C.emerald600,
-          fontFace: 'Consolas',
-        },
+        text: `${locale === 'es-PE' ? 'EL SALTO' : 'THE LEAP'}:  `,
+        options: { fontSize: 11, bold: true, color: C.emerald600, fontFace: 'Consolas' },
       },
       {
-        text: 'Agentic AI adds the loop — ',
-        options: {
-          fontSize: 11,
-          color: C.zinc950,
-          fontFace: 'Georgia',
-        },
+        text: locale === 'es-PE' ? 'La IA autónoma añade el ciclo — ' : 'Agentic AI adds the loop — ',
+        options: { fontSize: 11, color: C.zinc950, fontFace: 'Georgia' },
       },
       {
-        text: 'perceive → reason → act → reflect',
-        options: {
-          fontSize: 11,
-          italic: true,
-          color: C.emerald600,
-          fontFace: 'Georgia',
-          breakLine: true,
-        },
+        text: locale === 'es-PE' ? 'percibir → razonar → actuar → reflexionar' : 'perceive → reason → act → reflect',
+        options: { fontSize: 11, italic: true, color: C.emerald600, fontFace: 'Georgia', breakLine: true },
       },
       {
-        text: 'Reactive → Proactive  ·  Single-shot → Multi-step  ·  Answering → Executing  ·  Tool → Collaborator',
-        options: {
-          fontSize: 9,
-          color: C.zinc600,
-          fontFace: 'Calibri',
-          breakLine: true,
-        },
+        text: `${t('CapabilityLeaps.leap1From')} → ${t('CapabilityLeaps.leap1To')}  ·  ${t('CapabilityLeaps.leap2From')} → ${t('CapabilityLeaps.leap2To')}  ·  ${t('CapabilityLeaps.leap3From')} → ${t('CapabilityLeaps.leap3To')}  ·  ${t('CapabilityLeaps.leap4From')} → ${t('CapabilityLeaps.leap4To')}`,
+        options: { fontSize: 9, color: C.zinc600, fontFace: 'Calibri', breakLine: true },
       },
       {
-        text: 'Cusco Vision Agent operates at Stage 4 (L5 autonomy)',
-        options: {
-          fontSize: 9,
-          bold: true,
-          color: C.zinc950,
-          fontFace: 'Calibri',
-        },
+        text: `${t('Tab3.slide6.cuscoPin')}`,
+        options: { fontSize: 9, bold: true, color: C.zinc950, fontFace: 'Calibri' },
       },
       {
-        text: '  —  perceive plaza → reason on anomalies → act via 3-tier escalation → reflect via LLM judge',
-        options: {
-          fontSize: 9,
-          color: C.zinc600,
-          fontFace: 'Calibri',
-        },
+        text: `  —  ${locale === 'es-PE' ? 'cicla percibir-razonar-actuar con disyuntor de seguridad' : 'loops perceive-reason-act with safety circuit breaker'}`,
+        options: { fontSize: 9, color: C.zinc600, fontFace: 'Calibri' },
       },
     ],
     {
@@ -500,6 +416,7 @@ export async function GET() {
       align: 'left',
       valign: 'top',
       lineSpacingMultiple: 1.2,
+      shrinkText: true,
     }
   )
 
@@ -518,7 +435,9 @@ export async function GET() {
 
   // Sources
   slide.addText(
-    'Sources: McKinsey · BCG · Bain · Gartner · Deloitte · WEF · Stanford HAI · MIT Sloan · Sequoia · VastData  ·  2024–2025',
+    locale === 'es-PE'
+      ? 'Fuentes: McKinsey · BCG · Bain · Gartner · Deloitte · WEF · Stanford HAI · MIT Sloan · Sequoia · VastData  ·  2024–2025'
+      : 'Sources: McKinsey · BCG · Bain · Gartner · Deloitte · WEF · Stanford HAI · MIT Sloan · Sequoia · VastData  ·  2024–2025',
     {
       x: MARGIN,
       y: 6.75,
@@ -533,7 +452,7 @@ export async function GET() {
   )
 
   // Copyright
-  slide.addText('Cusco Vision Agent v1.0  ·  Agentic Camera Intelligence for Peru  ·  2026-07-14', {
+  slide.addText(`${t('Header.brand')} v1.0  ·  ${locale === 'es-PE' ? 'Inteligencia de cámara autónoma para el Perú' : 'Agentic Camera Intelligence for Peru'}  ·  ${locale === 'es-PE' ? '14/07/2026' : '2026-07-14'}`, {
     x: MARGIN,
     y: 7.02,
     w: CONTENT_W,
@@ -548,14 +467,14 @@ export async function GET() {
   // ════════════════════════════════════════════════════════════════════════
   // GENERATE
   // ════════════════════════════════════════════════════════════════════════
-  const buffer = (await pres.write({ outputType: 'nodebuffer' })) as Buffer
+  const buffer = (await pres.write({ outputType: 'nodebuffer' })) as Uint8Array
 
-  return new NextResponse(buffer, {
+  return new NextResponse(buffer as BodyInit, {
     status: 200,
     headers: {
       'Content-Type':
         'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'Content-Disposition': 'attachment; filename="cusco-vision-agent-strategic-brief.pptx"',
+      'Content-Disposition': 'attachment; filename="vision-agent-strategic-brief.pptx"',
       'Content-Length': buffer.length.toString(),
     },
   })

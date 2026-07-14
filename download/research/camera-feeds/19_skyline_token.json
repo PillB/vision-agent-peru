@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/yt-dlp/yt-dlp/issues/7115",
+    "name": "Skylinewebcams - Failed to extract stream url · Issue #7115",
+    "snippet": "The streams can be found at https://hd-auth.skylinewebcams.com/live.m3u8?a=VALUE, The extractor needs to be updated in various ways: This gives ...\nIf you make a request to livee.m3u8, it tries to intimidate you by redirecting you to a stream titled copyright_violation 😂 Anyway, the a=VALUE stream seems to expire after about a minute, but then you just make a request without clearing your cookies, and that exact stream starts working again.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.skylinewebcams.com/en.html",
+    "name": "SkylineWebcams: ▶️ Live HD Cams from the World!",
+    "snippet": "Live HD webcams broadcasting from the world's best attractions and destinations, 100 million viewers are already hooked. Join them now!",
+    "host_name": "www.skylinewebcams.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=ycpTZPLLRSk",
+    "name": "How to Get M3U8 Link from Live Streaming Link | 2025 Tutorial",
+    "snippet": "Learn how to extract an M3U8 link from a live streaming URL with this easy-to-follow tutorial for 2025. for step-by-step instructions and tips ...\nLearn how to extract an M3U8 link from a live streaming URL with this easy-to-follow tutorial for 2025. Whether you're looking to record live streams or use M3U8 links for your own...",
+    "host_name": "www.youtube.com",
+    "rank": 2,
+    "date": "Jul 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.getchannels.com/t/new-project-webcam-resolver/37348",
+    "name": "New Project: Webcam Resolver - Custom Channels",
+    "snippet": "Fetch m3u8 URLs for hosted webcams. Solution for retrieving m3u8 streams from TugoTV and keeping tokens refreshed afs1990 January 10, 2024, Inspecting it gives ...",
+    "host_name": "community.getchannels.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://apify.com/conversational_kermis/visionsync-skylinewebcams/api",
+    "name": "SkylineWebcams Scraper - Live Cams & Weather API",
+    "snippet": "Scrape SkylineWebcams with VisionSync enrichment: live stream URLs, HD snapshots, real-time weather, and GPS coordinates. Part of the VisionSync Boutique Suite.",
+    "host_name": "apify.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/channel/UC2WMV4vCYurHdHPd9pCqYSg",
+    "name": "SkylineWebcams",
+    "snippet": "1200 TOP LIVE WEBCAMS around the World with relaxing Music ☕ and Map | SkylineWebcams · Live now · Videos · Past live streams.",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://raw.githubusercontent.com/Billy2011/streamlink-27/master/src/streamlink/plugins/skylinewebcams.py",
+    "name": "https://raw.githubusercontent.com/Billy2011/stream",
+    "snippet": "skylinewebcams.com $type live \"\"\" SkylineWebcams(Plugin): \\.m3u8(\\?a=\\w+))\\1\"\"\") _HD_AUTH_BASE = \"https://hd-auth.skylinewebcams.com/\" if \".m3u8\" in m.group(2):",
+    "host_name": "raw.githubusercontent.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/timmaurice/skyline-webcams",
+    "name": "timmaurice/skyline-webcams: View SkylineWebcams",
+    "snippet": "Dynamic Stream Extraction: Automatically finds the current live stream URL. Token Management: Handles authentication tokens for streams. with a live webcam",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.sharptools.io/t/adding-m3u8-stream/978",
+    "name": "Adding m3u8 stream - Legacy Tasker/Widgets",
+    "snippet": "The live stream URL is on a http://192.x.x.x/live/high/index.m3u8 problem is that you cannot seem to add m3u8 streams as a tile. What is the ...",
+    "host_name": "community.sharptools.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://hd-auth.skylinewebcams.com/%60",
+    "name": "hd-auth.skylinewebcams.com",
+    "snippet": "We would like to show you a description here but the site won’t allow us.",
+    "host_name": "hd-auth.skylinewebcams.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

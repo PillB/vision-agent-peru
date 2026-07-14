@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://blog.logrocket.com/next-js-real-time-video-streaming-hls-js-alternatives",
+    "name": "Next.js real-time video streaming: HLS.js and alternatives",
+    "snippet": "Set up real-time video streaming in Next.js using HLS.js and alternatives, exploring integration, adaptive streaming, and token-based authentication.",
+    "host_name": "blog.logrocket.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/EidSubaie/Camera",
+    "name": "GitHub - EidSubaie/Camera: Ultimate camera streaming",
+    "snippet": "Ultimate camera streaming application with support RTSP, WebRTC, HomeKit, FFmpeg, RTMP, etc. zero-dependency and zero-config small app for all OS (Windows, macOS, Linux, ARM)",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/AlexxIT/go2rtc",
+    "name": "GitHub - AlexxIT/go2rtc: Ultimate camera streaming",
+    "snippet": "Ultimate camera streaming application with support RTSP, WebRTC, HomeKit, FFmpeg, RTMP, etc.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://therelay.net/blog/stream-ip-cameras-to-website",
+    "name": "How to Stream IP Cameras to a Website (RTSP → HLS, WebRTC",
+    "snippet": "This guide covers the three practical methods for getting a live camera feed into a webpage: HLS (maximum compatibility), WebRTC (minimum latency), and RTMP to a streaming platform (for public broadcasts). For each method, you'll see real working code.",
+    "host_name": "therelay.net",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://liveapi.com/blog/webrtc-vs-hls",
+    "name": "WebRTC vs HLS: Choosing the Right Streaming Protocol",
+    "snippet": "Compare WebRTC and HLS across latency, scalability, device support, and use cases. Learn when to use each protocol — or both — for your streaming app.",
+    "host_name": "liveapi.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.blog.brightcoding.dev/2025/09/02/building-a-real-time-video-streaming-server-with-rtmp-webrtc-hls-and-srt-support-a-complete-guide-using-srs",
+    "name": "Building a Real-Time Video Streaming Server with RTMP, WebRTC",
+    "snippet": "Protocol babel-fish: Seamlessly converts RTMP ↔ WebRTC ↔ SRT ↔ HLS so you can ingest from OBS and reach mobile Safari, Chrome, or a set-top box without re-encoding. Cloud-native DNA: Docker image, Helm charts, Prometheus exporter, and graceful reload via ConfigMap.",
+    "host_name": "www.blog.brightcoding.dev",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://peerjs.com",
+    "name": "Simple peer-to-peer with PeerJS | PeerJS",
+    "snippet": "PeerJS simplifies WebRTC peer-to-peer data, video, and audio calls. Connect browsers directly with a few lines of JavaScript.",
+    "host_name": "peerjs.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  }
+]

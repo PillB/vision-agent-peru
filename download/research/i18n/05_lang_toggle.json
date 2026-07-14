@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://nextjs.org/docs/pages/guides/internationalization",
+    "name": "Guides: Internationalization | Next.js",
+    "snippet": "Next.js has built-in support for internationalized ( i18n ) routing since v10.0.0. You can provide a list of locales, the default locale, and domain-specific ... Prefixing the Default Locale · Transition between locales",
+    "host_name": "nextjs.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/10h0qj5/nextjs_i18n_how_to_make_sure_language_switch",
+    "name": "Nextjs & i18n - how to make sure, Language switch keeps the user on",
+    "snippet": "The language switch uses useRouter to pick out the path and create URLs for language change, so the user remains on the same page. How to Implement a Language Switcher in Next.js? (App Dir) - Reddit [NextJS 14+] Multilanguage app with language switcher, with SSR - Reddit More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=FsoBnIs7kxE",
+    "name": "Next.js Internationalization i18n without locale Routing | next-intl",
+    "snippet": "... language in your next.js project without ... Learn how to support localization (i18n) in both server and client components. Also add i18n ...",
+    "host_name": "www.youtube.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/amannn/next-intl/discussions/532",
+    "name": "How to apply a button that changes the language on the website with",
+    "snippet": "I use the LocaleSwitcher and LocaleSwitcherSelect components for my button language switch. It works perfect! /i18n/navigation' Here is my full code for the ... Internationalization for client side components · vercel next.js - GitHub Prevent rerender of language switcher · amannn next-intl - GitHub More results from github.com",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://lokalise.com/blog/nextjs-localization",
+    "name": "Next.js localization: A step-by-step guide with examples - Lokalise",
+    "snippet": "In this tutorial, you'll learn how to implement Next.js i18n application … creating a language switcher and managing localized",
+    "host_name": "lokalise.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/78873430/how-to-change-the-language-without-refreshing-the-page-using-next-intl-client-co",
+    "name": "How to change the language without refreshing the page using next-intl",
+    "snippet": "I want to change the language without refreshing the page by change cookie in next.js using next-intl without i18n routing, and in client component.",
+    "host_name": "stackoverflow.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gundogmuseray.medium.com/next-js-i18n-made-easy-build-multilingual-apps-with-app-router-in-2026-236151f37d60",
+    "name": "Next.js i18n Made Easy: Build Multilingual Apps with App Router",
+    "snippet": "The language switcher uses useSetLocale() from the better-i18n SDK to switch languages instantly without a full page reload:",
+    "host_name": "gundogmuseray.medium.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=shDb9A6F77k",
+    "name": "Language Switcher (Dropdown) in Next.js | i18n w/ next-intl & App Router",
+    "snippet": "Language Switcher (Dropdown) in Next.js | i18n w/ next-intl & App Router · Comments.",
+    "host_name": "www.youtube.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/environments/server-client-components",
+    "name": "Internationalization of Server & Client Components - next-intl",
+    "snippet": "Learn more in the Next.js docs: Passing Server Components to Client Components as Props. Example: How can I implement a locale switcher? If ...",
+    "host_name": "next-intl.dev",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://crowdin.com/blog/next-js-internationalization",
+    "name": "Guide to Next.js Internationalization (i18n) with next-intl - Crowdin",
+    "snippet": "Learn how to translate Next.js with next-intl and create Next.js multi language. Explore practical Next.js i18n and effective content ...",
+    "host_name": "crowdin.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

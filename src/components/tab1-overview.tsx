@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import {
   Camera,
   Brain,
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export function Tab1Overview({ onTryPrototype }: Props) {
+  const t = useTranslations('Tab1')
   return (
     <main className="bg-white text-zinc-950">
       {/* ============================================================
@@ -39,19 +41,18 @@ export function Tab1Overview({ onTryPrototype }: Props) {
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-12 md:py-20">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
-              Executive Summary
+              {t('hero.kicker')}
             </span>
             <span className="h-px flex-1 bg-zinc-200" />
             <span className="text-xs font-mono text-zinc-500">Cusco · Lima · Arequipa</span>
           </div>
 
           <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl leading-[1.05] text-zinc-950 max-w-4xl">
-            An agentic camera intelligence system that converts Peru&rsquo;s public plaza feeds into{' '}
-            <span className="italic text-emerald-700">automated, auditable incident response</span> — running entirely in the browser.
+            {t('hero.title')}
           </h1>
 
           <p className="mt-6 text-base md:text-lg text-zinc-600 max-w-3xl leading-relaxed">
-            The system pairs a traditional computer-vision layer (TF.js COCO-SSD, 90-class object detection) with an agentic reasoning layer (rule engine + LLM-as-judge) that perceives, decides, and acts on anomalies in real time — without sending camera frames to a remote server.
+            {t('hero.body')}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -59,14 +60,14 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               onClick={onTryPrototype}
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
-              Open live prototype
+              {t('hero.ctaPrototype')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <a
               href="#architecture"
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 hover:text-emerald-700 transition"
             >
-              Read the architecture
+              {t('hero.ctaArchitecture')}
               <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </div>
@@ -74,22 +75,22 @@ export function Tab1Overview({ onTryPrototype }: Props) {
           {/* SCR 3-column */}
           <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-px bg-zinc-200 rounded-xl overflow-hidden border border-zinc-200">
             <ScrCard
-              label="Situation"
+              label={t('scr.situation')}
               icon={<Camera className="h-4 w-4" />}
               tone="zinc"
-              body="Peru's public plazas (Cusco, Lima, Arequipa) are monitored by ad-hoc camera feeds. Operators watch screens manually, react late, and rarely produce an auditable incident trail."
+              body={t('scr.situationBody')}
             />
             <ScrCard
-              label="Complication"
+              label={t('scr.complication')}
               icon={<AlertTriangle className="h-4 w-4" />}
               tone="amber"
-              body="Manual monitoring means 10–15 min mean-time-to-respond, high false-alarm fatigue, no snapshot evidence at the moment of incident, and zero searchable history."
+              body={t('scr.complicationBody')}
             />
             <ScrCard
-              label="Resolution"
+              label={t('scr.resolution')}
               icon={<Zap className="h-4 w-4" />}
               tone="emerald"
-              body="An in-browser agentic loop: COCO-SSD perceives → rule engine reasons → 3-tier escalation acts → snapshot+report logged. Under 2 seconds per cycle, with full evidence trail."
+              body={t('scr.resolutionBody')}
             />
           </div>
         </div>
@@ -590,10 +591,10 @@ export function Tab1Overview({ onTryPrototype }: Props) {
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-16 md:py-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <h2 className="font-serif text-2xl md:text-3xl leading-tight max-w-2xl">
-              See the agentic loop run live on real footage of Peru&rsquo;s plazas.
+              {t('cta.title')}
             </h2>
             <p className="mt-2 text-sm text-emerald-100 max-w-2xl">
-              Switch to the Live Prototype tab. The model loads in your browser, detections stream in under 5 seconds, and you can trigger every action the agent can.
+              {t('cta.body')}
             </p>
           </div>
           <Button
@@ -602,7 +603,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             className="bg-white text-emerald-700 hover:bg-emerald-50"
           >
             <Activity className="mr-2 h-4 w-4" />
-            Open live prototype
+            {t('cta.button')}
           </Button>
         </div>
       </section>

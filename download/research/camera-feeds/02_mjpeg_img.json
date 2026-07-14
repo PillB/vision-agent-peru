@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/5269376/cross-browser-solution-for-displaying-mjpeg-stream",
+    "name": "Cross-browser solution for displaying MJPEG stream - Stack Overflow",
+    "snippet": "I'm trying to display an MJPEG stream from an Axis 2120 IP camera on a site that I'm developing, and I've found that this is quite reliable in current versions ... Rendering MJpeg stream in html5 - javascript - Stack Overflow Alternative to showing mjpeg in an img-Tag (with Basic-Authentication) More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ipcamtalk.com/threads/hikvision-mjpeg-substream-embed-to-html.50666",
+    "name": "Hikvision MJPEG substream embed to HTML - IP Cam Talk",
+    "snippet": "We're using a couple of hundreds Hikvision Cameras for a University; our requirement is we want to embed them to a web page hosted locally.",
+    "host_name": "ipcamtalk.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bensoftware.com/blog/adding-live-video-to-any-web-page",
+    "name": "Adding Live Video To Any Web Page | The Ben Software Blog",
+    "snippet": "This tutorial will show you how to add live video from SecuritySpy to your own web page. Method 1: MJPEG This method works in iOS and all Mac ...",
+    "host_name": "bensoftware.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bugzilla.mozilla.org/show_bug.cgi?id=858600",
+    "name": "When I put src with MJPEG stream adress value to <img> with JS no",
+    "snippet": "I have webcam streaming MJPEG and url where I can get camera's status. On webpage i have img-tag with src pointing to MJPEG stream.",
+    "host_name": "bugzilla.mozilla.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://rkblog.dev/posts/python/streaming-live-video-feed-on-a-website-with-a-mjpeg-server",
+    "name": "Streaming live video feed on a website with a mjpeg server - RkBlog",
+    "snippet": "The img tag stream is supported by modern browsers. You do not have any control over the stream on the webpage and it can't do audio.",
+    "host_name": "rkblog.dev",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=29980660",
+    "name": "A pure C Mjpeg-over-HTTP server - Hacker News",
+    "snippet": "MJPEG over Http is not a live streaming format, it takes a lot of bandwidth, it has high latency, it run on TCP which it is not a protocol for streaming.",
+    "host_name": "news.ycombinator.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=e2VcxhH_k7Y",
+    "name": "Webcam MJPEG Streaming - YouTube",
+    "snippet": "This will stream video in MJPEG format from a supported webcam over the network. Cameras shown in video: Logitech, Inc. Webcam C270 ...",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/thingsboard/thingsboard/issues/13913",
+    "name": "Support for Basic Authentication in `<img>` widget with MJPEG stream",
+    "snippet": "This works fine for an open stream, but my camera requires Basic Authentication (username + password). I couldn't find a way to configure ...",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://voip-sip-sdk.com/p_7598-display-mjpeg-camera-stream.html",
+    "name": "Display MJPEG camera stream - Ozeki VoIP SIP SDK",
+    "snippet": "How to display MJPEG camera stream via web browser. This example demonstrates a simple method for how you can display MJPEG camera stream via browser in C# ...",
+    "host_name": "voip-sip-sdk.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://issues.chromium.org/41325739",
+    "name": "MJPEG image can't stop loading [41325739] - Chromium Issue",
+    "snippet": "EXPECTED: When IMG element that displays the MJPEG content is removed, or its source is changed, Chrome should stop getting the MJPEG data. INSTEAD:",
+    "host_name": "issues.chromium.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

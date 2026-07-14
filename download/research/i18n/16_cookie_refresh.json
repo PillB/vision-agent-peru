@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://next-intl.dev/docs/routing/navigation",
+    "name": "Navigation APIs – Internationalization (i18n) for Next.js",
+    "snippet": "you can instead use useRouter to switch the locale, which can rely on updating the cookie on the client side before navigating to the target ...",
+    "host_name": "next-intl.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/78873430/how-to-change-the-language-without-refreshing-the-page-using-next-intl-client-co",
+    "name": "next.js - How to change the language without refreshing",
+    "snippet": "I want to change the language without refreshing the page by change cookie in next.js using next-intl without i18n routing, and in client component。this ...\nI want to change the language without refreshing the page by change cookie in next.js using next-intl without i18n routing, and in client component。 this is my code https://github.com/lik3yoo/next-app/blob/main/src/app/login/page.tsx#L33",
+    "host_name": "stackoverflow.com",
+    "rank": 1,
+    "date": "Jul 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/usage/configuration",
+    "name": "Request configuration – Internationalization (i18n) for Next.js",
+    "snippet": "Client Components: The locale is received from NextIntlClientProvider . Note that NextIntlClientProvider automatically inherits the locale ...\nWith locale-based routing: The locale is managed by the router and can be changed by using navigation APIs from next-intl like Link or useRouter. Without locale-based routing: You can change the locale by updating the value where the locale is read from (e.g. a cookie, a user setting, etc.).",
+    "host_name": "next-intl.dev",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://phrase.com/blog/posts/next-js-app-router-localization-next-intl",
+    "name": "Next.js 13/14 App Router Localization with next-intl",
+    "snippet": "next-intl uses a NEXT_LOCALE cookie to store the current locale, ensuring users consistently see their preferred language on subsequent visits.",
+    "host_name": "phrase.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/amannn/next-intl/discussions/532",
+    "name": "How to apply a button that changes the language",
+    "snippet": "How to apply a button that changes the language on the website with next-intl. Passing translations to Client Components. The Link component's locale property ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.thisdot.co/blog/internationalization-in-next-js-with-next-intl",
+    "name": "Internationalization in Next.js with next-intl",
+    "snippet": "This guide will walk you through setting up i18n in Next.js using next-intl for URL-based routing, user-specific settings, and domain-based ...",
+    "host_name": "www.thisdot.co",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1ej8z5h/bug_with_nextintl",
+    "name": "Bug with next-intl : r/nextjs",
+    "snippet": "I'm experiencing a bug with next-intl. I built a LocaleSwitcher Component for the user to change the language of the website. But it has a bug.",
+    "host_name": "www.reddit.com",
+    "rank": 6,
+    "date": "Jul 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/environments/server-client-components",
+    "name": "Internationalization of Server & Client Components",
+    "snippet": "next-intl will automatically provide an implementation that works best for the environment this component executes in (server or client).",
+    "host_name": "next-intl.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1olok7k/nextintl_language_switch_on_page_refresh_in",
+    "name": "Next-Intl Language Switch on Page Refresh in Production",
+    "snippet": "I'm encountering a frustrating localization issue using Next.js 15 App Router and the next-intl library. My setup works perfectly locally, ...",
+    "host_name": "www.reddit.com",
+    "rank": 8,
+    "date": "Nov 16, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/routing/setup",
+    "name": "Setup locale-based routing – Internationalization (i18n) for",
+    "snippet": "next-intl uses cache () to create a mutable store that holds the current locale. By calling setRequestLocale, the current locale will be written to the store, making it available to all APIs that require the locale.",
+    "host_name": "next-intl.dev",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

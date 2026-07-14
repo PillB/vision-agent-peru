@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://api.windy.com/webcams/version-transfer",
+    "name": "Migration from Webcams API v2 to v3",
+    "snippet": "Example V3 Example URL: https://api.windy.com/webcams/api/v3/webcams/1358084658?include=categories,images,location,player,urls&lang=en. Get list of the webcams\nGet list of the webcams. Example https://api.windy.com/api/webcams/v2/list/nearby=46.54,7.98,20 V3 Name nearby Location",
+    "host_name": "api.windy.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.windy.com/topic/28782/windy-webcam-api-v3-url-issue-bounding-box-validation",
+    "name": "Windy Webcam API V3 - URL issue + Bounding Box",
+    "snippet": "I just upgraded my code from Windy Webcam API V2 to V3 but run into the following issue: I am requesting the urls section but the URLs provided.",
+    "host_name": "community.windy.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api.windy.com/webcams/docs",
+    "name": "Documentation - Webcams",
+    "snippet": "The Webcams API provides access to the largest repository of webcams worldwide. Filter webcams based on criteria such as country, category, location, and more.",
+    "host_name": "api.windy.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.windy.com/topic/21795/example-request-url-for-webcams-and-info-including-within-a-certain-country",
+    "name": "Example request url for webcams and info including within",
+    "snippet": "Example request url for webcams and info. Possibly with the player like the windy.com home page. my latest url: https://api.windy.com/api/ ...\nI would like to be able to input a country code eg. GB and return up to a limit of 20 webcams and the webcam data such as lat/long coordinates and an image ...",
+    "host_name": "community.windy.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Cyreslab-AI/windy-webcams-mcp-server/blob/main/README.md",
+    "name": "README.md - Cyreslab-AI/windy-webcams-mcp-server",
+    "snippet": "Get detailed webcam information including images, timelapses, and live players Find nearby webcams using geographic. Player embeds for live streaming ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.windy.com/topic/11656/how-to-get-specific-webcam-url-using-api/3",
+    "name": "How to get specific webcam url using api?",
+    "snippet": "Your URL query part is not valid. Use: https://api.windy.com/api/webcams/v2/list/webcam=1361879037?show=webcams:location,image&key= ...",
+    "host_name": "community.windy.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api.windy.com/webcams/pricing",
+    "name": "Webcams API",
+    "snippet": "Easily add webcams and their content to your websites. Free Link or embed Link images to windy.com. Get a list of all available webcams, via a single API call.\nGet a list of all available webcams, refreshed regularly, containing all basic parameters, via a single API call. 9 990 € / year",
+    "host_name": "api.windy.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.windy.com/topic/33533/problems-with-webcam-api",
+    "name": "Problems with Webcam API",
+    "snippet": "When downloading a webcam via this example code line: curl --request GET --url 'https://api.windy.com/webcams/api/v3/webcams?webcamIds ...",
+    "host_name": "community.windy.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dlthub.com/context/source/windy-api",
+    "name": "Windy Python API Docs",
+    "snippet": "The REST API base URL is https://api.windy.com and All requests require an API key (header for Webcams/Map Forecast, body key for Point Forecast) ...\nList/search webcams. This example loads webcams and point_forecast from the Windy API into DuckDB. It mirrors the endpoint and data selector ...",
+    "host_name": "dlthub.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.windy.com/topic/18562/how-to-use-the-webcams-api",
+    "name": "How to use the Webcams API? - Windy Community",
+    "snippet": "Its quite simple, just start with the tutorials at api4.windy and copy the sample .html as it is into your own .html file. After that, put it on your web ...",
+    "host_name": "community.windy.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

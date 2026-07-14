@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/AlexxIT/go2rtc",
+    "name": "GitHub - AlexxIT/go2rtc: Ultimate camera streaming application",
+    "snippet": "It comes preinstalled with FFmpeg and Python. FFmpeg RTSP Aliases. HLS technologies. You can add new codecs to the stream using the FFmpeg transcoding.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/frigate_nvr/comments/1fvkev0/how_can_i_access_go2rtcs_direct_interface_when",
+    "name": "How can I access go2rtc's direct interface when Frigate is hosting it",
+    "snippet": "I'd like to be able to use go2rtc directly to view the streams. I have port 8554 accessible through docker, 2rtc itself. go2rtc not working as I think it should : r/frigate_nvr - Reddit New install, works without go2rtc : r/frigate_nvr - Reddit More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.facebook.com/groups/1014379956363616/posts/1494957748305832",
+    "name": "Why does go2rtc fail to access rtsp stream in frigate vm setup?",
+    "snippet": "go2rtc seems unable to access the stream. By checking the logs and adjusting your configuration, you should be able to identify and resolve any ... What are the advantages of using Go2RTC with Frigate and RTSP ... Consolidating go2rtc and frigate configs for camera streams? More results from www.facebook.com",
+    "host_name": "www.facebook.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.frigate.video/guides/configuring_go2rtc",
+    "name": "Configuring go2rtc - Frigate Docs",
+    "snippet": "Navigate to port 1984 in your browser to access go2rtc's web interface. If using Docker, forward port 1984 before accessing the web interface.",
+    "host_name": "docs.frigate.video",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.home-assistant.io/t/security-cameras-doubt-go2rtc-rtsptoweb-and-what-is-between/506819",
+    "name": "Security cameras doubt- go2rtc , RTSPtoWeb and what is between",
+    "snippet": "I've struggling for sometime to configure HA so i could view my cameras stream on mobile app. my main issue - not able to view camera stream ...",
+    "host_name": "community.home-assistant.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://hub.docker.com/r/skrashevich/go2rtc",
+    "name": "skrashevich/go2rtc - Docker Image",
+    "snippet": "Ultimate camera streaming application with support RTSP, WebRTC, HomeKit, FFmpeg, RTMP, etc. first project in the World with support H265 for WebRTC in browser.",
+    "host_name": "hub.docker.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/blakeblackshear/frigate/discussions/20877",
+    "name": "[Config Support]: Ingesting an HLS stream from the internet, #20877",
+    "snippet": "go2rtc supports a variety of stream types, including HLS. When using RTSP from go2rtc, does not play, check the go2rtc ・ view the go2rtc web ... Using a dedicated go2rtc instance to proxy my cameras to frigate (15.1) Questions regarding go2rtc · blakeblackshear frigate - GitHub More results from github.com",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://go2rtc.org/internal/webrtc",
+    "name": "WebRTC - go2rtc",
+    "snippet": "You can turn the browser of any PC or mobile into an IP camera with support for video and two-way audio. Or even broadcast your PC screen: Create empty stream ...",
+    "host_name": "go2rtc.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.home-assistant.io/t/local-realtime-person-detection-for-rtsp-cameras/103107?page=311",
+    "name": "Local realtime person detection for RTSP cameras - Page 311",
+    "snippet": "Now anybody point me to a tutorial to properly understand go2rtc,webrtc and how they work with home assistant? I am running frigate in docker(I ...",
+    "host_name": "community.home-assistant.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pkg.go.dev/github.com/AlexxIT/go2rtc",
+    "name": "go2rtc command - github.com/AlexxIT/go2rtc",
+    "snippet": "go2rtc stars docker pulls releases goreport. Ultimate camera streaming application with support for RTSP, WebRTC, HomeKit, FFmpeg, RTMP, ...",
+    "host_name": "pkg.go.dev",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://api.windy.com/webcams/docs",
+    "name": "Documentation - Webcams - Windy API",
+    "snippet": "The Webcams API provides access to the largest repository of webcams worldwide. Filter webcams based on criteria such as country, category, location, and more.",
+    "host_name": "api.windy.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.windy.com/topic/28782/windy-webcam-api-v3-url-issue-bounding-box-validation",
+    "name": "Windy Webcam API V3 - URL issue + Bounding Box Validation",
+    "snippet": "I just upgraded my code from Windy Webcam API V2 to V3 but run into the following issue: I am requesting the urls section but the URLs provided.",
+    "host_name": "community.windy.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api.windy.com/webcams/version-transfer",
+    "name": "Migration from Webcams API v2 to v3",
+    "snippet": "In V3, the Webcams API returns image URLs secured with tokens. These tokens have an expiration time: 10 minutes for the free API tier and 24 hours for the ...",
+    "host_name": "api.windy.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api.windy.com/webcams/pricing",
+    "name": "Webcams API - Windy API",
+    "snippet": "Easily add webcams and their content to your websites. Free Link or embed Link images to windy.com. Player size is unlimited",
+    "host_name": "api.windy.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.windy.com/category/31/webcams-api",
+    "name": "Webcams API - Windy Community",
+    "snippet": "Every displaying of webcam in your app is one API request, so no caching … you will get nearest webcams N Webcams API Free Tier Usage in an App",
+    "host_name": "community.windy.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Cyreslab-AI/windy-webcams-mcp-server/blob/main/README.md",
+    "name": "README.md - Windy Webcam MCP Server - GitHub",
+    "snippet": "You can obtain a free API key from Windy API. The API has rate limits but provides access to a comprehensive database of worldwide webcams.",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://account.windy.com/agreements/windy-api-webcams-terms-of-use",
+    "name": "Specific terms of use of the Windy Webcams API Services – Agreements",
+    "snippet": "User may use the Services in the Free Version without charge. Main Features Specifications The Free Version of the Webcam API contains the Services as ...",
+    "host_name": "account.windy.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dlthub.com/context/source/windy-api",
+    "name": "Windy Python API Docs | dltHub",
+    "snippet": "Windy API provides weather data and map forecasts; it includes Point Forecast and Map Forecast APIs; access requires an API key.",
+    "host_name": "dlthub.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api.windy.com/webcams/terms",
+    "name": "Terms of Use - Webcams - Windy API",
+    "snippet": "Link every image with either our webcam page or timelapse player for full view. Don't want to link or embed us? Use API.",
+    "host_name": "api.windy.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://help.angelcam.com/en/articles/5866554-how-to-connect-ip-camera-to-windy",
+    "name": "How to connect IP camera to Windy - Angelcam Help Center",
+    "snippet": "1. Create an account. · 2. Purchase the Essentials plan. · 3. Connect your camera to Angelcam · 4. Activate free broadcasting add-on to appear on ...",
+    "host_name": "help.angelcam.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

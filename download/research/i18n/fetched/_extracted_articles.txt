@@ -1,0 +1,1711 @@
+======================================================================
+FILE: buildwithmatija_proxy.html
+======================================================================
+Fix next-intl in Next.js 16: Rename middleware to proxy | Build with Matija 
+
+ Home 
+ Services 
+ Work 
+ Resources 
+
+ BuildWithMatija 
+ Blog 
+
+ svg]:px-3 group relative overflow-hidden flex items-center gap-2" data-slot="button" id="cta-shared-get-in-touch" href="/web/20260305174351/https://www.buildwithmatija.com/en/contact"> Get In Touch 
+
+ Open menu 
+
+ Home 
+
+ svg]:size-3.5"> 
+ Blog 
+
+ svg]:size-3.5"> 
+ Next.js 
+
+ svg]:size-3.5"> 
+ Fix next-intl in Next.js 16: Rename middleware to proxy 
+ Fix next-intl in Next.js 16: Rename middleware to proxy
+ Restore next-intl locale routing after upgrading to Next.js 16: rename middleware.ts→proxy.ts, add provider, and…
+
+ 19th March 2026 · Updated on: 1st March 2026 · MŽ Matija Žiberna · svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90">Next.js 
+ svg]:px-2.5" id="btn-copy-actions-trigger" type="button" aria-haspopup="menu" aria-expanded="false" data-state="closed"> Copy 
+
+ ⚡ Next.js Implementation Guides
+ In-depth Next.js guides covering App Router, RSC, ISR, and deployment. Get code examples, optimization checklists, and prompts to accelerate development.
+
+ svg]:px-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg whitespace-nowrap w-full sm:w-auto px-5 h-12 text-base" id="cta-newsletter-inline-submit" type="submit" disabled=""> Get Next.js Guides 
+ No spam. Unsubscribe anytime.
+
+ If you upgraded to Next.js 16 and suddenly your locale routing stopped working, you're in the right place. No redirects to /en
+, wrong locale in server components, or this in your logs:
+
+ Error: Unable to find `next-intl` locale because the middleware didn't run on this request.
+See https://next-intl.dev/docs/routing/middleware#unable-to-find-locale
+
+ The cause is a single breaking change in Next.js 16: middleware.ts
+ was renamed to proxy.ts
+. Your next-intl setup is fine — the file Next.js is looking for just no longer exists.
+
+ This guide covers the exact fix, why Next.js made this change, and two additional next-intl 4.0 breaking changes that tend to surface in the same upgrade.
+
+ Why Next.js 16 Renamed middleware.ts to proxy.ts
+
+ Next.js renamed the file to clarify what it actually does. From the release notes:
+
+ "proxy.ts replaces middleware.ts and makes the app's network boundary explicit. proxy.ts runs on the Node.js runtime."
+
+ The old name caused confusion with Express-style middleware and made the feature sound more general-purpose than it is. The new name makes it clear: this file sits at the network boundary and proxies requests before they reach your app. The logic inside hasn't changed at all — it's a rename, not a rewrite.
+
+ Next.js 16 still accepts middleware.ts
+ for now but treats it as deprecated and logs a warning:
+
+ You are using the `middleware` file convention, which is deprecated and has been renamed to `proxy`.
+
+ When next-intl's locale negotiation depends on that file running — and it does — a deprecated or ignored file means no locale gets set, which is why you see the "middleware didn't run" error.
+
+ The Fix: Three Steps
+
+ Step 1: Rename the file
+
+ src/middleware.ts → src/proxy.ts
+
+ That's it for most next-intl setups. If you're using createMiddleware
+ with a default export, the file contents stay identical:
+
+ // File: src/proxy.ts 
+ import createMiddleware from 'next-intl/middleware' ;
+ import {routing} from './i18n/routing' ;
+
+ export default createMiddleware (routing);
+
+ export const config = {
+ matcher : '/((?!api|trpc|_next|_vercel|.*\\..*).*)' ,
+};
+
+ The next-intl docs confirm it: "proxy.ts was called middleware.ts up until Next.js 16." No changes to imports, no changes to createMiddleware
+, no changes to your routing config.
+
+ Step 2: Rename the exported function (custom setups only)
+
+ If you wrote a custom wrapper around createMiddleware
+ rather than using a default export, Next.js 16 expects the named export to be called proxy
+, not middleware
+:
+
+ // File: src/proxy.ts — before 
+ import type { NextRequest } from 'next/server' ;
+ import createMiddleware from 'next-intl/middleware' ;
+ import {routing} from './i18n/routing' ;
+
+ const intlMiddleware = createMiddleware (routing);
+
+ export function middleware ( request : NextRequest ) {
+ return intlMiddleware (request);
+}
+
+ export const config = {
+ matcher : '/((?!api|_next|_vercel|.*\\..*).*)' ,
+};
+
+ // File: src/proxy.ts — after 
+ import type { NextRequest } from 'next/server' ;
+ import createMiddleware from 'next-intl/middleware' ;
+ import {routing} from './i18n/routing' ;
+
+ const intlProxy = createMiddleware (routing);
+
+ export function proxy ( request : NextRequest ) {
+ return intlProxy (request);
+}
+
+ export const config = {
+ matcher : '/((?!api|_next|_vercel|.*\\..*).*)' ,
+};
+
+ If you want to automate this, Next.js ships a codemod that handles both the file rename and the function rename in one command:
+
+ npx @next/codemod@canary middleware-to-proxy .
+
+ Step 3: Verify nothing else needs changing
+
+ No changes required to next.config.ts
+, src/i18n/routing.ts
+, src/i18n/navigation.ts
+, or src/i18n/request.ts
+. The proxy file is the only thing that moves.
+
+ Two More Breaking Changes Worth Checking
+
+ If you're upgrading to Next.js 16 you're likely also moving from next-intl v3 to v4. Two other changes in that upgrade break silently in ways that look similar to the proxy issue.
+
+ NextIntlClientProvider is now required
+
+ In next-intl v3, NextIntlClientProvider
+ was optional in many setups. In v4, if any client component in your tree calls useTranslations
+, a provider must exist above it or you'll hit:
+
+ Error: Failed to call `useTranslations` because the context from `NextIntlClientProvider` was not found.
+
+ The fix is straightforward — add it to your locale layout with no props:
+
+ // File: src/app/[locale]/layout.tsx 
+ import { NextIntlClientProvider } from 'next-intl' ;
+
+ export default async function LocaleLayout ( {children}: {children: React.ReactNode} ) {
+ return (
+ < html > 
+ < body > 
+ < NextIntlClientProvider > 
+ {children}
+ </ NextIntlClientProvider > 
+ </ body > 
+ </ html > 
+ );
+}
+
+ In v4, NextIntlClientProvider
+ automatically inherits messages
+ and formats
+ from your i18n/request.ts
+ — you don't need to pass them as props. If you were previously passing them manually, you can remove those props entirely.
+
+ getRequestConfig must return locale explicitly
+
+ In v3, returning locale
+ from getRequestConfig
+ was optional. In v4 it's required. If you're missing it, next-intl can't determine which locale is active, which compounds the proxy issue:
+
+ // File: src/i18n/request.ts 
+ import {getRequestConfig} from 'next-intl/server' ;
+ import {hasLocale} from 'next-intl' ;
+ import {routing} from './routing' ;
+
+ export default getRequestConfig ( async ({requestLocale}) => {
+ const requested = await requestLocale;
+ const locale = hasLocale (routing. locales , requested)
+ ? requested
+ : routing. defaultLocale ;
+
+ return {
+ locale, // required in v4 — don't omit this 
+ messages : ( await import ( `../../messages/ ${locale} .json` )). default ,
+ };
+});
+
+ The locale
+ field in the return object is what next-intl uses downstream. Without it, you'll see the same "Unable to find next-intl locale" error even after correctly renaming middleware.ts
+ to proxy.ts
+.
+
+ Wrapping Up
+
+ The Next.js 16 upgrade breaks next-intl locale routing through a combination of three changes: the middleware.ts
+ → proxy.ts
+ rename (Next.js-level), the required NextIntlClientProvider
+ wrapper (next-intl 4.0), and the mandatory locale
+ return from getRequestConfig
+ (next-intl 4.0). Any one of them is enough to produce the "Unable to find next-intl locale" error, which is why the upgrade can feel hard to diagnose.
+
+ The fixes are all mechanical — rename a file, add a provider, add one field to a return object. Nothing about how next-intl works has changed, and your routing configuration stays exactly as it was.
+
+ Let me know in the comments if you're hitting anything else after the upgrade, and subscribe for more practical development guides.
+
+ Thanks,
+Matija
+
+ 📄 View markdown version 
+
+ 0
+
+ Frequently Asked Questions
+ svg]:rotate-180 text-left" data-radix-collection-item="">Why did my next-intl stop setting locale after upgrading to Next.js 16? 
+
+ svg]:rotate-180 text-left" data-radix-collection-item="">Do I need to change my next-intl routing or imports after renaming the file? 
+
+ svg]:rotate-180 text-left" data-radix-collection-item="">What else in next-intl v4 can break silently after upgrading? 
+
+ Comments
+
+ Leave a Comment
+
+ Name * 
+ Email * Your email will not be published
+
+ svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current text-card-foreground border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20"> Stay updated! Get our weekly digest with the latest learnings on NextJS, React, AI, and web development tips delivered straight to your inbox.
+
+ Subscribe to our newsletter for weekly updates on new posts and web development insights 
+ Comment * 10-2000 characters
+
+ svg]:px-3 w-full sm:w-auto text-sm" type="submit" disabled="" id="form-comment-submit-next-intl-nextjs-16-proxy-fix-1772363577198">Post Comment 
+ • Comments are automatically approved and will appear immediately
+ • Your name and email will be saved for future comments
+ • Be respectful and constructive in your feedback
+ • No spam, self-promotion, or off-topic content
+
+ Matija Žiberna
+ Full-stack developer, co-founder
+
+ I'm Matija Žiberna, a self-taught full-stack developer and co-founder passionate about building products, writing clean code, and figuring out how to turn ideas into businesses. I write about web development with Next.js, lesson
+
+======================================================================
+FILE: devto_10_lang.html
+======================================================================
+Internationalization in Next.js 16: Lessons From Supporting 10 Languages - DEV Community 
+
+ Skip to content 
+
+ Navigation menu 
+
+ Search 
+
+ Powered by Algolia
+ Search 
+
+ Log in
+
+ Create account
+
+ DEV Community
+
+ Close 
+
+ Add reaction
+
+ Like
+
+ Unicorn
+
+ Exploding Head
+
+ Raised Hands
+
+ Fire
+
+ Jump to Comments
+
+ Save
+
+ Boost
+
+ More... 
+
+ Copy link 
+ Copy link 
+
+ Copied to Clipboard
+
+ Share to X
+
+ Share to LinkedIn
+
+ Share to Facebook
+
+ Share to Mastodon
+
+ Share Post via... 
+
+ Report Abuse 
+
+ Sam Dreams Maker 
+
+ Posted on Apr 3 
+
+ Internationalization in Next.js 16: Lessons From Supporting 10 Languages
+
+ # nextjs 
+ # i18n 
+ # react 
+ # webdev 
+
+ When I decided to support 10 languages in TaleForge from day one, I knew it would be work. I didn't know it would be this much work. Here's everything I learned.
+
+ The Setup
+
+ Stack: Next.js 16 App Router + next-intl
+. Why next-intl? It plays nicely with server components, supports namespaced messages, and handles pluralization rules per locale.
+
+ Languages supported: English, French, Spanish, German, Portuguese, Italian, Japanese, Chinese, Arabic, Hebrew.
+
+ Yes, that includes two RTL (right-to-left) languages. Yes, that was painful.
+
+ Message Organization
+
+ With 10 pages, dozens of components, and modals/forms everywhere, I quickly had hundreds of translation keys. Organization was critical.
+
+ I settled on one JSON file per locale with nested namespaces:
+
+ { 
+ "nav" : { 
+ "home" : "Home" , 
+ "pricing" : "Pricing" , 
+ "blog" : "Blog" 
+ }, 
+ "landing" : { 
+ "hero" : { 
+ "title" : "Stop fighting with tools to write your book" , 
+ "subtitle" : "A writing platform that works the way you think" 
+ } 
+ }, 
+ "editor" : { 
+ "save" : "Save" , 
+ "wordCount" : "{count, plural, =0 {No words} one {1 word} other {# words}}" 
+ } 
+ } 
+
+ Enter fullscreen mode 
+
+ Exit fullscreen mode 
+
+ The namespace convention: page.section.key
+. This makes it easy to find keys and keeps related translations together.
+
+ The 1,326 Keys Problem
+
+ At last count, TaleForge has 1,326 translation keys across 10 locales. That's 13,260 individual translations.
+
+ How do you manage this without going insane?
+
+ Extract keys as you build. Never hardcode strings, even "just for now." Future you will forget.
+
+ Batch translations by feature. When building the manga editor, I wrote all English strings first, then translated the entire batch. Context helps — translating strings in isolation leads to weird results.
+
+ Use ICU message format. {count, plural, one {1 project} other {# projects}}
+ handles pluralization correctly across languages. Japanese doesn't have plural forms. Arabic has six. ICU handles it.
+
+ Audit regularly. I built a script that checks for missing keys across locales. Run it in CI. Missing translations should break the build.
+
+ RTL Support
+
+ Arabic and Hebrew read right-to-left. This affects:
+
+ Text direction (obviously)
+
+ Layout direction (sidebars swap sides)
+
+ Icon direction (arrows flip)
+
+ Number formatting
+
+ Calendar direction
+
+ The CSS approach: use logical properties everywhere.
+
+ /* Don't do this */ 
+ .sidebar { margin-left : 20px ; } 
+
+ /* Do this */ 
+ .sidebar { margin-inline-start : 20px ; } 
+
+ Enter fullscreen mode 
+
+ Exit fullscreen mode 
+
+ Logical properties ( margin-inline-start
+, padding-inline-end
+, border-block-start
+) automatically flip in RTL mode. If you're starting a new project, use them exclusively. The browser support is excellent.
+
+ For the dir
+ attribute, I set it on the <html>
+ tag based on the current locale:
+
+ const rtlLocales = [ ' ar ' , ' he ' ]; 
+ const dir = rtlLocales . includes ( locale ) ? ' rtl ' : ' ltr ' ; 
+
+ Enter fullscreen mode 
+
+ Exit fullscreen mode 
+
+ Date and Number Formatting
+
+ Never format dates or numbers manually. Use Intl.DateTimeFormat
+ and Intl.NumberFormat
+.
+
+ // Dates 
+ new Intl . DateTimeFormat ( ' ja ' , { 
+ dateStyle : ' long ' 
+ }). format ( date ); 
+ // → "2026年4月3日" 
+
+ // Numbers 
+ new Intl . NumberFormat ( ' de ' , { 
+ style : ' currency ' , 
+ currency : ' USD ' 
+ }). format ( 9.99 ); 
+ // → "9,99 $" 
+
+ Enter fullscreen mode 
+
+ Exit fullscreen mode 
+
+ The Intl
+ APIs handle locale-specific formatting rules automatically. Arabic uses Eastern Arabic numerals (٠١٢٣). Japanese dates use year-month-day. German uses comma for decimals. Don't reinvent this.
+
+ Dynamic Content
+
+ Static UI text is straightforward. Dynamic content — user-generated stories, comments, reviews — is trickier.
+
+ I don't translate user content. The platform UI adapts to the user's language, but stories are displayed in whatever language the author wrote them in. This is a deliberate choice: machine-translating creative writing produces terrible results.
+
+ What I do translate: metadata. Genre names, status labels ("Published," "Draft"), system notifications. These come from a fixed set and can be pre-translated.
+
+ Performance Considerations
+
+ 10 locale files × 1,326 keys = a lot of JSON. Loading all of it on every page would be wasteful.
+
+ next-intl supports message splitting — only load the messages needed for the current page. With Next.js App Router, each layout or page can specify which namespaces it needs:
+
+ export default async function PricingPage () { 
+ const t = await getTranslations ( ' pricing ' ); 
+ // Only 'pricing' namespace is loaded 
+ } 
+
+ Enter fullscreen mode 
+
+ Exit fullscreen mode 
+
+ This keeps the client bundle lean. The full message files are only used server-side.
+
+ Testing
+
+ I test i18n with two approaches:
+
+ Snapshot tests for critical pages in each locale. This catches layout breaks (German words are notoriously long) and missing translations.
+
+ Visual regression for RTL layouts. A sidebar that looks perfect in English might overlap content in Arabic.
+
+ The most common bug: hardcoded strings that bypass the translation system. A code review checklist item: "Are there any raw strings in the JSX?"
+
+ Lessons Learned
+
+ Start with i18n on day one. Retrofitting is 10x harder than building it in.
+
+ RTL is not just direction: rtl
+. It touches layout, icons, animations, and user expectations.
+
+ Professional translation > machine translation for user-facing text. But machine translation is fine for a first pass that you refine.
+
+ 10 languages is probably too many to start with. English + 2-3 major languages would have been more practical. I added Japanese, Chinese, Arabic, and Hebrew because the writing community is global — but maintaining 10 locales is a real cost.
+
+ The result: about 40% of TaleForge 's traffic comes from non-English speakers. For a writing platform, that's significant.
+
+ TaleForge — free creative writing platform supporting 10 languages 
+
+ Top comments (0) 
+
+ Subscribe 
+
+ Personal 
+ Trusted User 
+
+ Create template
+
+ Templates let you quickly answer FAQs or store snippets for re-use.
+
+ Submit 
+ Preview 
+ Dismiss 
+
+ Code of Conduct 
+ • 
+ Report abuse 
+
+ Are you sure you want to hide this comment? It will become hidden in your post, but will still be visible via the comment's permalink .
+
+ Hide child comments as well
+
+ Confirm
+
+ For further actions, you may consider blocking this person and/or reporting abuse 
+
+ Sam Dreams Maker
+
+ Follow 
+
+ Joined
+
+ Mar 24, 2026 
+
+ More from Sam Dreams Maker 
+
+ Building a Freemium Model for Digital Content: Lessons Learned
+
+ # business 
+ # saas 
+ # startup 
+ # webdev 
+
+ Building a Screenplay Editor: Lessons from TaleForge's Next.js Architecture
+
+ # nextjs 
+ # webdev 
+ # javascript 
+ # writing 
+
+ 5 Free Tools Every Manga Creator Needs in 2026
+
+ # manga 
+ # writing 
+ # creativity 
+ # webdev 
+
+ 💎 DEV Diamond Sponsors
+
+ Thank you to our Diamond Sponsors for supporting the DEV Community
+
+ Google AI is the official AI Model and Platform Partner of DEV
+
+ Neon is the official database partner of DEV
+
+ Algolia is the official search partner of DEV
+
+ DEV Community — A space to discuss and keep up software development and manage your software career
+
+ Home
+
+ DEV Challenges
+
+ DEV++
+
+ Videos
+
+ DEV Education Tracks
+
+ DEV Help
+
+ Advertise on DEV
+
+ Organization Accounts
+
+ DEV Showcase
+
+ About
+
+ Contact
+
+ Free Postgres Database
+
+ DEV Shop
+
+ MLH
+
+ Code of Conduct
+
+ Privacy Policy
+
+ Terms of Use
+
+ Built on Forem — the open source software that powers DEV and other inclusive communities.
+
+ Made with love and Ruby on Rails . DEV Community © 2016 - 2026.
+
+ We're a place where coders share, stay up-to-date and grow their careers.
+
+ Log in
+
+ Create account
+
+======================================================================
+FILE: simplelocalize_icu.html
+======================================================================
+ICU message format: Guide to plurals, dates & localization syntax | SimpleLocalize Product 
+ Translation Editor
+ Web-based translation editor for your team
+
+ Auto-translation
+ Machine translations and AI translations
+
+ Public Suggestions
+ Crowdsource translations and feedback
+
+ QA checks and AI fixes
+ Live quality assurance checks for translations
+
+ Translation Hosting
+ Global CDN for your translations
+
+ Automations
+ Built-in and no-code automations for workflows
+
+ SimpleLocalize CLI
+ Sync translations with your local files
+
+ Per-customer translations
+ Alternate translations for different customers
+
+ Translation Editor
+ Web-based translation editor for your team
+
+ Auto-translation
+ Machine translations and AI translations
+
+ Public Suggestions
+ Crowdsource translations and feedback
+
+ QA checks and AI fixes
+ Live quality assurance checks for translations
+
+ Translation Hosting
+ Global CDN for your translations
+
+ Automations
+ Built-in and no-code automations for workflows
+
+ SimpleLocalize CLI
+ Sync translations with your local files
+
+ Per-customer translations
+ Alternate translations for different customers
+
+ Integrations 
+ Documentation 
+ Pricing 
+ Sign in 
+ Start for free 
+
+ Back to blog 
+ ICU message format: Guide to plurals, dates & localization syntax
+ internationalization-i18n 
+ technical-localization 
+ developers 
+ how-to 
+
+ Kinga Pomykała 
+
+ • Published:  February 02, 2023 • Last updated:  April 14, 2026 • 15 min read 
+ ICU message format is the standard way developers handle plurals, dates, numbers,
+and other localized text in software. It's part of the internationalization (i18n)
+toolkit that ensures your messages are grammatically correct, culturally accurate,
+and easy to translate — no matter the language or region. ICU is one of the core
+technical topics covered in our complete technical guide to internationalization
+and software localization ,
+alongside locale detection, RTL layouts, and i18n architecture patterns. By using
+ICU, you can avoid common localization bugs like "1 rooms", "0 rooms" instead
+of "No rooms", or incorrect date formats, while keeping translations consistent
+across all platforms.
+
+ Used by Google, Microsoft, and countless frameworks like React Intl and Angular, ICU allows you to define all variations of a message in one place, making life easier for both developers and translators.
+
+ Quick start: ICU in one minute 
+
+ Here's an ICU message format example that handles plurals:
+
+ // Message 
+ "Hi, thank you for booking {bookedRooms, plural, one {room} other {rooms}} with us!" 
+
+ // Result 
+ "Hi, thank you for booking 1 room with us!" 
+ // or 
+ "Hi, thank you for booking 3 rooms with us!" 
+
+ Why this matters for localization 
+
+ Plural rules are applied automatically for each locale.
+
+ Translators see all variations in one place, so no missing forms.
+
+ The same syntax works for dates, numbers, gender forms, and more.
+
+ Want to learn ICU step-by-step? Scroll down for syntax, examples and localization tips.
+
+ What is ICU? 
+
+ International Components for Unicode (ICU) is an open-source, cross-platform library that supports Unicode and global text handling.
+
+ ICU is widely used in software development to ensure that applications can work with text in multiple languages, formats, and scripts, supporting different format numbers, dates, times, currencies, and other locale-sensitive data.
+
+ Created in 1999 by Taligent (later acquired by IBM), ICU was designed to address the complexity of building software for multiple languages and cultural rules.
+Today, it's used by Google, Microsoft, Amazon, Apple, Oracle, Adobe, and many others.
+
+ How does it work? 
+
+ ICU provides APIs and data to convert, search, compare, and format text in any supported language.
+By combining Unicode (a universal text encoding system) with ICU's locale data, you can build applications that adapt naturally to any script or writing system.
+
+ ICU covers all text and language related issues like:
+
+ date and time formatting 
+
+ number formatting 
+
+ currency formatting 
+
+ pluralization 
+
+ gender-specific forms 
+
+ custom variables 
+
+ sorting and searching text
+
+ Download ICU from GitHub repository and read the documentation .
+
+ Problems ICU solves 
+
+ Without ICU, localization is harder and error-prone:
+
+ Hard-coded plurals (“1 rooms” problem)
+
+ Date/number formats that confuse users
+
+ Gender-specific language errors
+
+ Inconsistent translation files
+
+ ICU solves these issues by providing a standardized way to handle text formatting, pluralization, and other language-specific features. It allows developers to create messages that adapt to the user's locale, ensuring that translations are accurate and culturally appropriate.
+
+ Check our blog on best practices for software localization for more tips on how to improve your i18n process and localization quality.
+
+ What is Locale? 
+
+ Locale
+ defines the user's language, region, and cultural conventions. It is used to format and display text, dates, numbers, and other data in a way that is appropriate for a specific region or culture. For example, the date format and currency symbol used in the United States is different from that used in Spain.
+
+ Locale affects:
+
+ Date and time formats
+
+ Number and currency style
+
+ Text sorting and comparison rules
+
+ It differs from the Language
+ which is a more general term that refers to the language itself, without any specific regional or cultural context. For example, "English" is a language, while "en_US" is a locale that specifies English as spoken in the United States.
+
+ For detailed resources check ICU documentation for Locale and our blog post about differences between language and locale .
+
+ ICU Messages Formatting syntax 
+
+ Messages are user-visible texts that may contain both static text and variable elements (names, dates, numbers, etc.). ICU's MessageFormat
+ class uses curly braces { }
+ for variables, with optional formatting instructions.
+
+ General pattern:
+
+ {variable, type, format}
+
+ variable
+ is the name of the variable to be formatted
+
+ type
+ specifies the type of formatting (e.g., date
+, number
+, plural
+, select
+)
+
+ format
+ is the specific style or rule to be applied to the variable
+
+ ICU variables 
+
+ In ICU, variables let you insert dynamic content,like numbers, dates, or names, into messages. They are defined with the MessageFormat
+ class, which makes translations adapt to different conditions.
+
+ A simple variable without formatting works for fixed grammar, but can break in other languages:
+
+ "Hi, thank you for booking {roomsNumber} rooms with us!" 
+ // 1 rooms ❌ 
+
+ To handle grammar rules such as plurals, you can add ICU formatting directly to the variable:
+
+ "Hi, thank you for booking {bookedRooms, plural, one {room} other {rooms}} with us!" 
+ // 1 room ✅ 
+ // 3 rooms ✅ 
+
+ This ensures messages follow language rules for every locale.
+
+ Plurals 
+
+ Pluralization rules vary depending on the language, and its grammar. The rules are different in English, Polish, or Arabic - for different locales.
+
+ For example, English has two forms: one
+ and other
+.
+Polish adds few
+ and sometimes more, while Arabic has even more variations.
+You can explore each language's rules in the Unicode CLDR specs .
+
+ In ICU, the plural
+ argument selects the correct sub-message based on a number and the locale's plural rules.
+
+ Syntax for plural messages is:
+
+ {variable, plural, forms}
+
+ Where forms
+ are the plural categories for that language.
+
+ Example in English and Polish:
+
+ // English 
+ "You have booked {bookedRooms, plural, 
+ one {one room}, 
+ other {# rooms}
+} for {stayDate, date, medium}" 
+
+ // Polish 
+ "Zarezerwowałeś {bookedRooms, plural,
+ one {jeden pokój}, 
+ few {# pokoje}, 
+ other {# pokoi}
+} na {stayDate, date, medium}" 
+
+ Tip: The other
+ form is always required, it's your fallback for unexpected values.
+
+ This format gives translators all plural cases for a language, ensuring accuracy in every locale.
+
+ Select 
+
+ The ICU select
+ format lets you choose different message variants based on the value of a variable, typically a string or keyword. This is useful for handling cases like gender, status, or other categorical data where the message changes depending on the value.
+
+ The syntax looks like this:
+
+ {variable, select,
+ value1 { Message for value1}
+ value2 { Message for value2}
+ other { Default message}
+}
+
+ Example:
+
+ "Thank you for booking {bookedRoom, select,
+ dorm {a bed in dorm room}
+ private {a private room}
+ other {a room}
+} in our hostel." 
+
+ if bookedRoom
+ is dorm
+, it shows "a bed in dorm room"
+
+ if bookedRoom
+ is private
+, it shows "a private room"
+
+ if bookedRoom
+ is anything else, it defaults to "a room"
+
+ Combining plurals and select 
+
+ ICU messages let you combine plural and select formats to handle complex variations in your messages based on multiple variables.
+For complex cases, nest plural
+ inside select
+ (recommended order).
+
+ To visualize the nesting structure, think of it as a decision tree:
+
+ gender (select)
+├── female
+│ └── num_guests (plural)
+│ ├── =0 → "... doesn't invite guests to her ..."
+│ ├── =1 → "... invites {guest} to her ..."
+│ ├── =2 → "... invites {guest} and one other ... to her ..."
+│ └── other → "... invites {guest} and # others ... to her ..."
+├── male
+│ └── num_guests (plural)
+│ ├── =0 → "... doesn't invite guests to his ..."
+│ └── ... (same structure)
+└── other
+ └── num_guests (plural)
+ └── ... (uses "their")
+
+ The outer select
+ picks the gender branch first, then the inner plural
+ picks the correct guest count message. Here's the full example:
+
+ "{gender, select,
+ female {
+ {num_guests, plural, offset:1
+ =0 {{host} doesn't invite guests to her new hotel opening.}
+ =1 {{host} invites {guest} to her new hotel opening.}
+ =2 {{host} invites {guest} and one other guest to her new hotel opening.}
+ other {{host} invites {guest} and # other guests to her new hotel opening.}
+ }
+ }
+ male {
+ {num_guests, plural, offset:1
+ =0 {{host} doesn't invite guests to his new hotel opening.}
+ =1 {{host} invites {guest} to
+
+======================================================================
+FILE: simplelocalize_es_pe.html
+======================================================================
+Locale code: es-PE (Spanish - Peru) | SimpleLocalize Product 
+ Translation Editor
+ Web-based translation editor for your team
+
+ Auto-translation
+ Machine translations and AI translations
+
+ Public Suggestions
+ Crowdsource translations and feedback
+
+ QA checks and AI fixes
+ Live quality assurance checks for translations
+
+ Translation Hosting
+ Global CDN for your translations
+
+ Automations
+ Built-in and no-code automations for workflows
+
+ SimpleLocalize CLI
+ Sync translations with your local files
+
+ Per-customer translations
+ Alternate translations for different customers
+
+ Translation Editor
+ Web-based translation editor for your team
+
+ Auto-translation
+ Machine translations and AI translations
+
+ Public Suggestions
+ Crowdsource translations and feedback
+
+ QA checks and AI fixes
+ Live quality assurance checks for translations
+
+ Translation Hosting
+ Global CDN for your translations
+
+ Automations
+ Built-in and no-code automations for workflows
+
+ SimpleLocalize CLI
+ Sync translations with your local files
+
+ Per-customer translations
+ Alternate translations for different customers
+
+ Integrations 
+ Documentation 
+ Pricing 
+ Sign in 
+ Start for free 
+
+ Locale Code: es-PE 
+ The locale code represents Spanish language in  Peru  country.
+ See all locale codes 
+
+ Translation Editor ✨
+ Save time on handling localization files and translation strings.
+ Try SimpleLocalize 
+
+ General
+ General information related to the locale code
+ Comprehensive es-PE locale data for Peru Property
+ Value
+
+ Country Name
+ Peru
+
+ Country Name (Local)
+ Perú/Piruw
+
+ Country Flag
+ 🇵🇪
+
+ Country Area
+ 1285216 km 2 
+
+ Country Code (ISO 3166-1)
+ PE
+
+ Language Name
+ Spanish
+
+ Language Name (Local)
+ Español
+
+ Language Code (ISO 639-1)
+ es
+
+ Continent
+ South America
+
+ Region
+ South America
+
+ Capital Name
+ Lima
+
+ Capital Latitude
+ -12.04318
+
+ Capital Longitude
+ -77.02824
+
+ Postal Code Format
+ #####
+
+ Postal Code Regex
+ ^(\d{5})$
+
+ Related Codes
+ Related codes for the es-PE locale
+ Code and abbreviations related to Peru and es-PE locale Property
+ Value
+
+ Language Code (ISO 639-1)
+ es
+
+ Language Code (ISO 639-2)
+ spa
+
+ Language Code (ISO 639-3)
+ spa
+
+ Country Code (ISO 3166-1 Numeric)
+ 604
+
+ Country Code (ISO 3166-1 Alpha2)
+ PE
+
+ Country Code (ISO 3166-1 Alpha3)
+ PER
+
+ TLD (Top Level Domain)
+ pe
+
+ Vehicle Code
+ PE
+
+ FIPS10
+ PE
+
+ UN LOCODE
+ PE
+
+ STANAG 1059
+ PER
+
+ IOC
+ PER
+
+ FIFA
+ PER
+
+ ITU
+ PRU
+
+ Maritime
+ 760
+
+ MMC
+ 716
+
+ Currency
+ The currency used for the locale code es-PE is Nuevo Sol .
+ Currency details for Peru and es-PE locale Property
+ Value
+
+ Currency Name
+ Nuevo Sol
+
+ Currency Name (Local)
+ Peruvian sol
+
+ Currency Code
+ PEN
+
+ Currency Symbol
+ S/ 
+
+ Currency Numeric
+ 604
+
+ Currency Subunit Value
+ 100
+
+ Currency Subunit Name
+ Céntimos
+
+ Timezones
+ Peru has one timezone with UTC offset UTC-05:00 .
+ UTC-05:00
+
+ Borders
+ Peru shares borders with 5 countries and it's not landlocked .
+ Bolivia
+ BO
+
+ Brazil
+ BR
+
+ Chile
+ CL
+
+ Colombia
+ CO
+
+ Ecuador
+ EC
+
+ Related Locale Codes
+ We found 26 related locale codes for the es-PE locale based on the shared borders and languages.
+ ay-BO
+ Aymara ( Bolivia )
+
+ pt-BR
+ Portuguese ( Brazil )
+
+ qu-BO
+ Quechua ( Bolivia )
+
+ es-BO
+ Spanish ( Bolivia )
+
+ es-CL
+ Spanish ( Chile )
+
+ es-EC
+ Spanish ( Ecuador )
+
+ es-CO
+ Spanish ( Colombia )
+
+ es-GQ
+ Spanish ( Equatorial Guinea )
+
+ es-AR
+ Spanish ( Argentina )
+
+ es-BZ
+ Spanish ( Belize )
+
+ es-CR
+ Spanish ( Costa Rica )
+
+ es-DO
+ Spanish ( Dominican Republic )
+
+ es-SV
+ Spanish ( El Salvador )
+
+ es-GU
+ Spanish ( Guam )
+
+ es-GT
+ Spanish ( Guatemala )
+
+ es-HN
+ Spanish ( Honduras )
+
+ es-CU
+ Spanish ( Cuba )
+
+ es-MX
+ Spanish ( Mexico )
+
+ es-NI
+ Spanish ( Nicaragua )
+
+ es-PA
+ Spanish ( Panama )
+
+ es-PY
+ Spanish ( Paraguay )
+
+ es-PR
+ Spanish ( Puerto Rico )
+
+ es-ES
+ Spanish ( Spain )
+
+ es-UY
+ Spanish ( Uruguay )
+
+ es-VE
+ Spanish ( Venezuela )
+
+ es-EH
+ Spanish ( Western Sahara )
+
+ Try SimpleLocalize 
+
+ Go to Editor 
+
+ Get started with SimpleLocalize
+
+ All-in-one localization platform 
+ Web-based translation editor for your team 
+ Auto-translation, QA-checks, AI and more 
+ See how easily you can start localizing your product. 
+ Powerful API, hosting, integrations and developer tools 
+ Unmatched customer support 
+
+ Start for free No credit card required ∙ 5-minute setup 
+
+ " The product and support are fantastic . "
+ Laars Buur | CTO
+
+ " The support is blazing fast , thank you Jakub! "
+ Stefan | Developer
+
+ " Interface that makes any dev feel at home ! "
+ Dario De Cianni | CTO
+
+ " Excellent app, saves my time and money "
+ Dmitry Melnik | Developer
+
+ What is ' es-PE ' locale code?
+ Every locale code is a unique identifier for a specific language and country (or region). It is used in software development to localize applications and websites. Locale code is a combination of ISO 639-1 language code and ISO 3166-1 country code . For example, es _ PE is a locale code for Spanish language in Peru . Locale codes are used to define the language and country settings for date, time, currency, and number formatting. They are also used to translate user interfaces and messages in software applications. Locale codes are essential for building multilingual and internationalized software products. They are used in programming languages, frameworks, and libraries to provide internationalization and localization features. Locale codes are also used in databases, operating systems, and web browsers to provide language and country-specific settings. Locale codes are standardized by the International Organization for Standardization (ISO) and are widely used in software development.
+
+ GitHub 
+ YouTube 
+ Discord 
+ Email us 
+
+ Made in Europe
+ Developed and maintained, adhering to the highest standards of data protection and privacy regulations, including GDPR.
+
+ Product
+ Translation Editor 
+ Auto-translation 
+ Automations 
+ AI Translations 
+ Translation Hosting 
+ In-Context Editor 
+ Changelog 
+ Solutions
+ Auto-translate JSON 
+ Translate files 
+ React apps localization 
+ Translation management 
+ For Developers 
+ For Translators 
+ Use cases 
+
+ Learn
+ Blog 
+ Tools 
+ Compare 
+ World data 
+ Case studies 
+ Company
+ About us 
+ Brand assets 
+ Privacy policy 
+ Affiliate program 
+ Terms of service 
+ Refund policy 
+ Security 
+ Careers 
+ Service status 
+
+ Integrations
+ Multi-language JSON 
+ Android Strings 
+ XC Strings 
+ PO Files 
+ Laravel 
+ Angular 
+ Next.js 
+ Astro 
+ Vue.js 
+ XLIFF 
+ Figma 
+ i18next 
+ FormatJS 
+ VS Code 
+ IntelliJ 
+ Shopify 
+ Webflow 
+
+ Copyright © 2026 Jakub Pomykała Software registered in Poland . All rights reserved. All trademarks are the property of their respective owners. RSS 2.0 Sitemap (XML) Sitemap
+
+======================================================================
+FILE: locize_keys.html
+======================================================================
+The Art of the Key: A Definitive Guide to i18n Key Naming for Longevity and Sanity 
+
+ Skip to content 
+ How it works For your team Pricing Customers Services AI Docs Blog 
+ Login Register 
+
+ How it works For your team Pricing Customers Services AI Docs Blog 
+
+ September 22, 2025 9 min read Guides 
+ The Art of the Key: A Definitive Guide to i18n Key Naming for Longevity and Sanity
+
+ Internationalization ( i18n ) is the blueprint for global software. At its heart lies a deceptively simple element: the translation key . Your team's approach to naming these keys isn't a minor detail: it's a foundational architectural decision. A poor strategy creates “i18n debt,” a silent tax on every future feature that slows development and inflates costs. A great one ensures longevity and streamlines collaboration for years to come.
+
+ The Key is a Three-Party Contract 📜 
+
+ Think of an i18n key not as a variable, but as a stable, multi-party contract between three stakeholders:
+
+ Developers: They need a predictable interface to retrieve text. The key should offer clues about a string’s purpose, reducing the need to constantly jump between the codebase and translation files.
+
+ Translators: The key is often their first and most important piece of context. A key like userProfile.buttons.saveChanges
+ is a beacon of clarity; key_123
+ is a black box that invites guesswork and errors.
+
+ Systems (TMS): A Translation Management System uses the key as a unique, immutable ID to manage a string’s entire history, screenshots, comments, and glossary terms. If a key changes, that contract is broken, the history is lost, and the string must be re-translated from scratch.
+
+ A strategy that only serves one party will inevitably fail. What looks like a simple naming convention is actually a complex system design problem that must balance the needs of everyone involved.
+
+ Why Key Naming is a Critical Architectural Decision 🏗️ 
+
+ Choosing your key strategy hastily is like building a house on a shaky foundation. The i18n debt you incur manifests in several painful ways:
+
+ Maintenance Brittleness: When keys are tied to file paths, refactoring UI code becomes a nightmare. Developers become afraid to make changes for fear of breaking translations in a dozen languages.
+
+ Increased Bugs: Ambiguous or reused keys are a primary source of localization bugs. Using a single key for “Read” can lead to grammatical errors when the context shifts from a verb (“Read more”) to a status (“Message Read”).
+
+ Collaboration Friction: A chaotic system forces translators to constantly ask developers for clarification, pulling them away from feature development and slowing down the entire localization cycle.
+
+ Reduced Scalability: As an application grows, a flat list of keys becomes unmanageable and kills performance. A scalable architecture requires a structured approach from day one to enable optimizations like code-splitting translations.
+
+ Investing time to establish a robust strategy is a down payment on future agility, enabling your team to build and scale a global product efficiently.
+
+ The Three Philosophies of Key Naming 
+
+ Three dominant philosophies have emerged for naming keys. The choice between them is a fundamental decision about where to place the burden of complexity in your workflow.
+
+ 1. Structured (Semantic) Keys: The Path of Order 
+
+ This is the most robust and widely recommended approach. It involves creating abstract but descriptive identifiers that are decoupled from the source language text.
+
+ Example: t('userProfile.labels.firstName')
+, t('errors.network.timeout')
+
+ Pros: 
+
+ ✅ High Maintainability: The English source text can be changed without touching the code, preserving all existing translations.
+
+ ✅ Provides Context: A key like checkout.buttons.confirmOrder
+ tells translators its location and purpose.
+
+ ✅ Avoids Collisions: A partial namespacing is built-in, preventing ambiguity. But can also be improved with real namespaces .
+
+ Cons: 
+
+ ❌ Increased Upfront Effort: It’s a “write-it-twice” workflow: create the key in code, then add its value in a JSON file.
+
+ ❌ Reduced In-Code Readability: The code shows t('userProfile.labels.firstName')
+, not the actual text.
+
+ However, this readability drawback is being solved by innovations in the i18next ecosystem. The new Selector API transforms the experience. Instead of a magic string, you use a type-safe function: t($ => $.userProfile.labels.firstName)
+. This enables autocompletion, compile-time checks, and seamless refactoring in TypeScript, turning a historic weakness into a major strength.
+
+ 2. Natural Language (Content-as-Key): The Path of Convenience 
+
+ This philosophy prioritizes initial development speed by using the full source language string (typically English) as the key itself.
+
+ Example: t('Please enter your email address')
+
+ Pros: 
+
+ ✅ High In-Code Readability: The code is self-documenting, showing the exact default text.
+
+ ✅ Low Initial Effort: It’s the fastest way to start, as there’s no need to invent a separate keying system.
+
+ Cons: 
+
+ ❌ Extremely Brittle: This is the deal-breaker. Fixing a simple typo or rephrasing the text changes the key , breaking the link to all existing translations and forcing costly re-translation.
+
+ ❌ Problematic for Complex Strings: Using paragraphs or strings with HTML as keys is unwieldy and error-prone.
+
+ ❌ Inherent Ambiguity: It can’t differentiate between two identical strings that need different translations based on context (e.g., “View” as a noun vs. a verb).
+
+ 3. Content-Agnostic (Generated) Keys: The Path of Ultimate Decoupling 
+
+ A less common approach that uses machine-generated identifiers as keys.
+
+ Example: t('key_aB38fG1p')
+
+ Pros: 
+
+ ✅ Guaranteed Uniqueness and Stability: Eliminates human error in naming and ensures the key is never changed.
+
+ ✅ Complete Decoupling: The key is independent of both content and code structure, offering maximum architectural flexibility.
+
+ Cons: 
+
+ ❌ Zero Human Readability: The keys are meaningless without a sophisticated layer of tooling.
+
+ ❌ Heavy Reliance on Tooling: This approach is only viable with mature tools like IDE extensions that display source text inline and a robust TMS that provides all context to translators.
+
+ Ultimately, Structured (Semantic) keys represent the most balanced approach. They place a manageable burden on the developer during initial implementation to reduce systemic friction and cost for all stakeholders over the long term.
+
+ The Great Debate: To Reuse or Not to Reuse? 🤔 
+
+ Developers are trained on the “Don’t Repeat Yourself” (DRY) principle, so creating a common.save
+ key seems efficient. However, this is a dangerous trap.
+
+ “Creating new messages is cheaper than trying to manage shared messages.”
+
+ The flaw is that textual identity is not semantic identity . While two strings may be identical in English, their correct translations can vary dramatically depending on context. The unbreakable rule is to adopt the linguist’s perspective: the fundamental unit of translation is the message in context .
+
+ Dangers of Reuse: 
+
+ Grammatical Context: “Read” (present-tense verb) and “Read” (past-tense status) require different translations. A single key forces them to be the same.
+
+ Domain Context: “Cancel” for a subscription is a significant action; “Cancel” for a dialog box is trivial. The translation should reflect this.
+
+ Future Divergence: Two “Back” buttons might be identical today, but next month a PM may want one of them to say “Previous Step.” Changing the shared key breaks the other instance.
+
+ Try to use this default policy: never reuse keys . Each string instance in the UI should have its own unique key. An approach that creates distinct keys like userProfile.buttons.save
+ and documentEditor.buttons.save
+ is vastly superior because they are free to evolve independently.
+
+ Building for Scale: Namespaces and Performance 
+
+ As an application grows, a flat list of keys collapses into chaos. A structured system is essential for scale and performance.
+
+ Namespacing: Partition keys into logical groups. The most robust strategy is to namespace by feature or domain ( checkout
+, adminDashboard
+). This aligns your i18n structure with your application architecture and is resilient to UI refactoring.
+
+ Nesting: Use a dot ( .
+) separator to create a hierarchy within namespaces. A nesting depth of 2–3 levels ( checkout.paymentForm.submitButton
+) provides the best balance of organization and simplicity.
+
+ Code-Splitting: A key benefit of namespacing is performance. Instead of loading one giant translation file, modern libraries like i18next
+ can load namespaces on demand. When a user navigates to the checkout page, you only fetch the checkout
+ translations, dramatically improving your app’s initial load time.
+
+ Beyond Plain Text: Mastering Complex Content 
+
+ Modern UIs are dynamic. Simply concatenating strings is the cardinal sin of i18n: it hardcodes English grammar into your app and is guaranteed to fail in other languages.
+
+ ICU Message Format 
+
+ The industry standard is the ICU (International Components for Unicode) Message Format , which embeds logic directly into your translation string.
+
+ Pluralization: Handle complex plural rules for different languages with a single key.
+
+ Copy { 
+ "notifications.unread" : "{count, plural, =0 {You have no new messages.} one {You have one new message.} other {You have # new messages.}}" , 
+ "user.activity.likedPost" : "{gender, select, female {She liked your post.} male {He liked your post.} other {They liked your post.}}" 
+ } 
+
+ But seems the simpler i18next format is preferred by most developers and offers interpolation , context , nesting , formatting , pluralization and much more...
+
+ Rich Text and HTML 
+
+ Never embed raw HTML in translations and render it with dangerouslySetInnerHTML
+. This is a major security risk. The correct solution is component interpolation .
+
+ Libraries like react-i18next
+ use a <Trans>
+ component that lets you safely mix 
+
+======================================================================
+FILE: localeplanet_es_pe.html
+======================================================================
+ICU Locale “Spanish (Peru)” (es_PE) 
+
+ LocalePlanet 
+
+ What we've got here is failure to communicate 
+
+ Home 
+
+ API 
+
+ Data 
+
+ Support 
+
+ ICU Locale “Spanish (Peru)” (es_PE)
+
+ General Information
+
+ Property
+
+ Value
+
+ Base locale ID
+
+ es_PE
+
+ Language
+
+ es 
+
+ Country
+
+ PE 
+
+ Display name
+
+ Spanish (Peru)
+
+ Display name with dialect
+
+ Spanish (Peru)
+
+ Character orientation
+
+ left-to-right
+
+ Line orientation
+
+ top-to-bottom
+
+ ISO 639-2/T language code
+
+ spa
+
+ Java Locale
+
+ es-PE 
+
+ Other data sources
+
+ compare 
+
+ Numbers
+
+ Property
+
+ Value
+
+ Currency symbol
+
+ S/
+
+ Decimal separator
+
+ .
+
+ Digit
+
+ #
+
+ Exponent separator
+
+ E
+
+ Grouping separator
+
+ ,
+
+ Infinity
+
+ ∞
+
+ International currency symbol
+
+ PEN
+
+ Minus sign
+
+ -
+
+ Monetary decimal separator
+
+ .
+
+ NaN
+
+ NaN
+
+ Pad escape
+
+ *
+
+ Pattern Separator
+
+ ;
+
+ Percent
+
+ %
+
+ Per mill
+
+ ‰
+
+ Plus sign
+
+ +
+
+ Significant digit
+
+ @
+
+ Zero digit
+
+ 0
+
+ Dates
+
+ Property
+
+ Value(s)
+
+ AM/PM Strings
+
+ a. m., p. m. 
+
+ Eras
+
+ a. C., d. C. 
+
+ Era names
+
+ antes de Cristo, después de Cristo 
+
+ Months
+
+ enero, febrero, marzo, abril, mayo, junio, julio, agosto, setiembre, octubre, noviembre, diciembre 
+
+ Short months
+
+ ene., feb., mar., abr., may., jun., jul., ago., set., oct., nov., dic. 
+
+ Short weekdays
+
+ dom., lun., mar., mié., jue., vie., sáb. 
+
+ Weekdays
+
+ domingo, lunes, martes, miércoles, jueves, viernes, sábado 
+
+ Format
+
+ Pattern
+
+ Date.3
+
+ Example: 14/07/26
+Pattern: d/MM/yy
+Local Pattern: d/MM/yy
+
+ Date.2
+
+ Example: 14 jul. 2026
+Pattern: d MMM y
+Local Pattern: d MMM y
+
+ Date.1
+
+ Example: 14 de julio de 2026
+Pattern: d 'de' MMMM 'de' y
+Local Pattern: d 'de' MMMM 'de' y
+
+ Date.0
+
+ Example: martes, 14 de julio de 2026
+Pattern: EEEE, d 'de' MMMM 'de' y
+Local Pattern: EEEE, d 'de' MMMM 'de' y
+
+ Also see the list of time zones .
+
+ Related ICU Locales
+
+ Parent: Spanish ( es )
+
+ Feedback |
+ Validate: HTML5 |
+ CSS
+

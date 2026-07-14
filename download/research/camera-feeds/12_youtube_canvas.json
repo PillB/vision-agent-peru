@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/50276077/youtube-api-and-cross-origin-requests",
+    "name": "YouTube API and cross origin requests - Stack Overflow",
+    "snippet": "Has YouTube started locking down cross origin requests? Blocked a frame from accessing a cross-origin frame 4 Using Youtube iframe api in cross ... Using Youtube iframe api in cross origin isolated site Youtube Player Api Get Screenshot - javascript More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developers.google.com/youtube/iframe_api_reference",
+    "name": "YouTube Player API Reference for iframe Embeds - Google for Developers",
+    "snippet": "The IFrame player API lets you embed a YouTube video player on your website and control the player using JavaScript.",
+    "host_name": "developers.google.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=x5ziTvS-qMg",
+    "name": "YouTube IFrame API with JavaScript – Part 4: Player Initialization & Control",
+    "snippet": "... Cross-Origin Security Best Practices Console Debugging Techniques Suggested Video: https://youtu.be/_MbtC7q4z-0 YouTube IFrame API State ...",
+    "host_name": "www.youtube.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://issuetracker.google.com/issues/240387105",
+    "name": "240387105 - Issue Tracker - Google",
+    "snippet": "youtube iframe response requires both: Cross-Origin-Resource-Policy \"cross-origin\" Cross-Origin-Embedder-Policy \"require-corp\" # or ...",
+    "host_name": "issuetracker.google.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=4Sdxpry5pp4",
+    "name": "Custom YouTube Player Part 2 – IFrame API + HTML Integration (2025 Tutorial)",
+    "snippet": "Video Title: Custom YouTube Player Part 2 – IFrame API + HTML Integration (2025 Tutorial) Build the HTML foundation for a custom YouTube ...",
+    "host_name": "www.youtube.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discourse.webflow.com/t/youtube-player-api-issue-with-default-video-embed-embedly-cors/157812",
+    "name": "Youtube player API issue with default video embed (embedly, CORS?) - Forum | Webflow",
+    "snippet": "I'm trying to capture events from a youtube video eg to record if a user clicked play or how much they played etc Normally this can be done with an existing ...\nI'm trying to capture events from a youtube video eg to record if a user clicked play or how much they played etc. Normally this can be done ...",
+    "host_name": "discourse.webflow.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://support.google.com/youtube/thread/281427131/youtube-embed-video-works-only-in-some-cases?hl=en",
+    "name": "YouTube embed video works only in some cases - Google Help",
+    "snippet": "The Google Search Console says that some videos are not considered for indexing because the videos do not appear in the viewport.",
+    "host_name": "support.google.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/nwjs/nw.js/issues/2856",
+    "name": "Iframe youtube api · Issue #2856 · nwjs/nw.js - GitHub",
+    "snippet": "I'm trying to have some youtube iframe in my app. This is the error I get with some videos: This video contains content from . It is restricted from playback ...",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.experts-exchange.com/questions/29182025/Access-Control-Allow-Origin-not-working-for-iframe-youtube-embed-video.html",
+    "name": "Solved: Access-Control-Allow-Origin not working for iframe youtube embed video",
+    "snippet": "Find answers to Access-Control-Allow-Origin not working for iframe youtube embed video from the expert community at Experts Exchange.",
+    "host_name": "www.experts-exchange.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/learnjavascript/comments/23pns2/help_with_youtube_api_custom_video_player",
+    "name": "Help with YouTube API / custom video player / cross-browser issues : r/learnjavascript",
+    "snippet": "[Error] Blocked a frame with origin \"http://www.youtube.com\" from accessing a frame with origin \"http://resistorsings.com\". Protocols ...\nI went back to the YouTube iFrame API and changed the way I was building the player, using a <div> tag in my HTML and supplying options in the ...",
+    "host_name": "www.reddit.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

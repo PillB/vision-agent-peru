@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://community.home-assistant.io/t/integrate-a-webcam-public-https-stream-online-with-a-specif-url-as-a-generic-camera-or-mpeg-camera/426989",
+    "name": "Integrate a webcam (public https stream online with a specif url) as a",
+    "snippet": "Go to integrations and add a generic camera integration, you add the URL to the stream source URL not the still image URL. Change the RTSP transport protocol.",
+    "host_name": "community.home-assistant.io",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discourse.weather-watch.com/t/help-insert-to-the-pwsdashboard-m3u8-video-stream-from-webcam/70986",
+    "name": "Help insert to the pwsdashboard m3u8 video stream from webcam",
+    "snippet": "The webcam video stream links are in the attached file. The link to your movie goes in there. Put it on the line iframe source=. I inserted the ...",
+    "host_name": "discourse.weather-watch.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.getchannels.com/t/new-project-webcam-resolver/37348",
+    "name": "New Project: Webcam Resolver - Custom Channels",
+    "snippet": "Fetch m3u8 URLs for hosted webcams. the point of this project is for providing m3u8 URLs for hosted web cams of a select few providers. Please open a new ... Is it possible to add a webcam stream? - Channels Community Is it possible to add a webcam stream? - Custom Channels More results from community.getchannels.com",
+    "host_name": "community.getchannels.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/maddox/webcam-resolver",
+    "name": "maddox/webcam-resolver: Fetch m3u8 URLs for hosted  - GitHub",
+    "snippet": "Webcam Resolver is a tool that will return the true streaming URLs of publicly hosted webcams hosted by providers that cycle their URLs.",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://worldcam.eu",
+    "name": "WorldCam: Webcams from around the World",
+    "snippet": "WorldCam features an extensive network of live webcams from around the World. Portal offers a map and the search engine for internet cameras.",
+    "host_name": "worldcam.eu",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=Uhor4rPNMBs",
+    "name": "How to Livestream Outdoor Webcam to YouTube | 5x Optical Zoom",
+    "snippet": "How to setup/livestream an outdoor webcam to YouTube and embed into a website. What you'll need: Camera (used in video, 4K and 5x optical ...",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/33803331/let-users-link-webcams-in-website-to-stream",
+    "name": "Let users link webcams in website to stream - Stack Overflow",
+    "snippet": "I want to link two or more webcams in a webpage and be able to watch it as a spectator. (Without having to much serverload, if possible)",
+    "host_name": "stackoverflow.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://help.verkada.com/verkada-cameras/video-streaming-and-sharing/embed-a-cameras-live-stream-on-a-website",
+    "name": "Embed a Camera's Live Stream on a Website - Verkada Help",
+    "snippet": "Verkada cameras let you embed a live stream of a camera on your website. The embed is an inline frame (iframe) code snippet that is compatible ...",
+    "host_name": "help.verkada.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://worldcam.live/en/map",
+    "name": "Webcams map - WorldCam.Live",
+    "snippet": "The website allows you to stream live from IP cameras to the Internet, and optionally creating time-lapse videos, maintaining statistics, password protection, ...",
+    "host_name": "worldcam.live",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api.windy.com/webcams/docs",
+    "name": "Documentation - Webcams - Windy API",
+    "snippet": "The Webcams API provides access to the largest repository of webcams worldwide. Filter webcams based on criteria such as country, category, location, and more.",
+    "host_name": "api.windy.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

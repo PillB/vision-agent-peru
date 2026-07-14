@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://simplelocalize.io/blog/posts/what-is-icu",
+    "name": "ICU message format: Guide to plurals, dates & localization",
+    "snippet": "Yes. ICU's select syntax lets you choose message variations based on gender, role, or any other fixed set of values.\nSee full list on simplelocalize.io",
+    "host_name": "simplelocalize.io",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://lokalise.com/blog/complete-guide-to-icu-message-format",
+    "name": "Guide to ICU message format & syntax with examples",
+    "snippet": "This article gives a complete guide on how to use ICU message format which is widely used in many i18n libraries.",
+    "host_name": "lokalise.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://groups.google.com/g/okapi-devel/c/OJwHnGbdTrE",
+    "name": "ICU Message Format and Plurals",
+    "snippet": "The aim of these step is to recognize ICU message patterns and transform them in a form that allows translators to edit them in our MateCat CAT tool without ...",
+    "host_name": "groups.google.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://crowdin.com/blog/icu-guide",
+    "name": "ICU Message Format Guide: Syntax, Plurals & Real-World",
+    "snippet": "The most complete ICU Message Format guide for developers. Covers plurals, select, number skeletons, nested arguments, escape sequences, ...\nThe most complete ICU Message Format guide for developers. Covers plurals, select, number skeletons, nested arguments, escape sequences, and framework setups for React, Vue, Angular, and Symfony — with production-ready code examples.",
+    "host_name": "crowdin.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://lingoport.com/blog/mastering-icu-message-formats-best-practices-and-pitfalls-to-avoid",
+    "name": "ICU Message Formats: Best Practices and Pitfalls to Avoid",
+    "snippet": "The ICU message format offers several use cases, Pluralization Gender- localization (l10n). By keeping i18n on the development side and ...",
+    "host_name": "lingoport.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/gboquizosanchez/icu-i18n",
+    "name": "gboquizosanchez/icu-i18n: Advanced i18n for Laravel",
+    "snippet": "ICU MessageFormat Support: Use standard syntax like {count, plural, ...} or {gender, select, ...} directly in your translation files. Smart Regional Fallback: ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://phrase.com/blog/posts/guide-to-the-icu-message-format",
+    "name": "A Practical Guide to the ICU Message Format",
+    "snippet": "From text expansion to pluralization, this guide explores key i18n pitfalls and best practices for modern web developers.",
+    "host_name": "phrase.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/75028034/incorrect-translations-when-implementing-pluralization-in-icu-message-format-i",
+    "name": "Incorrect translations when implementing pluralization in",
+    "snippet": "It seems like using pluralization in ICU message format is not dependable when combined with static text. by ordinal number, gender, or both",
+    "host_name": "stackoverflow.com",
+    "rank": 7,
+    "date": "Jul 15, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://intlpull.com/glossary/icu-message-format",
+    "name": "ICU Message Format - Definition & Examples | IntlPull Glossary",
+    "snippet": "ICU Message Format. A standard syntax for handling plurals, gender, and complex formatting in translations. Definition. ICU (International Components for ...",
+    "host_name": "intlpull.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://icusyntax.com/guides/icu-messageformat-guide",
+    "name": "ICU MessageFormat guide: syntax, plural, select, and examples",
+    "snippet": "Complete ICU MessageFormat guide for developers: placeholders, plural/select/selectordinal syntax, nesting patterns, and best practices for i18n and localization.",
+    "host_name": "icusyntax.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.earthcam.com",
+    "name": "EarthCam - Webcam Network",
+    "snippet": "EarthCam is the leading network of live streaming webcams for tourism and entertainment around the world with 4K streaming technology.",
+    "host_name": "www.earthcam.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.getchannels.com/t/new-project-webcam-resolver/37348",
+    "name": "New Project: Webcam Resolver - Custom Channels",
+    "snippet": "Webcam Resolver will fetch the real URLs for you and redirect to that URL, Fetch m3u8 URLs for hosted webcams. Inspecting it gives this as the m3u8 … e1-na8. ...",
+    "host_name": "community.getchannels.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.earthcam.com/network",
+    "name": "EarthCam Network",
+    "snippet": "The EarthCam Network offers scenic views, city skylines, sunsets and sunrises, and popular tourist destinations located throughout the world.",
+    "host_name": "www.earthcam.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/earthcam",
+    "name": "EarthCam - YouTube",
+    "snippet": "EarthCam is a leading provider of advanced AI solutions for construction monitoring and documentation, and hosts a network of live streaming cameras.",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.earthcam.com/usa/louisiana/neworleans/bourbonstreet",
+    "name": "EarthCam “New Orleans Bourbon Street”",
+    "snippet": "Live webcam view of New Orleans - a must-watch during Mardi Gras and fascinating year-round. Experience the energy of New Orleans live on Bourbon Street.",
+    "host_name": "www.earthcam.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://play.google.com/store/apps/details?id=com.earthcam.webcams&hl=en_US",
+    "name": "Webcams - Apps on Google Play",
+    "snippet": "Free · Android With EarthCam's Webcams app, you can travel the globe, via our unique network of live HD streaming video and megapixel snapshot cameras.",
+    "host_name": "play.google.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.earthcam.com/usa/newyork/statueofliberty",
+    "name": "Statue of Liberty Cams - EathCam",
+    "snippet": "Take in the sights from the Statue of Liberty, including unique, one-of-a-kind perspectives of the torch, crown, face and tablet, and Ellis Island.",
+    "host_name": "www.earthcam.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.earthcam.net/about-us",
+    "name": "About EarthCam | Global Leader in Webcam Technology & Services",
+    "snippet": "EarthCam delivers live video, time-lapse, 360° reality capture and aerial imagery with exceptional quality and reliability. +1 (800) 327-8422",
+    "host_name": "www.earthcam.net",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.home-assistant.io/t/integrate-a-webcam-public-https-stream-online-with-a-specif-url-as-a-generic-camera-or-mpeg-camera/426989",
+    "name": "Integrate a webcam (public https stream online with a specif url) as a",
+    "snippet": "Go to integrations and add a generic camera integration, you add the URL to the stream source URL not the still image URL. Change the RTSP transport protocol.",
+    "host_name": "community.home-assistant.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/streamlink/streamlink/issues/2856",
+    "name": "Earthcam plugin · Issue #2856 · streamlink/streamlink - GitHub",
+    "snippet": "I developed a project based on earthcam webcam, but today I found that there is an 403 error when I run the project. The url can normally open.",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

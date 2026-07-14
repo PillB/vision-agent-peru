@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/57984894/how-to-resolve-tainted-canvas-for-frame-grab-of-remote-video-on-cordova-android",
+    "name": "How to Resolve Tainted Canvas for Frame Grab of Remote",
+    "snippet": "At issue is, a CORS violation which results in a Tainted Canvas when attempting to execute toDataURL on a canvas element.",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "Jul 15, 2020",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/crossorigin",
+    "name": "crossorigin HTML attribute - MDN Web Docs",
+    "snippet": "The crossorigin content attribute on media elements is a CORS settings attribute. These attributes are enumerated, and have the following ...\nThe crossorigin content attribute on media elements is a CORS settings attribute. These attributes are enumerated, and have the following ...",
+    "host_name": "developer.mozilla.org",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://observablehq.com/@severo/trying-to-understand-cors-for-videos",
+    "name": "Trying to understand CORS for videos / Sylvain Lesage",
+    "snippet": "The <video> HTML element can play a video file served from another origin, The cross-origin resource is said to be embedded and cannot be read in JavaScript. ...\nThe  HTML element can play a video file served from another origin, The cross-origin resource is said to be embedded and cannot be read in JavaScript. painted ...",
+    "host_name": "observablehq.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.dofactory.com/html/video/crossorigin",
+    "name": "HTML <video> crossorigin Attribute",
+    "snippet": "In HTML, the crossorigin attribute on n tag specifies that CORS is supported when loading video files from a third party server or domain.",
+    "host_name": "www.dofactory.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discussions.apple.com/thread/5959971",
+    "name": "Support for cross-origin videos in canvas - Safari 7?",
+    "snippet": "The video tag has the crossOrigin=\"anonymous\" attribute set. The application works fine in Chrome and Firefox without errors. When I call ...\nI've built a javascript application which lets you take a snapshot of a video. The video tag has the crossOrigin=\"anonymous\" attribute set. ...",
+    "host_name": "discussions.apple.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/video-dev/hls.js",
+    "name": "video-dev/hls.js: HLS.js is a JavaScript library that plays",
+    "snippet": "HLS.js is a JavaScript library that implements an HTTP Live Streaming client. It relies on HTML5 video and MediaSource Extensions for playback.",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.experts-exchange.com/questions/28122803/javascript-capture-video-frame-and-save-to-a-file-in-the-server.html",
+    "name": "javascript capture video frame and save to a file in the server",
+    "snippet": "I need to capture a frame of a video and save it as a file in a folder on the server. This example explains how to capture the video frame.",
+    "host_name": "www.experts-exchange.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=_2SvAepbCSg",
+    "name": "Canvas - Video Frame Grabs and Image Uploads - Episode 7",
+    "snippet": "This Canvas tutorial covers quite a few topics. Included is how to do frame grabs from a video, how to convert those frames into binary images ...",
+    "host_name": "www.youtube.com",
+    "rank": 7,
+    "date": "Jul 16, 2019",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.geeksforgeeks.org/html/how-to-allow-cross-origin-use-of-images-and-canvas",
+    "name": "How to allow cross-origin use of images and canvas ?",
+    "snippet": "In this article, we will see how to allow the use of the cross-origin for images and canvas, ie, utilizing the images and canvas from the foreign website.",
+    "host_name": "www.geeksforgeeks.org",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/35244215/html5-video-screenshot-via-canvas-using-cors",
+    "name": "HTML5 video screenshot via canvas using CORS - Stack Overflow",
+    "snippet": "I have: Added crossOrigin=\"anonymous\" to the video element, but this just makes the video fail to load altogether; Tried even the same ... HTML5 video doesn't play with crossOrigin=\"anonymous\" How to set crossOrigin anonymous - javascript - Stack Overflow More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

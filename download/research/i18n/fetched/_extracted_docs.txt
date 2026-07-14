@@ -1,0 +1,1377 @@
+======================================================================
+FILE: next_intl_configuration.html
+======================================================================
+Request configuration – Internationalization (i18n) for Next.js Skip to content 
+
+ Search 
+ Getting started App Router 
+ Pages Router 
+
+ Usage guide Translations 
+ Numbers 
+ Dates and times 
+ Lists 
+ Display names 
+ Request configuration 
+ useExtracted 
+ Next.js plugin 
+
+ Routing Setup 
+ Configuration 
+ Proxy / middleware 
+ Navigation 
+
+ Environments Server & Client Components 
+ Server Actions, Metadata & Route Handlers 
+ Error files (e.g. not-found) 
+ Testing 
+ Core library 
+ Runtime requirements 
+
+ Workflows & integrations TypeScript augmentation 
+ Localization management with Crowdin 
+ VSCode integration 
+ Storybook 
+ Validating messages 
+
+ Design principles 
+
+ Presented by
+ Crowdin logo Light 
+
+ Docs Usage guide Request configuration 
+ Request configuration
+
+ Configuration properties that you use across your Next.js app can be set per request.
+
+ Server & Client Components 
+
+ Depending on if you handle internationalization in Server- or Client Components , the configuration from i18n/request.ts
+ or NextIntlClientProvider
+ will be applied respectively.
+
+ i18n/request.ts
+ & getRequestConfig
+
+ i18n/request.ts
+ can be used to provide configuration for server-only code, i.e. Server Components, Server Actions & friends. The configuration is provided via the getRequestConfig
+ function and provides a requestLocale
+ parameter in case you’re using locale-based routing .
+
+ i18n/request.ts 
+ import {getRequestConfig} from ' next-intl/server ' ; 
+ import {routing} from ' @/i18n/routing ' ; 
+
+ export default getRequestConfig ( async ( { requestLocale } ) => { 
+ // ... 
+
+ return { 
+ locale , 
+ messages 
+ // ... 
+ }; 
+ }); 
+
+ The configuration object is created once for each request by internally using React’s cache
+ . The first component to use internationalization will call the function defined with getRequestConfig
+.
+
+ Since this function is executed during the Server Components render pass, you can call functions like cookies()
+ and headers()
+ to return configuration that is request-specific.
+
+ NextIntlClientProvider
+
+ NextIntlClientProvider
+ can be used to provide configuration for Client Components .
+
+ layout.tsx 
+ import { NextIntlClientProvider } from ' next-intl ' ; 
+ import {getMessages} from ' next-intl/server ' ; 
+
+ export default async function RootLayout ( /* ... */ ) { 
+ // ... 
+
+ return ( 
+ < html lang = { locale } > 
+ < body > 
+ < NextIntlClientProvider > ... </ NextIntlClientProvider > 
+ </ body > 
+ </ html > 
+ ); 
+ } 
+
+ These props are inherited if you’re rendering NextIntlClientProvider
+ from a Server Component:
+
+ locale
+
+ messages
+
+ now
+
+ timeZone
+
+ formats
+
+ If you don’t want to inherit some of these props, e.g. because you’re selective about how you use internationalization in Server & Client Components , you can opt-out:
+
+ layout.tsx 
+ < NextIntlClientProvider 
+ // Don't pass any messages to the client 
+ messages = { null } 
+ // ... 
+ > 
+ ... 
+ </ NextIntlClientProvider > 
+
+ Additionally, nested instances of NextIntlClientProvider
+ will inherit configuration from their respective ancestors. Note however that individual props are treated as atomic, therefore e.g. messages
+ need to be merged manually—if necessary.
+
+ In contrast, these props are not inherited:
+
+ onError
+
+ getMessageFallback
+
+ How can I provide non-serializable props like onError
+ to NextIntlClientProvider
+? React limits the types of props that can be passed to Client Components to the ones that are serializable . Since onError
+ and getMessageFallback
+ can receive functions, these configuration options can’t be automatically inherited by the client side.
+ In order to define these values on the client side, you can add a provider that defines these props:
+ IntlErrorHandlingProvider.tsx 
+ ' use client ' ; 
+
+ import {NextIntlClientProvider} from ' next-intl ' ; 
+
+ export default function IntlErrorHandlingProvider ( { children } ) { 
+ return ( 
+ < NextIntlClientProvider 
+ onError = { ( error ) => console . error (error) } 
+ getMessageFallback = { ( { namespace , key } ) => ` ${ namespace } . ${ key } ` } 
+ > 
+ { children } 
+ </ NextIntlClientProvider > 
+ ); 
+ } 
+
+ Once you have defined your client-side provider component, you can use it in a Server Component:
+ layout.tsx 
+ import {NextIntlClientProvider} from ' next-intl ' ; 
+ import {getLocale} from ' next-intl/server ' ; 
+ import IntlErrorHandlingProvider from ' ./IntlErrorHandlingProvider ' ; 
+
+ export default async function RootLayout ( { children } ) { 
+ const locale = await getLocale (); 
+
+ return ( 
+ < html lang = { locale } > 
+ < body > 
+ < NextIntlClientProvider > 
+ < IntlErrorHandlingProvider > { children } </ IntlErrorHandlingProvider > 
+ </ NextIntlClientProvider > 
+ </ body > 
+ </ html > 
+ ); 
+ } 
+
+ By doing this, your provider component will already be part of the client-side bundle and can therefore define and pass functions as props.
+ Note that the inner NextIntlClientProvider
+ inherits the configuration from the outer one, only the onError
+ and getMessageFallback
+ functions are added.
+
+ Locale 
+
+ The locale
+ represents an identifier that contains the language and formatting preferences of users, optionally including regional information (e.g. en-US
+). Locales are specified as IETF BCP 47 language tags .
+
+ i18n/request.ts Provider 
+ Depending on if you’re using locale-based routing , you can read the locale from the requestLocale
+ parameter or provide a value on your own:
+ With locale-based routing: 
+ i18n/request.ts 
+ export default getRequestConfig ( async ( { requestLocale } ) => { 
+ // Typically corresponds to the `[locale]` segment 
+ const requested = await requestLocale ; 
+ const locale = hasLocale ( routing . locales , requested ) 
+ ? requested 
+ : routing . defaultLocale ; 
+
+ return { 
+ locale 
+ // ... 
+ }; 
+ }); 
+
+ Without locale-based routing: 
+ i18n/request.ts 
+ export default getRequestConfig ( async () => { 
+ // Provide a static locale, fetch a user setting, 
+ // read from `cookies()`, `headers()`, etc. 
+ const locale = ' en ' ; 
+
+ return { 
+ locale 
+ // ... 
+ }; 
+ }); 
+
+ Which values can the requestLocale
+ parameter hold? While the requestLocale
+ parameter typically corresponds to the [locale]
+ segment that was matched by the middleware, there are three special cases to consider:
+
+ Overrides : When an explicit locale
+ is passed to awaitable functions like getTranslations({locale: 'en'})
+, then this value will be used instead of the segment.
+
+ undefined
+ : The value can be undefined
+ when a page outside of the [locale]
+ segment renders (e.g. a language selection page at app/page.tsx
+).
+
+ Invalid values : Since the [locale]
+ segment effectively acts like a catch-all for unknown routes (e.g. /unknown.txt
+), invalid values should be replaced with a valid locale. In addition to this, you might want to call notFound()
+ in the root layout to abort the render in this case.
+
+ < NextIntlClientProvider locale = " en " > ... </ NextIntlClientProvider > 
+
+ How can I change the locale? Depending on if you’re using locale-based routing , the locale can be changed as follows:
+
+ With locale-based routing : The locale is managed by the router and can be changed by using navigation APIs from next-intl
+ like Link
+ or useRouter
+ .
+
+ Without locale-based routing : You can change the locale by updating the value where the locale is read from (e.g. a cookie, a user setting, etc.).
+
+ Learn more:
+ Locale switcher 
+
+ useLocale
+ & getLocale
+
+ The current locale of your app is automatically incorporated into hooks like useTranslations
+ & useFormatter
+ and will affect the rendered output.
+
+ In case you need to use this value in other places of your app, e.g. to implement a locale switcher or to pass it to API calls, you can read it via useLocale
+ or getLocale
+:
+
+ // Regular components 
+ import {useLocale} from ' next-intl ' ; 
+ const locale = useLocale (); 
+
+ // Async Server Components 
+ import {getLocale} from ' next-intl/server ' ; 
+ const locale = await getLocale (); 
+
+ Which value is returned from useLocale
+? Depending on how a component renders, the returned locale corresponds to:
+
+ Server Components : The locale represents the value returned in i18n/request.ts
+ .
+
+ Client Components : The locale is received from NextIntlClientProvider
+ .
+
+ Note that NextIntlClientProvider
+ automatically inherits the locale if it is rendered by a Server Component, therefore you rarely need to pass a locale to NextIntlClientProvider
+ yourself.
+
+ I’m using the Pages Router, how can I access the locale? If you use internationalized routing with the Pages Router , you can receive the locale from the router in order to pass it to NextIntlClientProvider
+:
+ _app.tsx 
+ import {useRouter} from ' next/router ' ; 
+
+ // ... 
+
+ const router = useRouter (); 
+
+ return ( 
+ < NextIntlClientProvider locale = { router . locale } > 
+ ... 
+ </ NextIntlClientProvider > ; 
+ ); 
+
+ Locale
+ type 
+
+ When passing a locale
+ to another function, you can use the Locale
+ type for the receiving parameter:
+
+ import {Locale} from ' next-intl ' ; 
+
+ async function getPosts ( locale : Locale ) { 
+ // ... 
+ } 
+
+ This can be helpful when integrating with backend services or a CMS:
+
+ Backend content 
+
+ 💡
+ By default, Locale
+ is typed as string
+. However, you can optionally provide
+a strict union based on your supported locales for this type by augmenting
+the Locale
+ type .
+
+ Messages 
+
+ The most crucial aspect of internationalization is providing labels based on the user’s language. The recommended workflow is to store your messages in your repository along with the code.
+
+ ├── messages 
+ │ ├── en.json 
+ │ ├── de-AT.json 
+ │ └── ... 
+ ... 
+
+ Colocating your messages with app code is beneficial because it allows developers to make changes quickly and additionally, you can use the shape of your local messages for type checking .
+
+ If your team ships frequently, you can consider automating the translation process:
+
+ AI translations with Crowdin 
+
+ That being said, next-intl
+ is agnostic to how you store messages and allows you to freely define an async function that fetches them while your app renders:
+
+ i18n/request.ts Provider 
+ i18n/request.ts 
+ import {getRequestConfig} from ' next-intl/server ' ; 
+
+ export default getRequestConfig ( async () => { 
+ return { 
+ messages : ( await import ( ` ../../messages/ ${ locale } .json ` )) . default 
+ // ... 
+ }; 
+ }); 
+
+ After messages are configured, they can be used via useTranslations
+ .
+ Since getRequestConfig
+ can execute arbitrary code, you can also:
+
+ Share messages across multiple locales
+
+ Merge messages from another locale as fallbacks
+
+ Load messages from a remote source
+
+ Learn more: 
+ Providing messages 
+ How can I split my messages into multiple files? Since messages can be freely defined and loaded, you can split them into multiple files and merge them later at runtime if you prefer:
+ const messages = { 
+ ... ( await import ( ` ../../messages/ ${ locale } /login.json ` )) . default , 
+ ... ( await import ( ` ../../messages/ ${ locale } /dashboard.json ` )) . default 
+ } ; 
+
+ Note that the VSCode integration for next-intl
+ can help you manage messages within a single, large file. If you’re splitting messages purely for organizational reasons, you might want to consider using this instead.
+
+ useMessages
+ & getMessages
+
+ In case you require access to messages in a component, you can read them via useMessages()
+ or getMessages()
+ from your configuration:
+ // Regular components 
+ import {useMessages} from ' next-intl ' ; 
+ const messages = useMessages (); 
+
+ // Async Server Components 
+ import {getMessages} from ' next-intl/server ' ; 
+ const messages = await getMessages (); 
+
+ import {NextIntlClientProvider} from ' next-intl ' ; 
+ import {getMessages} from ' next-intl/server ' ; 
+ import pick from ' lodash/pick ' ; 
+
+ async function Component ( { children } ) { 
+ // Read messages configured via `i18n/request.ts` 
+ const messages = await getMessages (); 
+
+ return ( 
+ < NextIntlClientProvider messages = { pick (messages , [ ' Navigation ' ]) } > 
+ ... 
+
+======================================================================
+FILE: next_intl_server_client.html
+======================================================================
+Internationalization of Server & Client Components – Internationalization (i18n) for Next.js Skip to content 
+
+ Search 
+ Getting started App Router 
+ Pages Router 
+
+ Usage guide Translations 
+ Numbers 
+ Dates and times 
+ Lists 
+ Display names 
+ Request configuration 
+ useExtracted 
+ Next.js plugin 
+
+ Routing Setup 
+ Configuration 
+ Proxy / middleware 
+ Navigation 
+
+ Environments Server & Client Components 
+ Server Actions, Metadata & Route Handlers 
+ Error files (e.g. not-found) 
+ Testing 
+ Core library 
+ Runtime requirements 
+
+ Workflows & integrations TypeScript augmentation 
+ Localization management with Crowdin 
+ VSCode integration 
+ Storybook 
+ Validating messages 
+
+ Design principles 
+
+ Presented by
+ Crowdin logo Light 
+
+ Docs Environments Server & Client Components 
+ Internationalization of Server & Client Components
+
+ React Server Components allow you to implement components that remain server-side only if they don’t require React’s interactive features, such as useState
+ and useEffect
+.
+
+ This applies to handling internationalization too.
+
+ page.tsx 
+ import {useTranslations} from ' next-intl ' ; 
+
+ // Since this component doesn't use any interactive features 
+ // from React, it can be run as a Server Component. 
+
+ export default function HomePage () { 
+ const t = useTranslations ( ' HomePage ' ); 
+ return < h1 > { t ( ' title ' ) } </ h1 > ; 
+ } 
+
+ Moving internationalization to the server side unlocks new levels of performance, leaving the client side for interactive features.
+
+ Benefits of server-side internationalization: 
+
+ Your messages never leave the server and don’t need to be passed to the client side
+
+ Library code for internationalization doesn’t need to be loaded on the client side
+
+ No need to split your messages, e.g. based on routes or components
+
+ No runtime cost on the client side
+
+ Using internationalization in Server Components 
+
+ Server Components can be declared in two ways:
+
+ Async components
+
+ Non-async, regular components
+
+ In a typical app, you’ll likely find both types of components. next-intl
+ provides corresponding APIs that work for the given component type.
+
+ Async components 
+
+ These are primarily concerned with fetching data and cannot use hooks . Due to this, next-intl
+ provides a set of awaitable versions of the functions that you usually call as hooks from within components.
+
+ page.tsx 
+ import {getTranslations} from ' next-intl/server ' ; 
+
+ export default async function ProfilePage () { 
+ const user = await fetchUser (); 
+ const t = await getTranslations ( ' ProfilePage ' ); 
+
+ return ( 
+ < PageLayout title = { t ( ' title ' , {username : user . name } ) } > 
+ < UserDetails user = { user } /> 
+ </ PageLayout > 
+ ); 
+ } 
+
+ These functions are available:
+
+ getTranslations
+
+ getFormatter
+
+ getNow
+
+ getTimeZone
+
+ getMessages
+
+ getLocale
+
+ Non-async components 
+
+ Components that aren’t declared with the async
+ keyword and don’t use interactive features like useState
+, are referred to as shared components . These can render either as a Server or Client Component, depending on where they are imported from.
+
+ In Next.js, Server Components are the default, and therefore shared components will typically execute as Server Components:
+
+ UserDetails.tsx 
+ import {useTranslations} from ' next-intl ' ; 
+
+ export default function UserDetails ( { user } ) { 
+ const t = useTranslations ( ' UserProfile ' ); 
+
+ // This component will execute as a Server Component by default. 
+ // However, if it is imported from a Client Component, it will 
+ // execute as a Client Component. 
+ return ( 
+ < section > 
+ < h2 > { t ( ' title ' ) } </ h2 > 
+ < p > { t ( ' followers ' , {count : user . numFollowers }) } </ p > 
+ </ section > 
+ ); 
+ } 
+
+ If you import useTranslations
+, useFormatter
+, useLocale
+, useNow
+ and useTimeZone
+ from a shared component, next-intl
+ will automatically provide an implementation that works best for the environment this component executes in (server or client).
+
+ How does the Server Components integration work? next-intl
+ uses react-server
+ conditional exports to load code that is optimized for the usage in Server or Client Components. While configuration for hooks like useTranslations
+ is read via useContext
+ on the client side, on the server side it is loaded via i18n/request.ts
+ .
+ Hooks are currently primarily known for being used in Client Components since they are typically stateful or don’t apply to a server environment. However, hooks like useId
+ can be used in Server Components too. Similarly, next-intl
+ provides a hooks-based API that looks identical, regardless of if it’s used in a Server or Client Component.
+ The one restriction that currently comes with this pattern is that hooks cannot be called from async
+ components. next-intl
+ therefore provides a separate set of awaitable APIs for this use case.
+
+ Should I use async or non-async functions for my components? If you implement components that qualify as shared components, it can be beneficial to implement them as non-async functions. This allows to use these components either in a server or client environment, making them really flexible. Even if you don’t intend to to ever run a particular component on the client side, this compatibility can still be helpful, e.g. for simplified testing.
+ However, there’s no need to dogmatically use non-async functions exclusively for handling internationalization—use what fits your app best.
+ Regarding performance, async functions and hooks can be used interchangeably. The configuration from i18n/request.ts
+ is only loaded once upon first usage and both implementations use request-based caching internally where relevant. The only minor difference is that async functions have the benefit that rendering can be resumed right after an async function has been invoked. In contrast, in case a hook call triggers the initialization in i18n/request.ts
+, the component will suspend until the config is resolved and will re-render subsequently, possibly re-executing component logic prior to the hook call. However, once config has been resolved as part of a request, hooks will execute synchronously without suspending, resulting in less overhead in comparison to async functions since rendering can be resumed without having to wait for the microtask queue to flush (see resuming a suspended component by replaying its execution in the corresponding React RFC).
+
+ Using internationalization in Client Components 
+
+ Depending on your situation, you may need to handle internationalization in Client Components. Providing all messages to the client side is the easiest way to get started, therefore next-intl
+ automatically does this when you render NextIntlClientProvider
+ . This is a reasonable approach for many apps.
+
+ However, you can be more selective about which messages are passed to the client side if you’re interested in optimizing the performance of your app:
+
+ layout.tsx 
+ < NextIntlClientProvider 
+ // Don't pass any messages to the client 
+ messages = { null } 
+ > 
+ ... 
+ </ NextIntlClientProvider > 
+
+ You can still add another instance of NextIntlClientProvider
+ for certain parts of your app in case you want to pass messages
+ to the client there.
+
+ There are several options for using translations from next-intl
+ in Client Components, listed here in order of enabling the best performance:
+
+ Option 1: Passing translated labels to Client Components 
+
+ The preferred approach is to pass the processed labels as props or children
+ from a Server Component.
+
+ FAQEntry.tsx 
+ import {useTranslations} from ' next-intl ' ; 
+ import Expandable from ' ./Expandable ' ; // A Client Component 
+ import FAQContent from ' ./FAQContent ' ; 
+
+ export default function FAQEntry () { 
+ // Call `useTranslations` in a Server Component ... 
+ const t = useTranslations ( ' FAQEntry ' ); 
+
+ // ... and pass translated content to a Client Component 
+ return ( 
+ < Expandable title = { t ( ' title ' ) } > 
+ < FAQContent content = { t ( ' description ' ) } /> 
+ </ Expandable > 
+ ); 
+ } 
+
+ Expandable.tsx 
+ ' use client ' ; 
+
+ import {useState} from ' react ' ; 
+
+ function Expandable ( { title , children } ) { 
+ const [ expanded , setExpanded ] = useState ( false ); 
+
+ function onToggle () { 
+ setExpanded ( ! expanded); 
+ } 
+
+ return ( 
+ < div > 
+ < button onClick = { onToggle } > { title } </ button > 
+ { expanded && < div > { children } </ div > } 
+ </ div > 
+ ); 
+ } 
+
+ By doing this, we can use interactive features from React like useState
+ on translated content, even though the translation only runs on the server side.
+
+ Learn more in the Next.js docs: Passing Server Components to Client Components as Props 
+
+ Example: How can I implement a locale switcher? If you implement a locale switcher as an interactive select, you can keep internationalization on the server side by rendering the labels from a Server Component and only marking the select
+ element as a Client Component.
+ LocaleSwitcher.tsx 
+ import {useLocale , useTranslations} from ' next-intl ' ; 
+ import {locales} from ' @/config ' ; 
+
+ // A Client Component that registers an event listener for 
+ // the `change` event of the select, uses `useRouter` 
+ // to change the locale and uses `useTransition` to display 
+ // a loading state during the transition. 
+ import LocaleSwitcherSelect from ' ./LocaleSwitcherSelect ' ; 
+
+ export default function LocaleSwitcher () { 
+ const t = useTranslations ( ' LocaleSwitcher ' ); 
+ const locale = useLocale (); 
+
+ return ( 
+ < LocaleSwitcherSelect defaultValue = { locale } label = { t ( ' label ' ) } > 
+ { locales . map ( ( cur ) => ( 
+ < option key = { cur } value = { cur } > 
+ { t ( ' locale ' , {locale : cur}) } 
+ </ option > 
+ )) } 
+ </ LocaleSwitcherSelect > 
+ ); 
+ } 
+
+ Example implementation ( demo )
+ See also: useRouter
+
+ Example: How can I implement a form? Forms need client-side state for showing loading indicators and validation errors.
+ To keep internationalization on the server side, it can be helpful to structure your components in a way where the interactive parts are moved out to leaf components instead of marking the whole form with 'use client';
+.
+ Example: 
+ app/register/page.tsx 
+ import {useTranslations} from ' next-intl ' ; 
+
+ // A Client Component, so that `useActionState` can be used 
+ // to potentially display errors received after submission. 
+ import RegisterForm from ' ./RegisterForm ' ; 
+
+ // A Client Component, so that `useFormStatus` can be used 
+ // to disable the input field during submission. 
+ import FormField from ' ./FormField ' ; 
+
+ // A Client Component, so that `useFormStatus` can be used 
+ // to disable the submit button during submission. 
+ import FormSubmitButton from ' ./FormSubmitButton ' ; 
+
+ export default function RegisterPage () { 
+ const t = useTranslations ( ' RegisterPage ' ); 
+
+ function registerAction () { 
+ ' use server ' ; 
+ // ... 
+ } 
+
+ return ( 
+ < RegisterForm action = { registerAction } > 
+ < FormField label = { t ( ' firstName ' ) } name = " firstName " /> 
+ < FormField label = { t ( ' lastName ' ) } name = " lastName " /> 
+ < FormField label = { t ( ' email ' ) } name = " email " /> 
+ < FormField label = { t ( ' password ' ) } name = " password " /> 
+ < FormSubmitButton label = { t ( ' submit ' ) } /> 
+ </ RegisterForm > 
+ ); 
+ } 
+
+ Option 2: Moving state to the server side 
+
+ You might run into cases where you have dynamic state, such as pagination, that should be reflected in translated messages.
+
+ Pagination.tsx 
+ function Pagination ( { curPage , totalPages } ) { 
+ const t = useTranslations ( ' Pagination ' ); 
+ return < p > { t ( ' info ' , {curPage , totalPages}) } </ p > ; 
+ } 
+
+ You can still manage your translations on the server side by using:
+
+ Page or search params
+
+ Cookies
+
+ Database state
+
+ In particular, page and search params are often a great option because they offer additional benefits such as preserving the state of the app when the URL is shared, as well as integration with the browser history.
+
+ 💡
+ There’s 
+
+======================================================================
+FILE: next_intl_getting_started.html
+======================================================================
+Next.js App Router internationalization (i18n) – Internationalization (i18n) for Next.js Skip to content 
+
+ Search 
+ Getting started App Router 
+ Pages Router 
+
+ Usage guide Translations 
+ Numbers 
+ Dates and times 
+ Lists 
+ Display names 
+ Request configuration 
+ useExtracted 
+ Next.js plugin 
+
+ Routing Setup 
+ Configuration 
+ Proxy / middleware 
+ Navigation 
+
+ Environments Server & Client Components 
+ Server Actions, Metadata & Route Handlers 
+ Error files (e.g. not-found) 
+ Testing 
+ Core library 
+ Runtime requirements 
+
+ Workflows & integrations TypeScript augmentation 
+ Localization management with Crowdin 
+ VSCode integration 
+ Storybook 
+ Validating messages 
+
+ Design principles 
+
+ Presented by
+ Crowdin logo Light 
+
+ Docs Getting started App Router 
+ Next.js App Router internationalization (i18n)
+
+ Prefer to watch a video?
+
+ Set up next-intl 
+
+ Getting started 
+
+ If you haven’t done so already, create a Next.js app that uses the App Router and run:
+
+ npm install next-intl 
+
+ Now, we’re going to create the following file structure:
+
+ ├── messages 
+ │ ├── en.json 
+ │ └── ... 
+ ├── next.config.ts 
+ └── src 
+ ├── i18n 
+ │ └── request.ts 
+ └── app 
+ ├── layout.tsx 
+ └── page.tsx 
+
+ Let’s set up the files: 
+
+ messages/en.json
+
+ Messages represent the translations that are available per language and can be provided either locally or loaded from a remote data source.
+ The simplest option is to add JSON files in your local project folder:
+ messages/en.json 
+ { 
+ "HomePage" : { 
+ "title" : " Hello world! " 
+ } 
+ } 
+
+ i18n/request.ts
+
+ next-intl
+ creates a request-scoped configuration object, which you can use to provide messages and other options based on the user’s locale to Server Components.
+ src/i18n/request.ts 
+ import {getRequestConfig} from ' next-intl/server ' ; 
+
+ export default getRequestConfig ( async () => { 
+ // Static for now, we'll change this later 
+ const locale = ' en ' ; 
+
+ return { 
+ locale , 
+ messages : ( await import ( ` ../../messages/ ${ locale } .json ` )) . default 
+ }; 
+ }); 
+
+ Can I move this file somewhere else? This file is supported out-of-the-box as ./i18n/request.ts
+ both in the src
+ folder as well as in the project root with the extensions .ts
+, .tsx
+, .js
+ and .jsx
+.
+ If you prefer to move this file somewhere else, you can optionally provide a path to the plugin:
+ next.config.ts 
+ const withNextIntl = createNextIntlPlugin ( 
+ // Specify a custom path here 
+ ' ./somewhere/else/request.ts ' 
+ ); 
+
+ next.config.ts
+
+ Now, set up the plugin which links your i18n/request.ts
+ file to next-intl
+.
+ next.config.ts next.config.js 
+ next.config.ts 
+ import {NextConfig} from ' next ' ; 
+ import createNextIntlPlugin from ' next-intl/plugin ' ; 
+
+ const nextConfig : NextConfig = {} ; 
+
+ const withNextIntl = createNextIntlPlugin (); 
+ export default withNextIntl ( nextConfig ); 
+
+ next.config.js 
+ const createNextIntlPlugin = require ( ' next-intl/plugin ' ); 
+
+ const withNextIntl = createNextIntlPlugin (); 
+
+ /** @type { import('next').NextConfig } */ 
+ const nextConfig = {} ; 
+
+ module . exports = withNextIntl ( nextConfig ); 
+
+ app/layout.tsx
+
+ To make your request configuration available to Client Components, you can wrap the children
+ in your root layout with NextIntlClientProvider
+.
+ app/layout.tsx 
+ import {NextIntlClientProvider} from ' next-intl ' ; 
+
+ type Props = { 
+ children : React . ReactNode ; 
+ }; 
+
+ export default async function RootLayout ( { children } : Props ) { 
+ return ( 
+ < html > 
+ < body > 
+ < NextIntlClientProvider > { children } </ NextIntlClientProvider > 
+ </ body > 
+ </ html > 
+ ); 
+ } 
+
+ app/page.tsx
+
+ Use translations in your page components or anywhere else!
+ app/page.tsx 
+ import {useTranslations} from ' next-intl ' ; 
+
+ export default function HomePage () { 
+ const t = useTranslations ( ' HomePage ' ); 
+ return < h1 > { t ( ' title ' ) } </ h1 > ; 
+ } 
+
+ In case of async components, you can use the awaitable getTranslations
+ function instead:
+ app/page.tsx 
+ import {getTranslations} from ' next-intl/server ' ; 
+
+ export default async function HomePage () { 
+ const t = await getTranslations ( ' HomePage ' ); 
+ return < h1 > { t ( ' title ' ) } </ h1 > ; 
+ } 
+
+ Next steps 
+
+ Locale-based routing 
+
+ If you’d like to use unique pathnames for every language that your app supports (e.g. /en/about
+ or example.de/über-uns
+), you can continue to set up a top-level [locale]
+ segment for your app.
+
+ Set up locale-based routing → 
+
+ Provide a locale 
+
+ If your app doesn’t require unique pathnames per locale, you can provide a locale to next-intl
+ based on user preferences or other application logic.
+
+ The simplest option is to use a cookie:
+
+ src/i18n/request.ts 
+ import {cookies} from ' next/headers ' ; 
+ import {getRequestConfig} from ' next-intl/server ' ; 
+
+ export default getRequestConfig ( async () => { 
+ const store = await cookies (); 
+ const locale = store . get ( ' locale ' ) ?. value || ' en ' ; 
+
+ return { 
+ locale 
+ // ... 
+ }; 
+ }); 
+
+ Internationalization isn’t just translating words 
+
+ next-intl
+ provides the essential foundation for internationalization in Next.js apps. It handles aspects like translations, date and number formatting, as well as internationalized routing.
+
+ However, building for a global audience spans a wider range of topics:
+
+ Choosing the right architecture and routing strategy for your app
+
+ Integrating with backend services or a CMS 
+
+ Leveraging generative AI for content localization
+
+ Streamlining your development workflow with TypeScript and IDE tooling
+
+ Collaborating with your team using a translation management system 
+
+ Understanding all the pieces that contribute to a truly localized experience 
+
+ Mastering SEO for multilingual apps to reach global audiences
+
+ Build international Next.js apps with confidence
+ Learn how to build delightful, multilingual apps with Next.js—from the basics to advanced patterns, all through a real-world project.
+ Get started → 
+
+ Getting started Pages Router 
+
+ Docs
+  ·  Learn
+  ·  Examples
+  ·  Blog
+  ·  v3 v4 
+ X
+  ·  Bluesky
+  ·  GitHub
+  ·  Hosted on Vercel
+
+======================================================================
+FILE: next_intl_middleware.html
+======================================================================
+Proxy / middleware – Internationalization (i18n) for Next.js Skip to content 
+
+ Search 
+ Getting started App Router 
+ Pages Router 
+
+ Usage guide Translations 
+ Numbers 
+ Dates and times 
+ Lists 
+ Display names 
+ Request configuration 
+ useExtracted 
+ Next.js plugin 
+
+ Routing Setup 
+ Configuration 
+ Proxy / middleware 
+ Navigation 
+
+ Environments Server & Client Components 
+ Server Actions, Metadata & Route Handlers 
+ Error files (e.g. not-found) 
+ Testing 
+ Core library 
+ Runtime requirements 
+
+ Workflows & integrations TypeScript augmentation 
+ Localization management with Crowdin 
+ VSCode integration 
+ Storybook 
+ Validating messages 
+
+ Design principles 
+
+ Presented by
+ Crowdin logo Light 
+
+ Docs Routing Proxy / middleware 
+ Proxy / middleware
+
+ The next-intl
+ middleware can be created via createMiddleware
+.
+
+ It receives a routing
+ configuration and takes care of:
+
+ Locale negotiation
+
+ Applying relevant redirects & rewrites
+
+ Providing alternate links for search engines
+
+ Example: 
+
+ proxy.ts 
+ import createMiddleware from ' next-intl/middleware ' ; 
+ import {routing} from ' ./i18n/routing ' ; 
+
+ export default createMiddleware (routing); 
+
+ export const config = { 
+ // Match all pathnames except for 
+ // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel` 
+ // - … the ones containing a dot (e.g. `favicon.ico`) 
+ matcher : ' /((?!api|trpc|_next|_vercel|.* \\ ..*).*) ' 
+ } ; 
+
+ Note: proxy.ts
+ was called middleware.ts
+ up until Next.js 16.
+
+ Locale detection 
+
+ The locale is negotiated based on your routing configuration, taking into account your settings for localePrefix
+ , domains
+ , localeDetection
+ , and localeCookie
+ .
+
+ Prefix-based routing (default) 
+
+ Prefer to watch a video?
+
+ Prefix-based routing 
+
+ By default, prefix-based routing is used to determine the locale of a request.
+
+ In this case, the locale is detected based on these priorities:
+
+ A locale prefix is present in the pathname (e.g. /en/about
+)
+
+ A cookie is present that contains a previously detected locale
+
+ A locale can be matched based on the accept-language
+ header 
+
+ As a last resort, the defaultLocale
+ is used
+
+ To change the locale, users can visit a prefixed route. This will take precedence over a previously matched locale that is saved in a cookie or the accept-language
+ header and will update a previous cookie value.
+
+ Example workflow: 
+
+ A user requests /
+ and based on the accept-language
+ header, the en
+ locale is matched.
+
+ The user is redirected to /en
+.
+
+ The app renders <Link locale="de" href="/">Switch to German</Link>
+ to allow the user to change the locale to de
+.
+
+ When the user clicks on the link, a request to /de
+ is initiated.
+
+ The middleware will add a cookie to remember the preference for the de
+ locale.
+
+ The user later requests /
+ again and the middleware will redirect to /de
+ based on the cookie.
+
+ Which algorithm is used to match the accept-language header against the available locales? To determine the best-matching locale based on the available options from your app, the middleware uses the “best fit” algorithm of @formatjs/intl-localematcher
+ . This algorithm is expected to provide better results than the more conservative “lookup” algorithm that is specified in RFC 4647 .
+ To illustrate this with an example, let’s consider your app supports these locales:
+
+ en-US
+
+ de-DE
+
+ The “lookup” algorithm works by progressively removing subtags from the user’s accept-language
+ header until a match is found. This means that if the user’s browser sends the accept-language
+ header en-GB
+, the “lookup” algorithm will not find a match, resulting in the default locale being used.
+ In contrast, the “best fit” algorithm compares a distance between the user’s accept-language
+ header and the available locales, while taking into consideration regional information. Due to this, the “best fit” algorithm is able to match en-US
+ as the best-matching locale in this case.
+
+ Domain-based routing 
+
+ Prefer to watch a video?
+
+ Domain-based routing 
+
+ If you’re using the domains
+ setting, the middleware will match the request against the available domains to determine the best-matching locale. To retrieve the domain, the host is read from the x-forwarded-host
+ header, with a fallback to host
+ (hosting platforms typically provide these headers out of the box).
+
+ The locale is detected based on these priorities:
+
+ A locale prefix is present in the pathname (e.g. ca.example.com/fr
+)
+
+ A locale is stored in a cookie and is supported on the domain
+
+ A locale that the domain supports is matched based on the accept-language
+ header 
+
+ As a fallback, the defaultLocale
+ of the domain is used
+
+ Since the middleware is aware of all your domains, if a domain receives a request for a locale that is not supported (e.g. en.example.com/fr
+), it will redirect to an alternative domain that does support the locale.
+
+ Example workflow: 
+
+ The user requests us.example.com
+ and based on the defaultLocale
+ of this domain, the en
+ locale is matched.
+
+ The app renders <Link locale="fr" href="/">Switch to French</Link>
+ to allow the user to change the locale to fr
+.
+
+ When the link is clicked, a request to us.example.com/fr
+ is initiated.
+
+ The middleware recognizes that the user wants to switch to another domain and responds with a redirect to ca.example.com/fr
+.
+
+ Matcher config 
+
+ The middleware is intended to only run on pages, not on arbitrary files that you serve independently of the user locale (e.g. /favicon.ico
+).
+
+ A popular strategy is to match all routes that don’t start with certain segments (e.g. /_next
+) and also none that include a dot ( .
+) since these typically indicate static files. However, if you have some routes where a dot is expected (e.g. /users/jane.doe
+), you should explicitly provide a matcher for these.
+
+ proxy.ts 
+ export const config = { 
+ // Matcher entries are linked with a logical "or", therefore 
+ // if one of them matches, the middleware will be invoked. 
+ matcher : [ 
+ // Match all pathnames except for 
+ // - … if they start with `/api`, `/_next` or `/_vercel` 
+ // - … the ones containing a dot (e.g. `favicon.ico`) 
+ ' /((?!api|_next|_vercel|.* \\ ..*).*) ' , 
+
+ // However, match all pathnames within `/users`, optionally with a locale prefix 
+ ' /([ \\ w-]+)?/users/(.+) ' 
+ ] 
+ } ; 
+
+ Note that some third-party providers like Vercel Analytics typically use internal endpoints that are then rewritten to an external URL (e.g. /_vercel/insights/view
+). Make sure to exclude such requests from your middleware matcher so they aren’t rewritten by accident.
+
+ Composing other middlewares 
+
+ By calling createMiddleware
+, you’ll receive a function of the following type:
+
+ function middleware ( request : NextRequest ) : NextResponse ; 
+
+ If you need to incorporate additional behavior, you can either modify the request before the next-intl
+ middleware receives it, modify the response or even create the middleware based on dynamic configuration.
+
+ proxy.ts 
+ import createMiddleware from ' next-intl/middleware ' ; 
+ import {NextRequest} from ' next/server ' ; 
+
+ export default async function proxy ( request : NextRequest ) { 
+ // Step 1: Use the incoming request (example) 
+ const defaultLocale = request . headers . get ( ' x-your-custom-locale ' ) || ' en ' ; 
+
+ // Step 2: Create and call the next-intl middleware (example) 
+ const handleI18nRouting = createMiddleware ( { 
+ locales : [ ' en ' , ' de ' ] , 
+ defaultLocale 
+ } ); 
+ const response = handleI18nRouting ( request ); 
+
+ // Step 3: Alter the response (example) 
+ response . headers . set ( ' x-your-custom-locale ' , defaultLocale); 
+
+ return response; 
+ } 
+
+ export const config = { 
+ // Match only internationalized pathnames 
+ matcher : ' /((?!api|trpc|_next|_vercel|.* \\ ..*).*) ' 
+ } ; 
+
+ Example: Additional rewrites 
+
+ If you need to handle rewrites apart from the ones provided by next-intl
+, you can call NextResponse.rewrite()
+ conditionally after the next-intl
+ middleware has run.
+
+ This example rewrites requests for /[locale]/profile
+ to /[locale]/profile/new
+ if a special cookie is set.
+
+ proxy.ts 
+ import createMiddleware from ' next-intl/middleware ' ; 
+ import {NextRequest , NextResponse} from ' next/server ' ; 
+ import {routing} from ' ./i18n/routing ' ; 
+
+ const handleI18nRouting = createMiddleware ( routing ); 
+
+ export default async function proxy ( request : NextRequest ) { 
+ let response = handleI18nRouting ( request ); 
+
+ // Additional rewrite when NEW_PROFILE cookie is set 
+ if ( response . ok ) { 
+ // (not for errors or redirects) 
+ const [ , locale , ... rest ] = new URL ( 
+ response . headers . get ( ' x-middleware-rewrite ' ) || request . url 
+ ) . pathname . split ( ' / ' ); 
+ const pathname = ' / ' + rest . join ( ' / ' ); 
+
+ if ( 
+ pathname === ' /profile ' && 
+ request . cookies . get ( ' NEW_PROFILE ' ) ?. value === ' true ' 
+ ) { 
+ response = NextResponse . rewrite ( 
+ new URL ( ` / ${ locale } /profile/new ` , request . url ) , 
+ {headers : response . headers } 
+ ); 
+ } 
+ } 
+
+ return response; 
+ } 
+
+ export const config = { 
+ // Match only internationalized pathnames 
+ matcher : ' /((?!api|trpc|_next|_vercel|.* \\ ..*).*) ' 
+ } ; 
+
+ You may wish to customize this based on your routing configuration and use case.
+
+ Starter templates (auth, saas, tenants) 
+
+ 🌐 learn.next-intl.dev provides additional starter templates with middleware composition.
+
+ Including: 
+
+ app-router-auth
+ with Better Auth : Auth-protected app with locale from user settings.
+
+ app-router-saas
+ with Better Auth : Locale prefixes on public routes with a login to a protected app.
+
+ app-router-tenants
+ : An advanced composition pattern that routes between multiple tenants and a landing page while supporting multiple locales.
+
+ Source code 
+
+ Usage without proxy / middleware (static export) 
+
+ If you’re using the static export feature from Next.js ( output: 'export'
+), a proxy / middleware will not run. You can use prefix-based routing nonetheless to internationalize your app, but a few tradeoffs apply.
+
+ Static export limitations: 
+
+ Using a locale prefix is required (same as localePrefix: 'always'
+ )
+
+ The locale can’t be negotiated on the server (same as localeDetection: false
+ )
+
+ You can’t use pathnames
+ , as these require server-side rewrites
+
+ Static rendering is required
+
+ Additionally, other limitations as documented by Next.js will apply too.
+
+ If you choose this approach, you might want to enable a redirect at the root of your app:
+
+ app/page.tsx 
+ import {redirect} from ' next/navigation ' ; 
+
+ // Redirect the user to the default locale when `/` is requested 
+ export default function RootPage () { 
+ redirect ( ' /en ' ); 
+ } 
+
+ If you add such a root page at app/page.tsx
+, you need to add a root layout at app/layout.tsx
+ as well, even if it’s just passing children
+ through:
+
+ app/layout.tsx 
+ export default function RootLayout ( { children } ) { 
+ return children; 
+ } 
+
+ Troubleshooting 
+
+ ”The proxy / middleware doesn’t run for a particular page.” 
+
+ To resolve this, make sure that:
+
+ The proxy / middleware is set up in the correct file (e.g. src/proxy.ts
+).
+
+ Your matcher
+ correctly matches all routes of your application, including dynamic segments with potentially unexpected characters like dots (e.g. /users/jane.doe
+).
+
+ In case you’re composing other middlewares , ensure that the middleware is called correctly.
+
+ In case you require static rendering, make sure to follow the static rendering guide instead of relying on hacks like force-static
+ .
+
+ ”My page content isn’t localized despite the pathname containing a locale prefix.” 
+
+ This is very likely the result of your proxy / middleware not running on the request. As a result, a potential fallback from i18n/request.ts
+ might be applied.
+
+ ”Unable to find next-intl
+ locale because the proxy / middleware didn’t run on this request and no locale
+ was returned in getRequestConfig
+.” 
+
+ If the middleware is not expected to run on this request (e.g. because you’re using a 
+

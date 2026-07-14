@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://next-intl.dev/docs/getting-started/app-router",
+    "name": "App Router - Internationalization (i18n) for Next.js",
+    "snippet": "Set up next-intl. Getting started. If you haven't done so already, create a Next.js app that uses the App Router and run: npm install next-intl.\nnext-intl provides the essential foundation for internationalization in Next.js apps. It handles aspects like translations, date and number formatting, as well as internationalized routing.",
+    "host_name": "next-intl.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev",
+    "name": "next-intl – Internationalization (i18n) for Next.js",
+    "snippet": "Getting started App Router Pages Router Usage guide. Setup Configuration Proxy. Next.js-native and performance-obsessed App Router, Server Components, static ...",
+    "host_name": "next-intl.dev",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://i18nexus.com/tutorials/nextjs/next-intl",
+    "name": "Next.js 16 - Setting Up next-intl + AI Pre-Translation",
+    "snippet": "A step-by-step next-intl tutorial for the Next.js 16 App Router: install, routing, and messages setup, plus AI pre-translation of your strings\nA step-by-step next-intl tutorial for the Next.js 16 App Router: install, routing, and messages setup, plus AI pre-translation of your strings with i18nexus.",
+    "host_name": "i18nexus.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=XRS1hRGAEIU",
+    "name": "Next.js 15: i18n with next-intl (Full Walkthrough) + AI Translation",
+    "snippet": "In this tutorial, we are going to walk through setting up next-intl in a Next.js 15 app. We are also going to learn how to set up automatic ...",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "Aug 18, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://nextjs.org/docs/app/guides/internationalization",
+    "name": "Guides: Internationalization",
+    "snippet": "Next.js enables you to configure the routing and rendering of content to support multiple languages. Making your site adaptive to different locales.",
+    "host_name": "nextjs.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://poeditor.com/blog/next-js-i18n",
+    "name": "Next.js i18n with next-intl: A comprehensive guide",
+    "snippet": "In this guide, we'll set up i18n in a Next.js app using next-intl. We'll explain how to set it up for both the App and Pages Router.",
+    "host_name": "poeditor.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/AmuraDesign/Next.js-16-Next-Intl-Boilerplate",
+    "name": "Next.js 16 + next-intl Multi-Locale Boilerplate",
+    "snippet": "A modern multilingual boilerplate for Next.js 16 (App Router, Turbopack dev) A professional, modern starter for Next.js 16 apps. Ideal for multilingual SaaS, ...",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/routing/setup",
+    "name": "Setup locale-based routing – Internationalization (i18n) for",
+    "snippet": "In order to use unique pathnames for every language that your app supports, next-intl can be used to handle the following routing setups: In either case, next-intl integrates with the App Router by using a top-level [locale] dynamic segment that can be used to provide content in different languages.",
+    "host_name": "next-intl.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://noqta.tn/en/tutorials/nextjs-next-intl-i18n-app-router-guide-2026",
+    "name": "Next.js Internationalization with next-intl — Complete App",
+    "snippet": "Build a fully internationalized Next.js application with next-intl. This comprehensive guide covers App Router setup, RTL language support, dynamic routing, pluralization, and production-ready i18n patterns.",
+    "host_name": "noqta.tn",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nextjs.org/docs/pages/guides/internationalization",
+    "name": "Guides: Internationalization | Next.js",
+    "snippet": "Next.js has built-in support for internationalized (i18n) routing since v10.0.0. You can provide a list of locales, the default locale, and domain-specific locales and Next.js will automatically handle the routing.",
+    "host_name": "nextjs.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/76632259/how-to-use-hls-js-with-react-properly",
+    "name": "How to use Hls.js with React properly? [closed] - Stack Overflow",
+    "snippet": "I am building a react for a video player using Hls.js. I am using React Refs and calling useEffect to get the video element after it is rendard. How to use hls.js with react Is there a lightweight way to stream HLS Video in react? More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.npmjs.com/package/react-hls-player",
+    "name": "react-hls-player - NPM",
+    "snippet": "react-hls-player is a simple HLS live stream player. It uses hls.js to play your hls live stream if your browser supports html 5 video and MediaSource ...",
+    "host_name": "www.npmjs.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/masonwritescode/build-a-custom-hls-player-in-react-with-hlsjs-no-wrapper-libraries-pm9",
+    "name": "Build a custom HLS player in React with hls.js (no wrapper libraries) - DEV Community",
+    "snippet": "We'll build a custom HLS player on top of hls.js 1.6.x and React 19 with no wrapper library. Play/pause, seek, volume, quality readout, buffer ...",
+    "host_name": "dev.to",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://imagekit.io/blog/videojs-hls-adaptive-streaming-react",
+    "name": "HLS streaming with Video.js + React - ImageKit",
+    "snippet": "We demonstrate an actual working VideoJS component for React using VideoJS 8+ for HLS Adaptive Bitrate Streaming, with Quality Selector and ...",
+    "host_name": "imagekit.io",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/video-dev/hls.js",
+    "name": "GitHub - video-dev/hls.js: HLS.js is a JavaScript library that plays HLS in browsers with support for MSE.",
+    "snippet": "HLS.js is a JavaScript library that implements an HTTP Live Streaming client. It relies on HTML5 video and MediaSource Extensions for playback.",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@dilshanmw717/building-a-modern-hls-video-player-with-next-js-a-complete-guide-19c39c61ae73",
+    "name": "Building a Modern HLS Video Player with Next.js: A Complete Guide - Medium",
+    "snippet": "In this article, I'll walk you through building WixPlayer, a modern HLS video player built with Next.js that supports adaptive streaming for ...",
+    "host_name": "medium.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.amazon.com/docs/vega/0.22/media-player-hls-player.html",
+    "name": "Play adaptive content using Hls.js Player | Design and Develop Vega Apps",
+    "snippet": "The following steps show you how to use Hls.js Player with MSE mode to play adaptive streaming content. when the Video component is mounted.",
+    "host_name": "developer.amazon.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.gumlet.com/reference/react-hls-player-web",
+    "name": "React HLS Player (Web) - Gumlet Docs",
+    "snippet": "React HLS Player is a very popular player to play HLS streams on reactive websites. Step 1: Create Gumlet Configuration JSON",
+    "host_name": "docs.gumlet.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=DuS8_HoLN3Q",
+    "name": "Ep1: Reactjs Styled Components & Html5 Hls.js Player for Streaming Video - YouTube",
+    "snippet": "Ep1: Reactjs Styled Components & Html5 Hls.js Player for Streaming Video in Series Build Live Video Streaming Server use Ffmpeg Nginx Rtmp ...",
+    "host_name": "www.youtube.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/reactjs/comments/19cl02k/is_there_a_video_player_that_allows_you_to_stream",
+    "name": "Is there a video player that allows you to stream the video instead of loading it in its entirety? : r/reactjs - Reddit",
+    "snippet": "If your backend is encoding the video into HLS you'd then want a frontend player that can handle HLS.",
+    "host_name": "www.reddit.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

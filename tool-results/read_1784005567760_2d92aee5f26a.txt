@@ -1,0 +1,188 @@
+   100→  * sqlite-vss / better-sqlite3 — local vector store for similar-incident retrieval (alternative to Postgres+pgvector).
+   101→
+   102→Stage Summary:
+   103→- Delivered a concrete menu of 12 implementable ideas (see "Top 12 Implementable Ideas" below) covering: anomaly detection (z-score, EMA band), spatial analytics (zone polygon, line-crossing), agentic loop (perceive→reason→act), LLM-as-judge filter, 3-tier escalation, snapshot evidence trail, structured incident reports, visual memory / similar-incident lookup, human-in-the-loop acknowledge, class-aware rule engine, plus a daily-digest email bonus.
+   104→- All 12 ideas are implementable in pure Next.js + TF.js + z-ai-web-dev-sdk server routes — NO Python backend required.
+   105→- Key architectural pattern recommended: a small "tool registry" mirroring LandingAI VisionAgent's design (named tools: count_persons, zone_count, line_crossing, snapshot, judge, email, escalate, report) that the agent loop calls each tick; rules are data, not code, so they're editable in a shadcn Sheet without recompiling.
+   106→- Key formula recommended for v1: 30-sample ring buffer (windowed mean + stddev for the "normal band" display) + parallel EMA(α=0.1) with online variance for the "live" anomaly score; alarm rule = `|x − EMA| > 2σ` sustained for ≥3 consecutive samples (debounce).
+   107→- LLM-as-judge pattern recommended: structured JSON output, server-side only via z-ai-web-dev-sdk, used as a false-positive filter between rule-fire and Tier-2 notification; always keep human-acknowledge gate for Tier ≥3.
+   108→- Handoff to implementation agent: pick 4-6 of the 12 ideas for v1 MVP (recommend #1 Z-Score, #5 LLM-Judge, #6 Agentic Loop, #7 3-Tier Escalation, #8 Snapshot Trail, #11 Acknowledge/Silence). Defer visual-memory (#9) and daily digest (#10) to v2.
+   109→
+   110→Top 12 Implementable Ideas (each: name, 1-sentence description, implementation hint):
+   111→1. Z-Score Crowd Surge Detector — Windowed z-score over person_count (last 30 samples); alarm if z>2 for 3 consecutive ticks. Hint: ring buffer in useReducer + compute μ/σ each tick; rule = `{metric:'person_count', window:30, z:2, sustain:3}`.
+   112→2. EMA Normal-Band Visualizer — Render `EMA ± 2σ` as a shaded band on a Recharts line chart so operators see what "normal" looks like in real time. Hint: `EMA_t = α·x_t + (1−α)·EMA_{t-1}`, α=0.1; online variance `var_t = α·(x_t−EMA_t)² + (1−α)·var_{t-1}`.
+   113→3. Named-Zone Polygon Counter — Draw 2-3 ROI polygons on the canvas (entrance / plaza center / restricted) and count detections whose bbox centroid falls inside each. Hint: ray-casting point-in-polygon test; persist zones in localStorage; shadcn Sheet for zone editor.
+   114→4. Directional Line-Crossing Counter — Track each person's centroid with a simple IoU greedy matcher; increment in/out counters when a centroid crosses a virtual line. Hint: cross-product sign flip before/after the line; Ultralytics LOI pattern (entry/tracking/exit zones).
+   115→5. LLM-as-Judge False-Positive Filter — On rule fire, POST cropped frame + detection JSON to `/api/judge`; only escalate if LLM returns `verdict:"real"` OR `confidence<0.6`. Hint: z-ai-web-dev-sdk chat completion server-side; structured JSON output `{verdict, confidence, reason}`; ~0.8 precision/recall per Eugene Yan.
+   116→6. Agentic Perceive→Reason→Act Loop — A 1s tick state machine (perceive=COCO-SSD, reason=rules+optional LLM, act=log/snapshot/email/escalate); show cycle count + last action in the UI. Hint: useEffect interval + zustand store; mirror Ultralytics' canonical 4-step loop.
+   117→7. 3-Tier Escalation Policy — Tier 1 dashboard badge; Tier 2 toast + email after 30s sustained; Tier 3 Slack/SMS webhook after 2 min unacknowledged; Tier 4 amber banner + DB log. Hint: escalation timers in zustand; Resend SDK in `/api/alert/route.ts`; AlertOps/PagerDuty pattern.
+   118→8. Snapshot Evidence Trail — On any Tier ≥2 alert, freeze a JPEG of canvas+detections + 5s pre-buffer; store under `/public/incidents/{ts}.jpg` and attach to a Prisma `Incident` record. Hint: `canvas.toBlob('image/jpeg', 0.8)`; pre-buffer = ring of last 150 frames.
+   119→9. Structured Incident Report Generator — On incident close, generate a markdown+JSON report (id, ts, camera, peak_count, baseline, z-score, snapshot URL, LLM verdict, tier, resolution). Hint: server route POST `/api/incident/:id/report` using z-ai chat to draft narrative; mirror dev.to 10-section template.
+   120→10. Daily Anomaly Digest Email — Scheduled job (Inngest or Vercel cron) sends a 6am digest of yesterday's incidents: counts, peak times, top cameras, link to dashboard. Hint: Inngest function + Resend template; query Prisma `Incident` where createdAt between yesterday 00:00 and 23:59.
+   121→11. Human-in-the-Loop Acknowledge / Silence — Toast with [Acknowledge][Silence 5 min][Escalate now]; Acknowledge stops escalation timers; Silence mutes; Escalate jumps to Tier 3. Hint: shadcn Sonner toast with action buttons; zustand ack-state; circuit-breaker = max 3 escalations per camera per hour.
+   122→12. Class-Aware Rule Engine — Different rules per COCO class: person_count for crowd surge; car+bus for traffic; "backpack abandoned" (stationary >2min without co-located person); "knife/scissors" → immediate Tier 3. Hint: rule registry `[{class, metric, threshold, window, tier}]` editable via shadcn Sheet.
+   123→
+   124→Bonus ideas (consider for v2):
+   125→13. Visual Memory / Similar-Incident Lookup — Embed each incident snapshot with CLIP ViT-B/32 (@xenova/transformers, in-browser WASM) and on new alert retrieve top-3 similar past incidents. Hint: mirror agentralabs/agentic-vision pattern; sqlite-vss for vector store.
+   126→14. Confidence-Drift Monitor — EMA of mean detection confidence per class; if drops below 0.4 for 30s, show "low-confidence — possible occlusion/night mode" banner. Hint: reuse EMA primitive from #2; render as a status pill.
+   127→
+   128→
+   129→---
+   130→Task ID: 0-c
+   131→Agent: Research Scout (McKinsey/BCG patterns)
+   132→Task: Research McKinsey/BCG/Bain presentation patterns + modern enterprise SaaS design systems (Linear, Vercel, Stripe, Notion) to produce a "McKinsey/BCG Style Guide" applicable to Tab 1 (corporate explanation page for an agentic camera system). Honor the project constraint: NO indigo/blue accent.
+   133→
+   134→Work Log:
+   135→- Read /home/z/my-project/worklog.md and /home/z/my-project/AGENT_STATE.md to align with the 2-tab SPA mission (Tab 1 = corporate explanation page, Tab 2 = functional ML prototype). Confirmed Phase 0.3 checkbox: "McKinsey/BCG presentation patterns documented — visual + content rules".
+   136→- Loaded web-search skill. Ran 12 search queries saved to /home/z/my-project/download/research/task0c/*.json: mckinsey_pyramid, bcg_structure, consulting_diagrams, exec_dashboard, value_chain, linear_design, stripe_design, saas_palette, typography, action_title, pipeline_viz, tailwind_tokens, slide_layout.
+   137→- Deep-read 7 high-value URLs by fetching HTML via curl and stripping to plain text (slideworks.io/action-titles, deckary.com/consulting-slide-standards, strategyu.co/slide-layouts [both halves], mannhowie.com/SCR, f1studioz.com/smart-saas-dashboard-design, vercel.com/geist/colors, shadcndesign.com/academy/neutral-colors). Saved as .txt in same dir.
+   138→- Extracted 10 content rules from the MBB (McKinsey/BCG/Bain) corpus: Action Titles (≤15 words, ≤2 lines, full sentence, active voice, specific+quantitative — "tells reader what to conclude, not what slide is about"); Pyramid Principle (top-down: conclusion → 2-4 args → evidence); One Message Per Slide ("if you wrote 'and', split into two slides"); SCR/SCQA (Situation-Complication-Resolution/Question-Answer, Resolution gets 60-70%); MECE (Mutually Exclusive Collectively Exhaustory); Ghost Deck Method (write ALL action titles first, read as story, then fill — 40% story / 30% data / 30% design); The Titles Test / 60-Second Rule (managing director should get the full argument reading only titles in 60s); Source Citation on every quantitative claim (footer: "Source: ...; Analysis: ..."); Rule of Three (consultants default to threes — pillars/recommendations/reasons); Progressive Disclosure / Shneiderman's Mantra (overview first, zoom+filter, details-on-demand).
+   139→- Extracted the canonical 14 consulting slide layouts from StrategyU (strategyu.co/slide-layouts): #1 Big Number, #2 Column Chart (NOT pie — McKinsey banned pie charts), #3 Chart+Insight Callout (chart 2/3 + insight box 1/3 with arrow to specific data point), #4 Two-Column Comparison (before/after, parallel structure), #5 Three Things (3 pillars with icons), #6 Process Flow (horizontal boxes + arrows, max 4-5 steps), #7 Waterfall (start→end with levers), #8 Funnel (narrowing bars), #9 2x2 Framework Grid, #10 Harvey Ball Scorecard (filled/half/quarter circles — avoids false precision), #11 Quote+Evidence, #12 Timeline (milestones + phase bars + risks below), #13 Dashboard (4-6 metric tiles + 2 panels below), #14 Executive Summary (3-col: Situation|Findings|Recommendation).
+   140→- Extracted 10 visual rules from MBB + enterprise SaaS corpus: 2-font max (McKinsey: Georgia titles + Arial body — modern equivalent: Instrument Serif + Inter); strict type scale; 3-color palette + 3 semantic traffic-light; accent used strategically not decoratively; high-contrast text (zinc-950/zinc-500/zinc-400 on white only); card density (24px padding, 24px gap, generous gutters — "white space is content"); border+shadow not heavy fills; consistent grid alignment (titles don't move between sections); NO pie/3D/clip-art/transitions; traffic-light status logic (green=healthy, amber=anomaly, red=critical — F1Studioz pattern).
+   141→- Researched modern enterprise design systems for the "corporate premium" feel: Linear (#5e6ad2 desaturated blue/purple — VIOLATES our no-indigo/blue constraint, REJECTED; uses Inter Variable + Berkeley Mono; OpenType cv01/ss03; 9999px corner radius for some elements; product UI uses red/orange/yellow/green tag system); Stripe (deep navy headings + soft cool-white canvas + near-monochrome + signature indigo gradients — indigo REJECTED; shadow color rgba(50,50,93,0.25) blue-gray); Vercel Geist (10 color scales, Background 1/2 split, Colors 1-3 component bg default/hover/active, 4-6 borders, 7-8 high-contrast bg, 9-10 text/icons secondary/primary — STRUCTURE adopted, blue scale skipped); Notion (grayscale workspace, content provides color, accent colors only inside content blocks — Notion Gray #787774 — minimalist philosophy adopted); shadcn neutrals (5 palettes: slate=cool blue-tinted REJECTED, gray, zinc=modern default ADOPTED, neutral=pure gray, stone=warm amber-tinted — zinc chosen as primary neutral because it reads gray not blue, modern, shadcn default, has depth for shadows/borders).
+   142→- Synthesized Tailwind color palette honoring the no-indigo/blue constraint: NEUTRAL=zinc (white→zinc-950, full shadcn token set in HSL+hex); BRAND=emerald-600 #059669 (primary, ring, CTA — signals "alive/healthy/processing" semantically perfect for agentic system); SEMANTIC traffic-light: emerald-600=success/Tier 0-1 healthy, amber-500 #f59e0b=warning/Tier 2 anomaly, rose-600 #e11d48=destructive/Tier 3 critical; CHARTS: emerald-600 primary series, zinc-100/zinc-300 baseline band, amber-500 anomaly flash, rose-600 critical flash, zinc-100 gridlines. All combinations WCAG AA compliant (emerald-600 on white=4.5:1, zinc-500 on white=4.6:1, zinc-950 on white=19:1).
+   143→- Synthesized typography recommendation (all Google Fonts, available via next/font/google): DISPLAY/SERIF=Instrument Serif (free 2023 release, modern Georgia equivalent, gives editorial McKinsey-report gravitas, weight 400 only, used ONLY for H1+display, italic available for pull-quotes); BODY/SANS=Inter Variable (de facto SaaS standard — Linear/Vercel/Stripe/Notion all use it or close variant, variable axis for fine weight tuning); MONO=JetBrains Mono (for inline code, metric values, agent-cycle counter — tabular-nums keeps live digits column-aligned). Rationale: serif=conclusion, sans=detail — visual split reinforces Pyramid Principle. Full next/font/google import snippet + tailwind.config.ts fontFamily mapping + 7-row type scale (Display 48/56 → Caption 12/16) documented.
+   144→- Designed recommended Tab 1 layout structure (10 sections, each mapped to one StrategyU layout pattern, each with a draft action title honoring Rule C1): ① Hero/Exec Summary (#14 SCR 3-col), ② Big Number (#1), ③ System Architecture (#6 Process Flow 5 numbered cards: Perceive→Reason→Act→Evidence→Adapt), ④ Three Pillars (#5: Perception/Reasoning/Action), ⑤ Traditional vs Agentic (#4 Two-Column Comparison), ⑥ Live Dashboard Preview (#13: 6 metric tiles + 2 panels), ⑦ Value Chain (#7 Waterfall: frames→anomalies→judged→escalated→resolved), ⑧ Use Cases (#5 variant 4-col or #10 Harvey Ball), ⑨ Roadmap (#12 Timeline v1→v2→v3), ⑩ Footer/Sources. Validated against Rule C7 (Titles Test): reading only the 10 action titles top-to-bottom tells the complete story.
+   145→- Documented 10 explicit ANTI-PATTERNS to reject (topic titles, pie charts, indigo/blue accents, 3D/clip-art/transitions, shrinking-font-to-fit, decorative color, missing source lines, inconsistent formatting, data vomit, multiple-messages-per-card).
+   146→- Compiled final deliverable: /home/z/my-project/download/research/task0c/STYLE_GUIDE.md — 7-section style guide (Content Rules, Visual Rules, Tab 1 Layout, Tailwind Palette with hex/HSL, Typography with next/font import + type scale, Component-level application classes, Anti-patterns). Ready as design contract for Tab 1 implementation.
+   147→
+   148→Stage Summary:
+   149→- DELIVERED: McKinsey/BCG Style Guide at /home/z/my-project/download/research/task0c/STYLE_GUIDE.md (7 sections, ~450 lines). Raw research corpus (12 JSON + 9 text snapshots) preserved in same dir for traceability.
+   150→- KEY CONTENT RULES (10): Action Title, Pyramid Principle, One Message Per Slide, SCR/SCQA, MECE, Ghost Deck, Titles Test (60-sec), Source Citation, Rule of Three, Progressive Disclosure.
+   151→- KEY VISUAL RULES (10): 2-font max, strict type scale, 3-color+3-semantic palette, strategic accent, high-contrast text, generous card density, border+shadow over fills, consistent grid, no pie/3D/clip-art, traffic-light status logic.
+   152→- TAILWIND PALETTE: zinc neutrals + emerald-600 brand + amber-500 warning + rose-600 destructive. All hex+HSL documented. Zero indigo/blue. WCAG AA verified.
+   153→- TYPOGRAPHY: Instrument Serif (display) + Inter (body) + JetBrains Mono (code) — all via next/font/google. Serif=conclusion, sans=detail reinforces Pyramid.
+   154→- TAB 1 LAYOUT: 10 sections, each = one StrategyU layout pattern, each with draft action title validated against Titles Test.
+   155→- HANDOFF to Phase 1 (Solution Design & Tab 1): implementation agent should treat STYLE_GUIDE.md as the design contract. Deviations require explicit justification. Recommended first build order: section ① Hero/Exec Summary (sets the SCR frame) → ③ Architecture Process Flow (anchors the "what is it") → ⑥ Dashboard Preview (most visually impressive, validates the palette/typography end-to-end) → fill the remaining sections.
+   156→
+   157→---
+   158→Task ID: final-synthesis
+   159→Agent: orchestrator
+   160→Task: Final synthesis, packaging, and report generation
+   161→
+   162→Work Log:
+   163→- Completed Phase 0: research on Peru cameras, agentic CV architectures, McKinsey/BCG patterns
+   164→- Completed Phase 1: Tab 1 corporate explanation (10 sections, McKinsey-style)
+   165→- Completed Phase 2: Tab 2 functional prototype (Real ML + Simulation modes, agent pipeline)
+   166→- Completed Phase 3: testing & validation (lint clean, agent-browser verified, error handling)
+   167→- Completed Phase 4: final report at /home/z/my-project/download/FINAL_REPORT.md
+   168→- Updated AGENT_STATE.md with retrospection notes per phase
+   169→
+   170→Stage Summary:
+   171→- 2-tab SPA delivered: Tab 1 (corporate explanation) + Tab 2 (functional prototype)
+   172→- Architecture: 5-stage pipeline with clear IA vs Agentic layer separation
+   173→- TF.js COCO-SSD for real ML detection (Real ML mode)
+   174→- Simulation mode with realistic crowd surges (default, works in any environment)
+   175→- Agent pipeline: rule engine + LLM-as-judge + 3-tier escalation + circuit breaker
+   176→- 4 use cases: crowd surge, sustained density, loitering, restricted zone
+   177→- API routes: /api/judge (LLM), /api/alert (email sim), /api/report (LLM)
+   178→- Verified end-to-end: T1→T2→T3 escalation, 74 actions logged, 4 reports generated
+   179→- Lint: 0 errors, 0 warnings
+   180→- Final report: /home/z/my-project/download/FINAL_REPORT.md
+   181→- Style guide: /home/z/my-project/download/research/task0c/STYLE_GUIDE.md
+   182→- Screenshots: /home/z/my-project/download/screenshots/
+   183→
+   184→---
+   185→Task ID: post-validation-fixes
+   186→Agent: orchestrator
+   187→Task: Fix anomaly detection robustness and code-split TF.js for memory
+   188→
+   189→Work Log:
+   190→- Fixed "recent baseline" anomaly computation: switched from sample-count-based exclusion (last 5/20 samples) to TIME-BASED exclusion (samples older than 30s). This makes the z-score immune to sustained surges regardless of duration.
+   191→- Code-split TF.js + COCO-SSD into a separate chunk via next/dynamic. The RealMlLoader component is only loaded when user switches to Real ML mode. This keeps the default (simulation) bundle small and avoids Turbopack compile OOM.
+   192→- Fixed stale closure bug in useAgentActions: peakCount in reports now reads fresh state from store via getState() instead of captured closure values.
+   193→- Verified full T1→T2→T3 escalation: z=6.31, peakZ=6.12, 60 persons, T3 escalate+judge+report all triggered.
+   194→- LLM-generated incident report reads naturally: "On 2026-07-14 at 03:17Z, camera Cusco — Plaza de Armas detected a Tier 3 anomaly with 62 persons (z-score 6.12)..."
+   195→- Captured final screenshots: tab1-desktop, tab2-final-working, tab2-report-final, tab2-mobile (390x844 iPhone 14 viewport).
+   196→- Lint: 0 errors, 0 warnings. TypeScript: 0 errors in src/.
+   197→
+   198→Stage Summary:
+   199→- All success criteria met.
+   200→- Both tabs verified rendering and functional.
+   201→- Agent pipeline fully operational in simulation mode (default).
+   202→- Real ML mode available via code-split lazy load (best with hardware GPU).
+   203→- Final report at /home/z/my-project/download/FINAL_REPORT.md.
+   204→- Screenshots at /home/z/my-project/download/screenshots/.
+   205→
+   206→---
+   207→Task ID: 3-a
+   208→Agent: Research Scout (think tank presentation styles)
+   209→Task: Research how top-tier think tanks, consulting firms, and AI conferences present the EVOLUTION of AI from static programs → deep learning → cognitive AI → agentic systems. Produce a structured brief to inspire a single-page "PowerPoint-style" web "Strategic Brief" (Tab 3) that is SELF-SUFFICIENT (readable without a presenter, with enough explanatory text and small paragraphs giving context).
+   210→
+   211→Work Log:
+   212→- Read /home/z/my-project/worklog.md to align with the existing 2-tab SPA (Tab 1 corporate explanation, Tab 2 functional ML prototype) and the prior McKinsey/BCG style guide (task 0-c, STYLE_GUIDE.md). Confirmed Tab 3 will be a NEW strategic-brief page that frames *why agentic AI matters now* using the 4-stage evolution narrative, inheriting the existing zinc+emerald+amber+rose palette and Instrument Serif + Inter + JetBrains Mono typography (zero indigo/blue).
+   213→- Loaded web-search skill. Ran 12 search queries saved to /home/z/my-project/download/research/task3a/*.json: 01_mckinsey_timeline, 02_bcg_maturity, 03_bain_capability, 04_ai4_agentic, 05_gartner_hype, 06_deloitte_journey, 07_wef_evolution, 08_stanford_hai, 09_a16z_agentic, 10_sequoia_waves, 11_four_stages, 12_agentic_value.
+   214→- Deep-read 17 high-value URLs by fetching HTML via Python urllib + Wayback Machine fallback (Bain/BCG/Gartner/McKinsey/WEF/Cisco all 403 on direct fetch, so used archive.org snapshots): sequoia_act_o1, sequoia_act_two, mit_agentic_explained, unstructured_autonomous, fedresources_next_leap, ibm_evolution_agents, arxiv_gen_to_agentic, deloitte_press, pragmatic_gartner, creative_machines_hype, stanford_hai_2025, vastdata_evolution, gartner_press, gartner_agentic_article, bcg_adoption_puzzle, bain_what_is_agentic, bain_building_foundation, mckinsey_what_is_ai, datamanagement_4phases, linkedin_4stages. All saved as .txt in same dir.
+   215→- Extracted the 4-stage evolution narrative with concrete definitions (synthesis of McKinsey Rodney Brooks "four previous stages" + VastData 3-era + Bain capability matrix + Aditya Sharma 4-stage + Unstructured 6-level spectrum + arXiv survey + DataMgmt RPA→agents): (1) Static/Traditional Programs (rule-based, deterministic, 1956-1980s) — "humans manually encode knowledge… struggle with real-world complexity" [mck-ai]; (2) ML/Deep Learning (pattern recognition, 1986-2017) — "models remained static until retrained… no inherent ability to reason about goals" [vast]; (3) Cognitive/Generative AI (perception + generation, 2017-2023) — "waits for a prompt and then responds" [fedresources]; (4) Agentic AI (autonomous reasoning + tool use + multi-step action, 2024-) — "pursue a defined goal on its own, by planning the steps, using tools and systems, and adjusting course as conditions change" [bain-what]. For each stage: what it CAN do, what it CAN'T do, value created — all verbatim from sources.
+   216→- Extracted the LEAP from Stage 3 → Stage 4: Sequoia's "System 1 (rapid-fire pre-trained) → System 2 (deliberate reasoning at inference time)" framing via AlphaGo analogy [seq-o1]; arXiv survey's "paradigm shift… enabling systems to act independently, pursue broad objectives rather than isolated decisions" [arxiv]; 4 capability leaps synthesized (reactive→proactive, single-shot→multi-step-with-feedback, answering→executing, tool→collaborator).
+   217→- Extracted 8 DESIGN PATTERNS think tanks use to visualize evolution: (A) Horizontal Timeline with Phase Bars (McKinsey + IBM dated eras), (B) Ascending Maturity Ladder / Staircase (BCG 5-stage + Cisco 5-levels with "85% stuck at 2-3" bracket), (C) Autonomy Spectrum / Horizontal Bar with Threshold Line (Unstructured 6-level L1 Code → L6 Autonomous, dotted line between L4-L5 "governance model must change"), (D) Capability Comparison Matrix (Bain GenAI vs Agentic table across 5 dimensions), (E) Hype Cycle Curve with Year-over-Year Markers (Gartner 5-phase + Pragmatic Coders 2022→2025 arc), (F) 3-Era Stack with Strengths & Limits per Era (VastData), (G) Loop Diagram Perceive→Reason→Act→Reflect (Fedresources + MIT + Ultralytics), (H) Pyramid / Nested Capability Stack (Aditya Sharma "nested not sequential" + Sequoia foundation/reasoning/application layers).
+   218→- Extracted 12 specific quotes/insights from think tanks about agentic AI value, each verbatim and sourced: Bain "structural shift in enterprise tech… reason, coordinate, and execute complex workflows" [bain-foundation]; Bain "people become AI supervisors rather than task executors" [bain-what]; MIT/Kellogg "fundamental economic promise… dramatically reduce transaction costs" [mit]; MIT/Aral "actions that change things happening in the physical world" [mit]; Bain "copilots assist… agents coordinate multistep work" [bain-what]; Sequoia "thinking fast → thinking slow" [seq-o1]; Sequoia "sell work ($/outcome) not software ($/seat)… target the services profit pool" [seq-o1]; Gartner "AI agents + AI-ready data fastest advancing on 2025 Hype Cycle" [gart-press]; Gartner "17% deployed / 60% within 2 years — most aggressive adoption curve" [gart-agentic]; Deloitte "3/4 planning agentic AI within 2 years, only 21% have mature agent governance" [deloitte]; WEF "shifts human value beyond old-school productivity… roles need to evolve" [wef]; VastData "not a detour… next logical step in progression toward more adaptive and collaborative intelligence" [vast]. Plus 5 bonus framing lines (unstruct "extensions of the mind into independent embodiments"; fedresources "GPS vs self-driving car"; li-4stages "Decides→Creates→Acts→Runs systems"; vast "creativity + recognition + execution merged into a continuous loop"; li-4stages "nested capabilities").
+   219→- Designed recommended 10-slide structure for Tab 3 (each slide: action title ≤15 words as full sentence + design pattern from §2 + self-sufficient body content + source line). Validated against McKinsey 60-second Titles Test (reading only the 10 action titles top-to-bottom tells the complete strategic story): ① Hero/Exec Summary (SCR 3-col: Situation|Complication|Resolution), ② 70-Year Timeline (Pattern A — 4 phase bars + milestone dots), ③ 4 Stages Defined reference card (Pattern F+H — 4 cards + nested pyramid inset), ④ The Leap Loop Diagram (Pattern G — Perceive→Reason→Act→Reflect + 4 capability-leap callouts), ⑤ GenAI vs Agentic Capability Matrix (Pattern D — Bain 5-row table), ⑥ Autonomy Spectrum with Threshold (Pattern C — 6-segment bar with L4/L5 threshold + "Cusco operates at L5" pin), ⑦ Market Timing Hype Cycle (Pattern E — Gartner curve + 4 markers + stat sidebar 17%/60%/$234B/$33.9B), ⑧ Enterprise Reality Maturity Ladder (Pattern B — BCG 5 stages + "85% stuck here" bracket + Deloitte pilot-prod stat), ⑨ Cusco Vision Agent Mapping (Pattern G variant — same loop overlaid on actual Tab 2 pipeline: TF.js COCO-SSD → rule engine + z-score + LLM-judge → log/snapshot/email/escalate → LLM verdict feedback), ⑩ Strategic Imperative + Sources (pull-quote from WEF + 3-bullet "what to do next" + full source list).
+   220→- Documented visual style recommendations extending STYLE_GUIDE.md (task 0-c) for Tab 3 specifically: (1) COLOR — inherit zinc+emerald+amber+rose, ADD stage color coding (Stage 1 zinc-400, Stage 2 zinc-600, Stage 3 amber-500, Stage 4 emerald-600) so the progression visually echoes the narrative (inert → creative-but-stuck → alive-and-acting), no new tokens needed; (2) TYPOGRAPHY — inherit Instrument Serif + Inter + JetBrains Mono, ADD pull-quote treatment (Instrument Serif italic 28-32px + emerald-600 left border 4px + zinc-100 bg) and stat-callout treatment (JetBrains Mono tabular-nums 36-44px + Inter caption 12px); (3) LAYOUT DENSITY — purpose-tuned density gradient: sparse slides 1,2,4,10 (≤30 body words, diagram dominates); medium slides 6,7,8,9 (60-120 words, diagram + stat sidebar); dense slides 3,5 (180-260 words structured as bullets/tables, reference slides); max-w-5xl prose / max-w-6xl diagrams; 96px title top padding, 48px title-to-body, 32px body-block rhythm; (4) SLIDE CHROME — section per slide with min-h-screen, px-6→px-24 responsive, border-b separator, slide number top-right "03 / 10" in mono, emerald kicker label above action title, source footer text-xs zinc-400 on every slide; (5) SELF-SUFFICIENCY RULES — 6 rules making each slide readable cold (action title = complete sentence, ≥2-sentence orienting prose above any diagram/table, every acronym expanded on first use within each slide, every quantitative claim sourced, every diagram labeled, no jargon-only headings); (6) ANTI-PATTERNS — no wordclouds/gradient decoration, no anthropomorphic robot illustrations (use abstract geometric icons), no animated slide transitions (it's a brief not a presentation), no AGI speculation slides, no pie charts, no uncited statistics.
+   221→- Provided handoff to implementation: build order (Slide 1 → 3 → 4 → 7 → fill rest); 5 reusable components to extract (<StageCard>, <ActionTitle>, <SourceLine>, <StatCallout>, <PullQuote>, <LoopDiagram>); STAGES TypeScript data structure as single source of truth (4 stages × 7 fields each, ready to drop into a stages.ts constant); 4-gate quality check (Titles Test, Cold-Reader Test, Source Test, Palette Test).
+   222→- Compiled final deliverable: /home/z/my-project/download/research/task3a/STRATEGIC_BRIEF_RESEARCH.md — 7 sections (~600 lines): (1) 4-stage evolution narrative with definitions + value of each stage, (2) 8 design patterns for visualizing evolution, (3) 12 quotes/insights about agentic AI value, (4) 10-slide structure with action titles + self-sufficient body, (5) visual style recommendations, (6) source inventory table (21 sources), (7) handoff to implementation. Raw research corpus (12 JSON search results + 17 fetched article bodies) preserved in same dir for traceability.
+   223→
+   224→Stage Summary:
+   225→- DELIVERED: Strategic Brief Research at /home/z/my-project/download/research/task3a/STRATEGIC_BRIEF_RESEARCH.md (7 sections, ~600 lines). Raw research corpus (12 JSON + 17 text snapshots + 2 wayback-fetched) preserved in same dir.
+   226→- KEY NARRATIVE (4 stages, nested not sequential): Stage 1 Static Programs (1956-1980s, rule-based, McKinsey "Symbolic AI") → Stage 2 ML/Deep Learning (1986-2017, learned-from-data, VastData "models remained static until retrained") → Stage 3 Cognitive/Generative AI (2017-2023, synthesize content, Bain "copilots assist") → Stage 4 Agentic AI (2024-, perceive-reason-act-reflect loop, Bain "pursue a defined goal on its own"). Each stage solves the previous era's ceiling.
+   227→- KEY LEAP (Stage 3 → 4): Sequoia "System 1 (rapid-fire pre-trained) → System 2 (deliberate reasoning at inference time)" via AlphaGo analogy; arXiv "paradigm shift… pursue broad objectives rather than isolated decisions". Four capability leaps: reactive→proactive, single-shot→multi-step-with-feedback, answering→executing, tool→collaborator.
+   228→- KEY DESIGN PATTERNS (8): Horizontal Timeline (McKinsey/IBM dated eras), Ascending Maturity Ladder (BCG 5-stage + Cisco 5-level with "85% stuck at 2-3" bracket), Autonomy Spectrum with Threshold Line (Unstructured 6-level L1 Code→L6 Autonomous, dotted line between L4-L5 "governance model must change"), Capability Comparison Matrix (Bain GenAI vs Agentic 5-row table), Hype Cycle Curve with Year Markers (Gartner + Pragmatic Coders 2022→2025 arc), 3-Era Stack with Strengths & Limits (VastData), Loop Diagram Perceive→Reason→Act→Reflect (Fedresources/MIT), Nested Pyramid (Aditya Sharma "nested capabilities").
+   229→- KEY QUOTES (12 verbatim, sourced): Bain "structural shift… reason, coordinate, execute"; Bain "AI supervisors not task executors"; MIT "dramatically reduce transaction costs"; MIT "actions that change the physical world"; Sequoia "thinking fast → thinking slow"; Sequoia "sell work not software, target services profit pool"; Gartner "fastest advancing technologies on 2025 Hype Cycle"; Gartner "17% deployed / 60% within 2 years, most aggressive curve"; Deloitte "3/4 planning agentic within 2 years, only 21% mature governance"; WEF "shifts human value beyond productivity, roles evolve"; VastData "next logical step, not a detour".
+   230→- KEY SLIDE STRUCTURE (10 slides, action titles validated against 60-sec Titles Test): ① Hero/Exec Summary (SCR), ② 70-Year Timeline, ③ 4 Stages Defined (reference card), ④ The Leap Loop Diagram, ⑤ GenAI vs Agentic Matrix, ⑥ Autonomy Spectrum with Threshold, ⑦ Market Timing Hype Cycle, ⑧ Enterprise Reality Maturity Ladder, ⑨ Cusco Vision Agent Mapping, ⑩ Strategic Imperative + Sources.
+   231→- KEY VISUAL STYLE: Inherit zinc+emerald+amber+rose palette + Instrument Serif/Inter/JetBrains Mono typography from STYLE_GUIDE.md (task 0-c). ADD stage color coding (zinc-400→zinc-600→amber-500→emerald-600 progression), pull-quote treatment (Instrument Serif italic + emerald border), stat-callout treatment (JetBrains Mono tabular-nums). Purpose-tuned density gradient (sparse→dense→sparse across the 10 slides). 6 self-sufficiency rules per slide (action title = full sentence, ≥2-sentence orienting prose, acronyms expanded per slide, every stat sourced, diagrams labeled, no jargon-only headings).
+   232→- HANDOFF to Tab 3 implementation: build order Slide 1 → 3 → 4 → 7 → fill rest. 5 reusable components (<StageCard>, <ActionTitle>, <SourceLine>, <StatCallout>, <PullQuote>, <LoopDiagram>). STAGES TypeScript constant (4 stages × 7 fields) ready to drop in. 4-gate quality check before merge (Titles Test, Cold-Reader Test, Source Test, Palette Test).
+   233→
+   234→---
+   235→Task ID: tab3-strategic-brief
+   236→Agent: orchestrator
+   237→Task: Add Tab 3 "Strategic Brief" — PowerPoint-style presentation on AI evolution (static → DL → cognitive → agentic)
+   238→
+   239→Work Log:
+   240→- Spawned research agent (Task 3-a) to study think-tank presentation patterns: McKinsey, BCG, Bain, Gartner, Deloitte, WEF, Stanford HAI, MIT Sloan, Sequoia, VastData, Cisco, Unstructured.io, IBM, arXiv. Output: /home/z/my-project/download/research/task3a/STRATEGIC_BRIEF_RESEARCH.md (359 lines).
+   241→- Synthesized 4-stage evolution narrative: Static Programs (1956) → ML/Deep Learning (1986) → Cognitive/Generative AI (2017) → Agentic AI (2024).
+   242→- Created /home/z/my-project/src/lib/stages.ts — single source of truth with STAGES, TIMELINE, COMPARISON, AUTONOMY_SPECTRUM, MATURITY_LADDER, QUOTES, MARKET_STATS, CAPABILITY_LEAPS, SOURCES.
+   243→- Created /home/z/my-project/src/components/tab3-strategic-brief.tsx — 10 slides + closing CTA.
+   244→- Updated /home/z/my-project/src/app/page.tsx — added third tab "Strategic Brief" with Presentation icon.
+   245→- Lint: 0 errors, 0 warnings.
+   246→- Agent Browser verification: all 3 tabs render, all 10 slides present with action titles, no console errors.
+   247→- Captured screenshots: tab3-slide1-hero, tab3-slide3-stages, tab3-slide4-loop, tab3-slide6-spectrum, tab3-slide7-hype, tab3-slide8-ladder, tab3-slide10-imperative, tab3-mobile-hero, tab3-mobile-stages, tab3-full-page.
+   248→
+   249→Stage Summary:
+   250→- Tab 3 delivers a self-sufficient strategic brief — readable without a presenter.
+   251→- Each slide has: action title (full sentence), orienting paragraph (2+ sentences), diagram/table, source footer.
+   252→- 10 slides pass the 60-second Titles Test (read top-to-bottom = complete story).
+   253→- Visual style: emerald/zinc/amber/rose palette (inherited from Tab 1), Instrument Serif + Inter + JetBrains Mono.
+   254→- Stage color coding: zinc-400 (static) → zinc-600 (ML) → amber-500 (cognitive) → emerald-600 (agentic).
+   255→- Reusable components: SlideSection, ActionTitle, OrientingParagraph, SourceLine, StageCard, LoopDiagram, HypeCycleDiagram, StatCallout, NextActionCard.
+   256→- Cross-links: Tab 3 CTAs navigate to Tab 1 (architecture) and Tab 2 (live prototype).
+   257→
+   258→---
+   259→Task ID: pptx-export
+   260→Agent: orchestrator
+   261→Task: Add PowerPoint (.pptx) download for Tab 3 — single slide with native editable objects
+   262→
+   263→Work Log:
+   264→- Installed pptxgenjs@4.0.1
+   265→- Created /api/export-pptx/route.ts — generates a SINGLE PowerPoint slide (13.333" × 7.5" widescreen)
+   266→- Layout: Header (logo+brand) → Main title → 4 stage cards → Timeline arrow → Insight callout → Footer
+   267→- All 42 shapes are NATIVE PowerPoint objects (rect, roundRect, line, rightArrow, text) — fully editable
+   268→- 53 text runs with Georgia (serif headings), Calibri (body), Consolas (mono) fonts
+   269→- Color palette: emerald-600 (brand), zinc (neutral), amber-500 (stage 3), rose-600 (threshold)
+   270→- Verified: 0 overflow issues, 0 occlusion issues, all shapes within slide bounds
+   271→- Card geometry: 4 cards × 3.056" wide, gap 0.17", x positions: [0.30, 3.53, 6.75, 9.98]
+   272→- Added download button to Tab 3 hero section + closing CTA (2 buttons)
+   273→- Added Sonner Toaster to layout.tsx for toast notifications
+   274→- Toast feedback: "PowerPoint downloaded · Single-slide .pptx with native editable objects · 13.333" × 7.5""
+   275→- API: GET /api/export-pptx → returns .pptx (85KB, 39 internal files)
+   276→- LibreOffice render verified: 1280×720 PNG, correct layout
+   277→- Lint: 0 errors, 0 warnings
+   278→
+   279→Stage Summary:
+   280→- Single-slide PowerPoint (.pptx) download fully functional
+   281→- Every element is a native, editable PowerPoint object (no raster images)
+   282→- Precise x/y/w/h measurements verified via XML extraction
+   283→- No overflow, no occlusion — clean geometric placement
+   284→- Button visible on Tab 3 (hero + closing CTA)
+   285→- File: cusco-vision-agent-strategic-brief.pptx
+
+[showing lines 100-285 of 286; use offset=286 with limit to continue reading]

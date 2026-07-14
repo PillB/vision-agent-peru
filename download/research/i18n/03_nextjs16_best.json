@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1jv3t1y/internationalization_with_nextjs_15",
+    "name": "Internationalization with Next.js 15? : r/nextjs",
+    "snippet": "Hello, I'm recently building my personal website as a life-long project. And I'd like to support multiple languages for my friends. I found this document ...",
+    "host_name": "www.reddit.com",
+    "rank": 0,
+    "date": "Jul 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://nextjs.org/docs/app/guides/internationalization",
+    "name": "Guides: Internationalization",
+    "snippet": "Next.js enables you to configure the routing and rendering of content to support multiple languages. Making your site adaptive to different locales.\nNext.js enables you to configure the routing and rendering of content to support multiple languages. Making your site adaptive to different locales includes translated content (localization) and internationalized routes.",
+    "host_name": "nextjs.org",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nextjs.org/docs/pages/guides/internationalization",
+    "name": "Guides: Internationalization",
+    "snippet": "If you don't plan to support all regions of a country, it is therefore a good practice to include country locales that will act as fallbacks.\nNext.js has built-in support for internationalized (i18n) routing since v10.0.0. You can provide a list of locales, the default locale, and domain-specific locales and Next.js will automatically handle the routing.",
+    "host_name": "nextjs.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://eastondev.com/blog/en/posts/dev/20251225-nextjs-i18n-complete-guide",
+    "name": "Next.js Internationalization Complete Guide: next-intl Best",
+    "snippet": "Best practices: use TypeScript for type safety, organize translation files by feature, use namespaces, implement language switching, handle SEO ...\nDeep dive into Next.js App Router internationalization solutions, including complete next-intl configuration, multi-language routing design, translation file management best practices, with practical code examples",
+    "host_name": "eastondev.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arnab-k.medium.com/internationalization-i18n-in-next-js-a-complete-guide-f62989f6469b",
+    "name": "Internationalization (i18n) in Next.js: A Complete Guide - rnab",
+    "snippet": "This guide will walk you through implementing i18n in your Next.js applications using its built-in features, alongside practical examples ...",
+    "host_name": "arnab-k.medium.com",
+    "rank": 4,
+    "date": "Jul 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=e_PPG7PTqGU",
+    "name": "Next.js 16: Build a Multilingual (i18n) App from Scratch using",
+    "snippet": "In this video, we'll walk through how to internationalize a Next.js. Configure languages and enable static page generation ✅ Declare ...",
+    "host_name": "www.youtube.com",
+    "rank": 5,
+    "date": "Jul 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://phrase.com/blog/posts/nextjs-i18n",
+    "name": "A Step-by-Step Guide to Next.js Internationalization",
+    "snippet": "From text expansion to pluralization, this guide explores key i18n pitfalls and best practices for modern web developers.",
+    "host_name": "phrase.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/design-principles",
+    "name": "Design principles – Internationalization (i18n) for Next.js",
+    "snippet": "next-intl takes a holistic approach to internationalization that nudges you towards best practices for handling languages and country-specific conventions.",
+    "host_name": "next-intl.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://leapcell.io/blog/best-practices-for-internationalization-in-next-js-and-nuxt-js",
+    "name": "Best Practices for Internationalization in Next.js and Nuxt.js",
+    "snippet": "A comprehensive guide to implementing robust i18n solutions in modern web frameworks like Next.js and Nuxt.js, covering key concepts, ...",
+    "host_name": "leapcell.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/samdreamsmaker/internationalization-in-nextjs-16-lessons-from-supporting-10-languages-15nb",
+    "name": "Internationalization in Next.js 16: Lessons From Supporting",
+    "snippet": "When I decided to support 10 languages in TaleForge from day one, I knew it would be work. I didn't know it would be this much work. Here's everything I learned. Stack: Next.js 16 App Router + next-intl. Why next-intl? It plays nicely with server components, supports namespaced messages, and handles pluralization rules per locale.",
+    "host_name": "dev.to",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

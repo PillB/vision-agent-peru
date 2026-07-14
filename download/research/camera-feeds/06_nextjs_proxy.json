@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/65058598/nextjs-cors-issue",
+    "name": "reactjs - NextJs CORS issue",
+    "snippet": "I have a Next.js app hosted on Vercel at www.example.com, which needs to communicate with a backend .NET Core Web API hosted on a different server ...",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "Jul 15, 2021",
+    "favicon": ""
+  },
+  {
+    "url": "https://maxschmitt.me/posts/next-js-api-proxy",
+    "name": "Next.js: The Easiest Way to Create an API Proxy (2023)",
+    "snippet": "If you're building a React website or application using Next.js, you might want to create a proxy for your API to prevent CORS issues.\nNext.js: The Easiest Way to Create an API Proxy (2023) If you're building a React website or application using Next.js, you might want to create a proxy for your API to prevent CORS issues.",
+    "host_name": "maxschmitt.me",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1ctoebq/nextjs_cors_error_when_calling_external_api",
+    "name": "Next.JS Cors Error When calling external api : r/nextjs",
+    "snippet": "If you use a Next.js route handler include an OPTIONS route handler with the CORS headers in this link. This is where the \"preflight\" request ...",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "Jul 14, 2024",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nextsaaspilot.com/blogs/nextjs-proxy-api-route",
+    "name": "Setting Up Proxy API Routes in Next.js: The Definitive Guide",
+    "snippet": "Configuring a nextjs proxy api route is the secret weapon for solving CORS errors, hiding API keys, and handling legacy backend migrations without rewriting ...",
+    "host_name": "www.nextsaaspilot.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.vercel.com/t/missing-cors-proxy-on-next-js-api-routes-in-v0-dev-change-or-bug/6424",
+    "name": "Missing CORS Proxy on Next.js API Routes in v0.dev",
+    "snippet": "the CORS proxy is no longer in effect, and my API calls are failing due to CORS issues. Are there any recommended workarounds or settings to ...",
+    "host_name": "community.vercel.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/vercel/next.js/discussions/52933",
+    "name": "How to properly implement CORs for API routes",
+    "snippet": "Summary\n\nI have two applications running on localhost.\n\nOne is running on :1200, the other is :1201.\n\nWhen I make an API request from one application ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@devva.kim/fixing-cors-errors-with-next-js-a43811d41270",
+    "name": "Fixing CORS Errors with Next.js",
+    "snippet": "This article shares how I introduced Next.js to resolve CORS errors that occurred while developing a playground for our in-house Copilot.",
+    "host_name": "medium.com",
+    "rank": 6,
+    "date": "Jul 14, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.propelauth.com/post/avoiding-cors-issues-in-react-next-js",
+    "name": "Avoiding CORS Issues in React/Next.js",
+    "snippet": "both React and Next.js have ways for you to turn them into proxies and proxy requests to your backend on your behalf. This avoids any CORS ...",
+    "host_name": "www.propelauth.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.logrocket.com/using-cors-next-js-handle-cross-origin-requests",
+    "name": "Using CORS in Next.js to handle cross-origin requests",
+    "snippet": "In this complete guide, we will explore several methods for using CORS in Next.js, enabling you to handle cross-origin requests effectively and securely.",
+    "host_name": "blog.logrocket.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/shrkwy/oxycors",
+    "name": "GitHub - shrkwy/oxycors: A lightweight Next.js-based CORS",
+    "snippet": "Sick of having to deal with those annoying CORS issues when you try to stream your M3U8/HLS files? Let oxycors handle the headache—seamless streaming starts here! 🎥 Here's a lightweight Next.js-based CORS proxy for HLS manifests, segments, YouTube livestreams, and more.",
+    "host_name": "github.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://github.com/yt-dlp/yt-dlp/issues/8503",
+    "name": "Option to not download but instead to create a prepped m3u8 file  - GitHub",
+    "snippet": "When you download a video from youtube it internally gets the m3u8 file, finds the best matching resolution according to your filter, downloads all the chunks, ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/37040798/how-do-you-use-youtube-dl-to-download-live-streams-that-are-live",
+    "name": "How do you use youtube-dl to download live streams (that are live)?",
+    "snippet": "Pick the format you wish to download, and fetch the HLS m3u8 URL of the video from the manifest. I'll be using 94 mp4 854x480 HLS 1380k ... How can I get the actual video URL of a YouTube live stream? YT-DLP Return Format (m3u8) - Stack Overflow More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nickmcmillan.com/posts/download_videos_yt-dlp",
+    "name": "How To Download Difficult Videos Using yt-dlp - Nick McMillan",
+    "snippet": "Open up your developer settings of your browser · Navigate to the Network tab · Refresh the page · Search for and then click the .m3u8 file · Find ...",
+    "host_name": "www.nickmcmillan.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/youtubedl/comments/1b5dikh/help_downloading_a_livestream_with_the_audio",
+    "name": "Help downloading a livestream with the audio : r/youtubedl - Reddit",
+    "snippet": "Hello, I'm trying to download a livestream from spwn.jp, I've managed to download the video of it via the .m3u8 file, but there is no audio. [yt-dlp] Downloading \"playlist.m3u8?token=\" links with \" What is the importance of m3u8 information in yt-dlp? - Reddit More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.devinschumacher.com/how-to-download-vimeo-videos-method-2-yt-dlp-at-the-m3u8-stream",
+    "name": "Method 2: yt-dlp at the m3u8 stream - Devin Schumacher",
+    "snippet": "Method 2: yt-dlp at the m3u8 stream · 1. Open DevTools & Play the Video · 2. Search for the Right Requests · 3. Copy the URL · 4. Run yt-dlp.",
+    "host_name": "blog.devinschumacher.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/yt-dlp/yt-dlp/issues/6705",
+    "name": "[generic] Detect hls livestreams · Issue #6705 · yt-dlp/yt-dlp - GitHub",
+    "snippet": "NO tells yt-dlp that the URL is not a live stream YES tells yt-dlp that the URL is a live stream AUTO. Downloading m3u8 information .m3u8\" [ ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://forum.videohelp.com/threads/412039-ANYBODY-can-help-me-with-this-m3u8-live-streaming-yt-dlp-and-ffmpeg",
+    "name": "ANYBODY can help me with this m3u8 live streaming, yt-dlp and",
+    "snippet": "I'm trying to access the m3u8 of this live streaming website ... How to fix the download failure with yt-dlp command for some live M3U8 link.",
+    "host_name": "forum.videohelp.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://superuser.com/questions/1696694/how-to-save-a-local-file-url-m3u8-stream-using-youtube-dl",
+    "name": "How to save a local file URL .m3u8 stream using youtube-dl?",
+    "snippet": "I have a local .m3u8 file containing stream information. I would like to use youtube-dl or a fork to download the stream. When I pass the ...",
+    "host_name": "superuser.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@howtodownloadvideos2/how-to-download-circle-so-videos-for-free-hls-m3u8-streams-using-yt-dlp-5d3265e5141d",
+    "name": "How to Download Circle.so Videos for Free (HLS m3u8 Streams) - Medium",
+    "snippet": "Find the .m3u8 link under Network → Media. · Use the master playlist.m3u8 , not the _1.m3u8 variant. · Copy the template command from Step 2.",
+    "host_name": "medium.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=ycpTZPLLRSk",
+    "name": "How to Get M3U8 Link from Live Streaming Link | 2025 Tutorial",
+    "snippet": "Learn how to extract an M3U8 link from a live streaming URL with this easy-to-follow tutorial for 2025. Whether you're looking to record ...",
+    "host_name": "www.youtube.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://next-intl.dev/docs/environments/server-client-components",
+    "name": "Internationalization of Server & Client Components - next-intl",
+    "snippet": "Moving internationalization to the server side unlocks new levels of performance, leaving the client side for interactive features.",
+    "host_name": "next-intl.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.thisdot.co/blog/internationalization-in-next-js-with-next-intl",
+    "name": "Internationalization in Next.js with next-intl - This Dot Labs",
+    "snippet": "This guide will walk you through setting up i18n in Next.js using next-intl for URL-based routing, user-specific settings, and domain-based ...",
+    "host_name": "www.thisdot.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/amannn/next-intl/discussions/975",
+    "name": "Using next-intl with app router without middleware.ts #975 - GitHub",
+    "snippet": "To use next-intl we seemingly need to use a middleware.ts file. This means NextJS 14 forces you to use an edge runtime, as opposed to the node runtime. How to integrate next-intl middleware with an existing middleware #1613 next-intl without middleware · amannn next-intl · Discussion #2048 - GitHub More results from github.com",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.prismic.io/t/help-needed-setting-up-i18n-router-with-next-intl/16556",
+    "name": "Help needed setting up i18n router with next-intl - Prismic People",
+    "snippet": "Ensure that both middleware functions are compatible and do not conflict with each other. Turn off localeDetection and alternateLinks in ...",
+    "host_name": "community.prismic.io",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/routing/middleware",
+    "name": "Proxy / middleware – Internationalization (i18n) for Next.js",
+    "snippet": "The next-intl middleware can be created via createMiddleware . It receives a routing configuration and takes care of: Locale negotiation ...",
+    "host_name": "next-intl.dev",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/179di22/nextintl_really_sucks_how_to_solve_this",
+    "name": "next-intl really sucks how to solve this? : r/nextjs - Reddit",
+    "snippet": "I'm getting errors when building the project with Next 14 in every single route! I'm using next-intl, but due to server side support being not ...",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev",
+    "name": "next-intl – Internationalization (i18n) for Next.js",
+    "snippet": "Internationalization (i18n) is an essential part of the user experience, therefore next-intl gives you all the parts you need to get language nuances right.",
+    "host_name": "next-intl.dev",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/78162323/how-to-navigate-when-using-next-intl-and-next-link",
+    "name": "How to navigate when using `Next-intl` and `next/link`",
+    "snippet": "To explicitly include the locale in your paths, you can use the useRouter hook from next/navigation (in nextjs 14 ) to access the current locale, and then ...",
+    "host_name": "stackoverflow.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://phrase.com/blog/posts/next-js-app-router-localization-next-intl",
+    "name": "Next.js 13/14 App Router Localization with next-intl - Phrase",
+    "snippet": "Take a deep dive into Next.js localization with next-intl and explore routing, Server and Client Components, and much more.",
+    "host_name": "phrase.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.buildwithmatija.com/blog/next-intl-nextjs-16-proxy-fix",
+    "name": "Fix \"Unable to find next-intl locale\" After Upgrading to Next.js 16",
+    "snippet": "Three fixes for next-intl in Next.js 16: rename middleware.ts to proxy.ts, add NextIntlClientProvider, and return locale from ...",
+    "host_name": "www.buildwithmatija.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

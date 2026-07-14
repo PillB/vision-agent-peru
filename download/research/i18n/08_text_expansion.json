@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Text/Wrapping_breaking_text",
+    "name": "Wrapping and breaking text - CSS - MDN Web Docs",
+    "snippet": "Wrapping and breaking text. This guide explains the various ways in which overflowing text can be managed in CSS. In this article.",
+    "host_name": "developer.mozilla.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://codersblock.com/blog/deep-dive-into-text-wrapping-and-word-breaking",
+    "name": "Deep Dive into Text Wrapping and Word Breaking - Coder's Block",
+    "snippet": "Putting overflow-wrap: break-word on an element will allow text to break mid-word if needed. It'll first try to keep a word unbroken by moving ...",
+    "host_name": "codersblock.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/642140/retain-newlines-in-html-but-wrap-text-possible",
+    "name": "Retain newlines in HTML but wrap text: possible? - Stack Overflow",
+    "snippet": "I want something that'll act like Notepad: the newlines will signal a newline but the text will otherwise wrap to fit inside it's container. How to stop text from taking up more than 1 line? - Stack Overflow css - How can I make text appear on next line instead of overflowing? More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/w3c/csswg-drafts/issues/3473",
+    "name": "[css-text] Preventing too-short final lines of blocks (Last Line  - GitHub",
+    "snippet": "Issue is about requiring a minimum length for lines. Common measures seem to be Suggestion for value space is ''match-indent | <length> | <percentage>''",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.chrome.com/docs/css-ui/css-text-wrap-balance",
+    "name": "CSS text-wrap: balance | CSS and UI - Chrome for Developers",
+    "snippet": "Balancing text competes with the white-space property because one is asking for no wrapping and the other is asking for balanced wrapping.",
+    "host_name": "developer.chrome.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.digitalocean.com/community/tutorials/css-prevent-line-break",
+    "name": "How To Prevent Line Breaks Using CSS - DigitalOcean",
+    "snippet": "The simplest choice is white-space: nowrap , which stops the browser from inserting line breaks inside that element's text. Pair it with width ...",
+    "host_name": "www.digitalocean.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/w3c/csswg-drafts/issues/2450",
+    "name": "[css-text-3] What does 'allowed' mean? #2450 - GitHub",
+    "snippet": "text layout SHOULD support breaks after a slash (especially for URLs and path strings, /i18n-tests/results/line-breaking etc do.",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://mrcoles.com/how-prevent-single-word-after-line-break-css",
+    "name": "How to prevent a single word after a line break with CSS - Peter Coles",
+    "snippet": "A CSS trick that uses white-space nowrap to prevent a single word at the final line of a paragraph.",
+    "host_name": "mrcoles.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://chenhuijing.com/blog/css-for-i18n",
+    "name": "CSS for internationalisation | Chen Hui Jing",
+    "snippet": "CSS is used to describe the presentation of a web page by telling the browser how elements on the page ought to be styled and laid out.",
+    "host_name": "chenhuijing.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://speakerdeck.com/gunnarbittersmann/css-and-i18n-dos-and-donts-when-styling-multilingual-websites",
+    "name": "CSS & i18n—dos and don'ts when styling multilingual websites",
+    "snippet": "The talk covers best practices and pitfalls when dealing with languages that create large compound words (like German), languages with ...",
+    "host_name": "speakerdeck.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

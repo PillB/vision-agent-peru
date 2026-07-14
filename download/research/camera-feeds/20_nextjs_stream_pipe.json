@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/13toeob/nextjs_response_with_a_stream",
+    "name": "NextJS Response with a stream. - Reddit",
+    "snippet": "How do i create a \"Readable\" or some type of stream (from a file or a custom stream) on a NextJS 13 GET request so i can download a file in ... How to stream files from Next.js Route Handlers : r/nextjs Next.js Custom Route Handlers : r/nextjs More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/bsorrentino/how-to-stream-data-over-http-using-nextjs-1kmb",
+    "name": "How to stream data over HTTP using NextJS - DEV Community",
+    "snippet": "ReadableStream as response body. This allows to return a response able to streaming data from a Next.js Route Handler.\nCreate a ReadableStream from an async generator · Create a specialized Response object · Create a NextJS Route Handler that stream data · Create ...",
+    "host_name": "dev.to",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/73872687/is-there-a-way-to-pipe-readablestreamuint8array-into-nextapiresponse",
+    "name": "javascript - Is there a way to pipe ReadableStream<Uint8Array> into",
+    "snippet": "What worked for me was to simply cast the response.body of type ReadableStream<Uint8Array> to a NodeJS.ReadableStream and then use the pipe function. Decode ReadableStream object nextjs 13 api route - Stack Overflow req.body return ReadableStream in my route NextJS - Stack Overflow More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://bsorrentino.github.io/bsorrentino/web/2024/03/05/how-to-stream-data-in-nextjs.html",
+    "name": "How to stream data over HTTP using NextJS | Welcome to Bartolomeo Blog",
+    "snippet": "ReadableStream as response body. This allows to return a response able to streaming data from a Next.js Route Handler.\nA guide to using HTTP streaming for efficient data visualization in NextJS applications.",
+    "host_name": "bsorrentino.github.io",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nextjs.org/docs/app/guides/streaming",
+    "name": "Guides: Streaming - Next.js",
+    "snippet": "Route Handlers can stream raw responses using the Web Streams API. This is useful for Server-Sent Events, large file generation, or any ...\nRaw HTML streaming in a Route Handler, with early CSS discovery; A configurable ReadableStream API endpoint for experimenting with chunk sizes ...",
+    "host_name": "nextjs.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/vercel/next.js/discussions/50614",
+    "name": "How do I return a ReadableStream in an API route? · vercel next.js - GitHub",
+    "snippet": "I want to return the file in a streaming fashion. This means, I need to use something like the ReadableStream API. Not sure how to do this. How to stream text with NextJS v14 from server component to client ... vercel next.js - Streaming files with \"readableWebStream\" - GitHub More results from github.com",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericburel.tech/blog/nextjs-stream-files",
+    "name": "How to stream files from Next.js Route Handlers - Eric Burel",
+    "snippet": "The easy way to serve files is to load them in memory and then return the result. pass it to a Response, which accepts a \"ReadStream\" object ...\nHere is how you would stream files in an API Route, without copying them in memory. This is similar to what you could find in a typical Express application.",
+    "host_name": "www.ericburel.tech",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@nikhi.unni/next-js-13-streaming-improving-api-performance-with-node-js-streams-f6c268bcddac",
+    "name": "Next.js 13 Streaming: Improving API Performance with Node.js Streams",
+    "snippet": "In Next.js 13, the new API route handlers under the “app/api” folder are designed to use streams by default for handling requests and responses.",
+    "host_name": "medium.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nextjs.org/learn/dashboard-app/streaming",
+    "name": "Streaming - App Router - Next.js",
+    "snippet": "Streaming is a data transfer technique that allows you to break down a route into smaller \"chunks\" and progressively stream them from the server to the client ...",
+    "host_name": "nextjs.org",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_streams",
+    "name": "Using readable streams - Web APIs | MDN",
+    "snippet": "As a JavaScript developer, programmatically reading and manipulating streams of data received over the network, chunk by chunk, is very useful!\nThe Fetch API allows you to fetch resources across the network, providing a modern alternative to XHR. It has a number of advantages, and what ...",
+    "host_name": "developer.mozilla.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

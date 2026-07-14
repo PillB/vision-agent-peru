@@ -1,0 +1,74 @@
+[
+  {
+    "url": "http://www.insecam.org",
+    "name": "Insecam - World biggest online cameras directory",
+    "snippet": "Insecam.com - the world biggest directory of online cameras. Watch live street, traffic, parking, office, road, beach, earth online webcams.",
+    "host_name": "www.insecam.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/blakeblackshear/frigate/discussions/1740",
+    "name": "Demo Stream For Testing #1740 - blakeblackshear frigate - GitHub",
+    "snippet": "Use http://www.insecam.org/ goto a cam, right click inspect. Copy the .mjpeg stream url.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.justanswer.com/home-security-systems/92g67-stream-mjpeg-video-camera-two-types-cameras.html",
+    "name": "Stream MJPEG video for IP camera - I have two types of  - JustAnswer",
+    "snippet": "To fix MJPEG stream authentication on FOSCAM cameras, verify the URL format includes correct credentials: http://username:password@camera_ip/video.cgi.",
+    "host_name": "www.justanswer.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.chiefdelphi.com/t/url-for-mjpegserver-from-cameraserver-usb-camera/155420",
+    "name": "URL for MjpegServer from CameraServer/USB Camera - Java",
+    "snippet": "I'm looking to use a USB camera connected to the robot for GRIP development. I know that GRIP doesn't accept the dashboard stream, but the MJPG ...",
+    "host_name": "www.chiefdelphi.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://knowledge.akuvox.com/docs/monitor-and-image-2",
+    "name": "Monitor and Image - Akuvox Knowledge Base",
+    "snippet": "MJPEG, or Motion JPEG, is a video compression format. You can add a camera's stream by adding its URL. To set it up, go to the Surveillance > ...",
+    "host_name": "knowledge.akuvox.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://forum.inductiveautomation.com/t/showing-a-video-stream-from-a-web-based-camera/38999",
+    "name": "Showing a Video stream from a web based camera - General Discussion",
+    "snippet": "You need Motion JPEG (mjpeg or mjpg) or JPEG stills (jpeg or jpg). Both send full JPEG images at once. MPEG is a completely different protocol.",
+    "host_name": "forum.inductiveautomation.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://vutlan.atlassian.net/wiki/spaces/DEN/pages/1016335",
+    "name": "A list of supported MJPEG IP cameras",
+    "snippet": "The most common URL format (IP address) is \"http://xx.xx.xx.xx/axis-cgi/mjpg/video.cgi\". You can try using this URL in the first setup of the camera.",
+    "host_name": "vutlan.atlassian.net",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://vivotek.zendesk.com/hc/en-001/articles/900005585106--All-cameras-What-is-the-HTTP-URL-to-play-the-camera-s-MJPEG-stream",
+    "name": "[All cameras] What is the HTTP URL to play the camera's MJPEG stream?",
+    "snippet": "Go to System > Network to view the HTTP & HTTPS settings. Under \"Allow access through\" clone, select \"HTTP\" to display the corresponding access name.",
+    "host_name": "vivotek.zendesk.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://helios.earth/developers/api/cameras",
+    "name": "Cameras API - Helios",
+    "snippet": "The Cameras API provides access to all cameras in the Helios Network. The primary endpoints are the Index and Live methods.",
+    "host_name": "helios.earth",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://opendata.dc.gov/datasets/DCGIS::traffic-camera/api",
+    "name": "Traffic Camera - Open Data DC",
+    "snippet": "Traffic Camera. Create a query URL from the available options to get a JSON response. See our full REST API documentation for details.",
+    "host_name": "opendata.dc.gov",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api.windy.com/webcams/docs",
+    "name": "Documentation - Webcams - Windy API",
+    "snippet": "The Webcams API provides access to the largest repository of webcams worldwide. Filter webcams based on criteria such as country, category, location, and more. ...",
+    "host_name": "api.windy.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/AlexxIT/go2rtc",
+    "name": "GitHub - AlexxIT/go2rtc: Ultimate camera streaming application",
+    "snippet": "mpjpeg - The legacy but still used MJPEG protocol for real-time media transmission. Via the HTTP API in json or dot format on an interactive connection map. ...",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/homeassistant/comments/1pzmqr1/looking_for_public_rtsp_camera_streams_cities",
+    "name": "Looking for Public RTSP Camera Streams (Cities, Beaches, Streets)",
+    "snippet": "I am looking for public and open RTSP streams from live cameras installed in public places, such as beaches, city streets, avenues, highways, or ... Live feed camera streams : r/ATAK - Reddit Security cameras with API/open source? : r/sysadmin - Reddit More results from www.reddit.com",
+    "host_name": "www.reddit.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://publicapi.ohgo.com/docs/v1/cameras",
+    "name": "Camera Documentation - OHGO API",
+    "snippet": "The camera endpoints display snapshots from the cameras, which update once every 5 seconds. Cameras may be fixed to see a certain position",
+    "host_name": "publicapi.ohgo.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=T7BUJExAMws",
+    "name": "Transform JSON Data and View Webcams - YouTube",
+    "snippet": "... free Manifold Viewer (https://manifold.net/viewer/), too! Note: The video shows techniques to manipulate data scraped from the web into a ...",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.home-assistant.io/t/integrate-a-webcam-public-https-stream-online-with-a-specif-url-as-a-generic-camera-or-mpeg-camera/426989",
+    "name": "Integrate a webcam (public https stream online with a specif url) as a",
+    "snippet": "Go to integrations and add a generic camera integration, you add the URL to the stream source URL not the still image URL. Change the RTSP transport protocol.",
+    "host_name": "community.home-assistant.io",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://api-docs.we4city.com/en/latest/api/Cameras",
+    "name": "Live Cameras - We4city API Docs",
+    "snippet": "We4city Platform can group real time cameras from different sources. The aplication API provides a RESTful endpoint to access real cameras data and sources.",
+    "host_name": "api-docs.we4city.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ipcamlive.com/resources/api/IPCamLiveAPIv2.pdf",
+    "name": "[PDF] IPCamLive JSON API v2",
+    "snippet": "IPCAMLIVE JSON API. Get camera storage files. You can get the list of the MP4 storage files associated to the camera by invoking the.",
+    "host_name": "www.ipcamlive.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

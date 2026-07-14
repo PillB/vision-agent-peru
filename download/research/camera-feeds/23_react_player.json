@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://blog.croct.com/post/best-react-video-libraries",
+    "name": "The best React video player libraries of 2026 | Croct Blog",
+    "snippet": "React UI component libraries that offer video players · React video player specific libraries · react-player · Video.js · react-youtube · mux-player- ...",
+    "host_name": "blog.croct.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://js.libhunt.com/react-player-alternatives",
+    "name": "ReactPlayer Alternatives - JavaScript Video/Audio | LibHunt",
+    "snippet": "Alternatively, view react-player alternatives based on common mentions on social networks and blogs. video.js. 9.7 7.1 L4 ReactPlayer VS video.",
+    "host_name": "js.libhunt.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cloudinary.com/guides/front-end-development/videojs-and-react-a-perfect-match-for-modern-video-players",
+    "name": "VideoJS and React: A Perfect Match for Modern Video Players | Cloudinary",
+    "snippet": "React Player: A versatile component supporting file paths, HLS, DASH ... Use the Video.js HLS or DASH plugins for delivering adaptive bitrate ...",
+    "host_name": "cloudinary.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.logrocket.com/guide-video-playback-react",
+    "name": "A guide to video playback in React - LogRocket Blog",
+    "snippet": "'react-player'; const VideoPlayer = () => { return ( <div> < ... ReactPlayer. While Video-React was heavily inspired by Video.js, most ...",
+    "host_name": "blog.logrocket.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://npmjs.com/package/@streamspark/react-video-player",
+    "name": "@streamspark/react-video-player - NPM",
+    "snippet": "react-player; video.js; hls.js; External UI frameworks; Redux or global state. It's written with vanilla React, DOM APIs, and TypeScript — fully ...",
+    "host_name": "npmjs.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://news.ycombinator.com/item?id=47506713",
+    "name": "I took back Video.js after 16 years and we rewrote it to be 88% smaller",
+    "snippet": "... HLS, Video.js's architecture makes that simple. If you want to customize UIs ... React Player and consolidating some development efforts. We're still a ...",
+    "host_name": "news.ycombinator.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/60794257/react-js-react-player-how-to-play-local-video",
+    "name": "React.js - react-player how to play local video - Stack Overflow",
+    "snippet": "Component } from 'react' import ReactPlayer from 'react-player ... js using html video tag? 1 · React.Js and Video.js integration · 0 · How to ... react-player: Is there a way to change video resolution with custom ... Does Video-React support video Streaming from url - Stack Overflow More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://npms.io/search?q=HLS%20Player",
+    "name": "HLS Player - npms",
+    "snippet": "video.js(7.19.2). Q P M · react-player-pfy(1.16.0). Q P M 73 · react-player-custom(1.11.14). Q P M 72 · @uizaio/hlsjs( ...",
+    "host_name": "npms.io",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://npm-compare.com/hls.js,plyr,plyr-react,react-player,video.js,videojs-record",
+    "name": "Video Playback and Recording Solutions for Modern Web",
+    "snippet": "react-player is a React component that supports multiple video platforms and formats with minimal configuration. video.js is a mature, feature-rich video player ...",
+    "host_name": "npm-compare.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1dv587f/video_player_in_nextjs",
+    "name": "Video player in Nextjs - Reddit",
+    "snippet": "... react-player, which by default will give you nice HTML5 based video ... In that case, Video JS would be the safest option you have.",
+    "host_name": "www.reddit.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

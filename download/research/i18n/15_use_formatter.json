@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://next-intl.dev/docs/usage/numbers",
+    "name": "Number formatting – Internationalization (i18n) for Next.js",
+    "snippet": "Currency sign position (e.g. “12 €” in de-DE vs. ”€ 12” in de-AT ). By using the formatting capabilities provided by next-intl , you can adjust ...",
+    "host_name": "next-intl.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/usage/dates-times",
+    "name": "Date and time formatting – Internationalization (i18n) for Next.js",
+    "snippet": "The formatting of dates and times varies greatly between locales (e.g. “Apr 24, 2023” in en-US vs. “24 квіт. 2023 р.” in uk-UA ).",
+    "host_name": "next-intl.dev",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/amannn/next-intl/issues/1492",
+    "name": "Allow formatting of number strings #1492 - amannn/next-intl - GitHub",
+    "snippet": "in order to use next-intl number formatter, we have to turn those numbers back into native number values, which would be lossy and produce ...",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat",
+    "name": "Intl.NumberFormat - JavaScript - MDN Web Docs",
+    "snippet": "const number = 123456.789; // request a currency format console.log( new Intl.NumberFormat(\"de-DE\", { style: \"currency\", currency: \"EUR\" }).",
+    "host_name": "developer.mozilla.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/schalkneethling/number-and-currency-formatting-in-javascript-using-intlnumberformat-46og",
+    "name": "Number and Currency Formatting in JavaScript using Intl.NumberFormat",
+    "snippet": "NumberFormat('en', {currency: 'USD', style: 'currency'}).format(magicCoinCurrentValue); console.log(formattedValue);.",
+    "host_name": "dev.to",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://simplelocalize.io/blog/posts/number-formatting-in-javascript",
+    "name": "Number formatting in JavaScript: toLocaleString and Intl",
+    "snippet": "This post focuses on toLocaleString() and Intl.NumberFormat , the two main tools, with practical examples for currencies, percentages, and units ...",
+    "host_name": "simplelocalize.io",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.i18next.com/translation-function/formatting",
+    "name": "Formatting - i18next documentation",
+    "snippet": "you can use the built-in formatting functions based on the Intl API . { val: new Date(Date.UTC(2012, 11, 20, 3, 0, 0)) });",
+    "host_name": "www.i18next.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/blog/date-formatting-nextjs",
+    "name": "Reliable date formatting in Next.js",
+    "snippet": "Can next-intl help? The main problem we've addressed in this post revolves around hydration mismatches that occur when formatting dates across ...",
+    "host_name": "next-intl.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://javascript.plainenglish.io/how-to-display-localized-numbers-with-multiple-currencies-72b32f67b975",
+    "name": "How to Display Localized Numbers with Multiple Currencies",
+    "snippet": "We will cover: - Creating a simple function to format numbers in multiple currencies - Building a component to show the right number - Discuss the pros and cons",
+    "host_name": "javascript.plainenglish.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://formatjs.github.io/docs/intl",
+    "name": "Intl - FormatJS",
+    "snippet": "This function will return a formatted date string. It expects a value which can be parsed as a date (i.e., isFinite(new Date(value)) ), and accepts ...",
+    "host_name": "formatjs.github.io",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

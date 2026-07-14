@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://next-intl.dev/docs/environments/server-client-components",
+    "name": "Internationalization of Server & Client Components - next-intl",
+    "snippet": "To configure these, you can wrap NextIntlClientProvider with another component that is marked with 'use client' and defines the relevant props.",
+    "host_name": "next-intl.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/amannn/next-intl/discussions/405",
+    "name": "Best practice for global usage in server and client components #405",
+    "snippet": "I would like to know the best practice to integrate a combined global usage of next-intl for server components and client components with app ... Passing defaultTranslationValues to NextIntlClientProvider #865 - GitHub Best practices for translations when we have a large use of client ... More results from github.com",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://suhaotian.medium.com/how-next-intl-works-c9ae100c9123",
+    "name": "How next-intl works - Jeremy - Medium",
+    "snippet": "A key challenge involves sharing i18n messages fetched in server components with client components to avoid redundant fetches and potential hydration errors.",
+    "host_name": "suhaotian.medium.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.thisdot.co/blog/internationalization-in-next-js-with-next-intl",
+    "name": "Internationalization in Next.js with next-intl - This Dot Labs",
+    "snippet": "This guide will walk you through setting up i18n in Next.js using next-intl for URL-based routing, user-specific settings, and domain-based ...",
+    "host_name": "www.thisdot.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://i18nexus.com/tutorials/nextjs/next-intl",
+    "name": "next-intl Setup Tutorial for Next.js 16 (App Router) + AI Translation",
+    "snippet": "Here we will also integrate the NextIntlClientProvider to allow next-intl functionality in Client Components.",
+    "host_name": "i18nexus.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/amannn/next-intl/issues/546",
+    "name": "Can I use the next-intl for client components and the server next-intl",
+    "snippet": "You can easily use for both with the same hook, you just need to setup both side, the provider + the fetch messages for client one using next- ...",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/77433462/no-intl-context-found-error-in-next-js-application-with-use-intl-library-nextj",
+    "name": "No intl context found error in Next.js application with use-intl library",
+    "snippet": "The documentation says that you need to first wrap your layout with NextIntlClientProvider. NextIntlClientProvider, useMessages} on your client ...",
+    "host_name": "stackoverflow.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1p1xbp1/working_with_nextintl",
+    "name": "Working with next-intl : r/nextjs - Reddit",
+    "snippet": "We use translations in both server and client components. Currently we wrap the whole layout with the <NextIntlClientProvider> and fetch the ...",
+    "host_name": "www.reddit.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://codingwithlucy.hashnode.dev/internationalisation-i18n-in-nextjs-with-next-intl",
+    "name": "Internationalization (i18n) in Next.js with next-intl - Untitled Publication",
+    "snippet": "If a part of your app is highly interactive, like a client dashboard, it's probably best to pass messages using NextIntlClientProvider . This ...",
+    "host_name": "codingwithlucy.hashnode.dev",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/usage/configuration",
+    "name": "Request configuration – Internationalization (i18n) for Next.js",
+    "snippet": "NextIntlClientProvider can be used to provide configuration for Client Components. layout.tsx. import { NextIntlClientProvider } from ' ...",
+    "host_name": "next-intl.dev",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

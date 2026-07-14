@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://next-intl.dev/docs/environments/server-client-components",
+    "name": "Internationalization of Server & Client Components",
+    "snippet": "Mar 13, 2026 — Forms need client - side state for showing loading indicators and validation errors. ally calling the hook from a Client Component,\nForms need client-side state for showing loading indicators and validation errors. To keep internationalization on the server side, it can be helpful to structure your components in a way where the interactive parts are moved out to leaf components instead of marking the whole form with 'use client';.",
+    "host_name": "next-intl.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/usage/configuration",
+    "name": "Request configuration – Internationalization (i18n) for Next.js",
+    "snippet": "Apr 28, 2026 — Request configuration. Configuration properties that you use across your Next .js app can be set per request.\nConfiguration properties that you use across your Next.js app can be set per request. Depending on if you handle internationalization in Server- or Client Components, the configuration from i18n/request.ts or NextIntlClientProvider will be applied respectively.",
+    "host_name": "next-intl.dev",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://next-intl.dev/docs/routing/navigation",
+    "name": "Navigation APIs – Internationalization (i18n) for Next.js",
+    "snippet": "Nov 14, 2025 — next - intl provides lightweight wrappers around Next .js' navigation APIs like <Link /> and useRouter that automatically handle the user locale and pathnames ...",
+    "host_name": "next-intl.dev",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/79892773/how-to-change-the-current-locale-using-next-intl",
+    "name": "How to change the current locale using next-intl?",
+    "snippet": "In next - intl , you don't manually change the locale in state . The locale is controlled by the route segment.",
+    "host_name": "stackoverflow.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/amannn/next-intl/discussions/1264",
+    "name": "How to send the language (locale) code to Fetch",
+    "snippet": "Aug 16, 2024 — I want to create a global fetch function for such later fetch operations and include the locale information in the header of this function.\nThe locale can only be read during render, via useLocale () (or await getLocale () in Server Components). If it's a hassle to read the locale for every HTTP call you're making from the client side, you can consider storing it in React Context.",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.thisdot.co/blog/internationalization-in-next-js-with-next-intl",
+    "name": "Internationalization in Next.js with next-intl",
+    "snippet": "Apr 11, 2025 — This guide will walk you through setting up i18n in Next .js. On the client , utilize Next .js navigation primitives to use the client - side router ...",
+    "host_name": "www.thisdot.co",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://phrase.com/blog/posts/next-js-app-router-localization-next-intl",
+    "name": "Next.js 13/14 App Router Localization with next-intl",
+    "snippet": "Jul 31, 2025 — We can't call next - intl's useLocale () hook directly from a Client Component, so we're passing the locale as a prop from the Header component.",
+    "host_name": "phrase.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/suhaotian/how-next-intl-works-1n43",
+    "name": "How next-intl Works",
+    "snippet": "Mar 27, 2024 — The use hook is restricted to regular components ( client or server components without the async prefix). You cannot use it within async server ...",
+    "host_name": "dev.to",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/nextjs/comments/1p1xbp1/working_with_nextintl",
+    "name": "Working with next-intl : r/nextjs",
+    "snippet": "Should all translations be fetched serverside, is it a bad to use the ClientProvider and fetch translations in client components? I've read that ...",
+    "host_name": "www.reddit.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev-docs.moodybeard.com/en/next-intl/environments/server-client-components",
+    "name": "Internationalization of Server & Client Components | dev-docs",
+    "snippet": "If you implement a locale switcher as an interactive select, you can keep internationalization on the server side by rendering the labels from a Server Component and only marking the select element as a Client Component.",
+    "host_name": "dev-docs.moodybeard.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://medium.com/@dilshanmw717/building-a-modern-hls-video-player-with-next-js-a-complete-guide-19c39c61ae73",
+    "name": "Building a Modern HLS Video Player with Next.js: A Complete Guide",
+    "snippet": "In this article, I'll walk you through building WixPlayer, a modern HLS video player built with Next.js that supports adaptive streaming for ...",
+    "host_name": "medium.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/video-dev/hls.js",
+    "name": "GitHub - video-dev/hls.js: HLS.js is a JavaScript library that plays HLS in",
+    "snippet": "HLS.js is a JavaScript library that implements an HTTP Live Streaming client. It relies on HTML5 video and MediaSource Extensions for playback.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.logrocket.com/next-js-real-time-video-streaming-hls-js-alternatives",
+    "name": "Next.js real-time video streaming: HLS.js and alternatives - LogRocket Blog",
+    "snippet": "It reads HLS manifest files (usually with the .m3u8 extension), separates the video and audio streams, and then feeds them into a standard HTML5 ...",
+    "host_name": "blog.logrocket.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=jHVDnbuB23k",
+    "name": "Stream Video In React & Next.js OPTIMALLY (WebM  - YouTube",
+    "snippet": "Stream Video In React & Next.js OPTIMALLY (WebM, CDN, m3u8 / HLS / ABS, ImageKit). @ByteGrad380 likes12K views1 year ago",
+    "host_name": "www.youtube.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nochev.github.io/hls.js/docs/html",
+    "name": "HLS.js - GitHub Pages",
+    "snippet": "hls.js is a JavaScript library which implements an HTTP Live Streaming client. It relies on HTML5 video and MediaSource Extensions for playback.",
+    "host_name": "nochev.github.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/masonwritescode/build-a-video-upload-hls-playback-flow-in-nextjs-15-with-direct-uploads-2383",
+    "name": "Build a video upload + HLS playback flow in Next.js 15 (with direct uploads)",
+    "snippet": "We're going to build a \"user uploads a video, user watches the video\" feature in a Next.js 15 app. The browser uploads directly to a managed ...",
+    "host_name": "dev.to",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/33869729/how-to-play-hls-stream-or-other-video-stream-obtained-from-webrtc",
+    "name": "How to play HLS stream (or other video stream) obtained from",
+    "snippet": "If you want to take an incoming stream and 'feed' it into the browser's HTML5 video player you can use the media source extensions mechanism - MSE. Playing m3u8 Files with HTML Video Tag - Stack Overflow Play hls m3u8 format in nextjs - Stack Overflow More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://hlsjs.video-dev.org",
+    "name": "hls.js demo",
+    "snippet": "Test your HLS streams in all supported browsers (Chrome/Firefox/IE11/Edge/Safari). Advanced controls are available at the bottom of this page.",
+    "host_name": "hlsjs.video-dev.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://imagekit.io/blog/videojs-hls-adaptive-streaming-react",
+    "name": "HLS streaming with Video.js + React - ImageKit",
+    "snippet": "Code to use this Video.js player component to deliver YouTube-like Adaptive Bitrate Streaming videos with HLS protocol (m3u8 manifest file) on ...",
+    "host_name": "imagekit.io",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://daily.dev/posts/stream-video-in-react-next-js-optimally-webm-cdn-m3u8-hls-abs-imagekit--o7cpqutbr",
+    "name": "Stream Video In React & Next.js OPTIMALLY (WebM, CDN,",
+    "snippet": "js player for HLS streaming, and the benefits of hosting videos on ImageKit, such as automatic format and quality optimization, CDN integration, ...",
+    "host_name": "daily.dev",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

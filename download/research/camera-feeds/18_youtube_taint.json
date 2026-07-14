@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://stackoverflow.com/questions/57725860/how-to-solve-canvas-is-tainted-by-cross-origin-data",
+    "name": "How to solve \"Canvas is tainted by cross-origin data\"",
+    "snippet": "If you try to draw an image from an insecure source, the canvas will be tainted and no image data can be read from it anymore.",
+    "host_name": "stackoverflow.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/How_to/CORS_enabled_image",
+    "name": "Use cross-origin images in a canvas - HTML - MDN Web Docs",
+    "snippet": "Sep 18, 2025 — As soon as you draw into a canvas any data that was loaded from another origin without CORS approval, the canvas becomes tainted . A tainted ...\nAs soon as you draw into a canvas any data that was loaded from another origin without CORS approval, the canvas becomes tainted. If the source ...",
+    "host_name": "developer.mozilla.org",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://konvajs.org/docs/posts/Tainted_Canvas.html",
+    "name": "Resolving \"Tainted canvases may not be exported\" with",
+    "snippet": "the canvas has been tainted by cross - origin data. That is a CORS error. First you may try to set crossOrigin = Anonymous attribute of the loading image.\nthe canvas has been tainted by cross-origin data. That is a CORS error. First you may try to set crossOrigin = Anonymous attribute of the loading image.",
+    "host_name": "konvajs.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://eraoftech.medium.com/canvas-cors-error-why-todataurl-fails-how-to-fix-it-complete-guide-f5b54d83fa2f",
+    "name": "Canvas CORS Error: Why toDataURL() Fails & How to Fix It",
+    "snippet": "A canvas becomes tainted when you draw any image that the browser considers unsafe. This is a security feature, not a bug. crossOrigin missing ...\nA canvas becomes tainted when you draw any image that the browser considers unsafe. This is a security feature, not a bug. Even local SVGs can ...",
+    "host_name": "eraoftech.medium.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discussions.apple.com/thread/5959971",
+    "name": "Support for cross-origin videos in canvas - Safari 7?",
+    "snippet": "Mar 3, 2014 — When I call toDataURL() on the canvas , I get the following message Unable to get image data from canvas because the canvas has been tainted ...\nWhen I call toDataURL() on the canvas, I get the following message Unable to get image data from canvas because the canvas has been tainted ...",
+    "host_name": "discussions.apple.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://docs.unblu.com/latest/knowledge-base/configuration/collaboration-layers/embedded-co-browsing/html-tainted-canvas-limitation.html",
+    "name": "HTML tainted canvas limitation",
+    "snippet": "A canvas is considered ' tainted ' by a browser if it has loaded images from a different origin that does not set the Access-Control-Allow - Origin header correctly ...\nA canvas is considered 'tainted' by a browser if it has loaded images from a different origin that does not set the Access-Control-Allow-Origin header correctly ...",
+    "host_name": "docs.unblu.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://corsfix.com/blog/tainted-canvas",
+    "name": "why the browser blocks your canvas (and how to unblock it)",
+    "snippet": "Apr 30, 2025 — When you draw an image fetched from another origin without proper CORS setup, the browser makes the entire canvas as “ tainted .” Any attempt ...\nWhen you draw an image fetched from another origin without proper CORS setup, the browser makes the entire canvas as “tainted.” Any attempt to ...",
+    "host_name": "corsfix.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/lokesh/color-thief/issues/105",
+    "name": "The canvas has been tainted by cross-origin data. #105",
+    "snippet": "Jul 30, 2016 — I managed to fix this by adding the tag ' crossorigin =\"anonymous\"' to my image element. Sadly the server where these images are stored no longer ...",
+    "host_name": "github.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://stackoverflow.com/questions/13674835/canvas-tainted-by-cross-origin-data",
+    "name": "Canvas tainted by cross-origin data - javascript - Stack Overflow",
+    "snippet": "Unable to get image data from canvas because the canvas has been tainted by cross-origin data. You cannot reset the crossOrigin flag once it is ... CanvasContext2D drawImage() issue [onload and CORS] How to solve \"Canvas is tainted by cross-origin data\" More results from stackoverflow.com",
+    "host_name": "stackoverflow.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.geeksforgeeks.org/html/how-to-allow-cross-origin-use-of-images-and-canvas",
+    "name": "How to allow cross-origin use of images and canvas - GeeksforGeeks",
+    "snippet": "In this article, we will see how to allow the use of the cross-origin for images and canvas, ie, utilizing the images and canvas from the foreign website.",
+    "host_name": "www.geeksforgeeks.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
