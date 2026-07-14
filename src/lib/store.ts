@@ -106,11 +106,10 @@ interface PrototypeState {
   isRunning: boolean
   fps: number
   lastDetectionLatencyMs: number
-  /** Real ML mode runs COCO-SSD on video frames. Simulation mode generates
-   *  synthetic person counts (with realistic crowd surges) so the agent
-   *  pipeline can be demoed in any environment — including headless
-   *  browsers without GPU acceleration. */
-  detectionMode: 'real' | 'simulation'
+  /** Active use case — determines detection classes, rule type, and actions. */
+  activeUseCaseId: string
+  /** Active capability level — controls which agentic features are enabled. */
+  capabilityLevel: 'traditional' | 'mldl' | 'cognitive' | 'agentic'
 
   // Detections (current frame)
   detections: Detection[]
@@ -143,10 +142,9 @@ interface PrototypeState {
   setRunning: (r: boolean) => void
   setFps: (f: number) => void
   setLatency: (ms: number) => void
-  setDetectionMode: (m: 'real' | 'simulation') => void
+  setActiveUseCase: (id: string) => void
+  setCapabilityLevel: (level: 'traditional' | 'mldl' | 'cognitive' | 'agentic') => void
   pushDetections: (dets: Detection[]) => void
-  /** Simulation-mode path: push a synthetic count directly, skipping ML. */
-  pushSimulatedCount: (count: number) => void
   clearSamples: () => void
   setAnomalyConfig: (c: Partial<AnomalyConfig>) => void
   setAgentConfig: (c: Partial<AgentConfig>) => void
@@ -179,7 +177,8 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   isRunning: false,
   fps: 0,
   lastDetectionLatencyMs: 0,
-  detectionMode: 'real',   // default to real ML (COCO-SSD on real video frames)
+  activeUseCaseId: 'crowd_surge',
+  capabilityLevel: 'agentic',
 
   detections: [],
   personCount: 0,
@@ -207,8 +206,8 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   setRunning: (r) => set({ isRunning: r }),
   setFps: (f) => set({ fps: f }),
   setLatency: (ms) => set({ lastDetectionLatencyMs: ms }),
-  setDetectionMode: (m) => set({
-    detectionMode: m,
+  setActiveUseCase: (id) => set({
+    activeUseCaseId: id,
     samples: [],
     stats: null,
     sustainCount: 0,
@@ -216,6 +215,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
     detections: [],
     personCount: 0,
   }),
+  setCapabilityLevel: (level) => set({ capabilityLevel: level }),
 
   pushDetections: (dets) => {
     const persons = dets.filter((d) => d.class === 'person')
@@ -230,24 +230,6 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
       return {
         detections: persons,
         personCount: count,
-        samples,
-        stats,
-        sustainCount,
-      }
-    })
-  },
-
-  pushSimulatedCount: (count) => {
-    const sample: AnomalySample = { t: Date.now(), count: Math.max(0, Math.round(count)) }
-    set((state) => {
-      const samples = [...state.samples, sample].slice(-MAX_SAMPLES)
-      const stats = computeAnomalyStats(samples, state.anomalyConfig)
-      const wasAnom = stats.peakZ > state.agentConfig.t1Z
-      const sustainCount = wasAnom ? state.sustainCount + 1 : 0
-      // In simulation mode we don't have real bboxes; clear detections
-      return {
-        detections: [],
-        personCount: sample.count,
         samples,
         stats,
         sustainCount,

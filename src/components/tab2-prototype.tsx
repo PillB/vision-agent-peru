@@ -8,6 +8,7 @@ import { AlertsPanel } from './prototype/alerts-panel'
 import { AgentTrace } from './prototype/agent-trace'
 import { ActionsPanel } from './prototype/actions-panel'
 import { ReportsPanel } from './prototype/reports-panel'
+import { UseCaseSelector } from './prototype/use-case-selector'
 import { usePrototypeStore } from '@/lib/store'
 import { Badge } from '@/components/ui/badge'
 import { Info } from 'lucide-react'
@@ -29,6 +30,9 @@ export function Tab2Prototype() {
             {isRunning ? (t('metrics.live')) : (t('metrics.live') === 'Live' ? 'Paused' : 'Pausado')}
           </Badge>
         </div>
+
+        {/* Use case + capability level selector */}
+        <UseCaseSelector />
 
         {/* Metrics row */}
         <MetricsRow />
