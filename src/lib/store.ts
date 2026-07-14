@@ -63,26 +63,38 @@ export interface CameraSource {
   location: string
   src: string
   poster?: string
+  /** Use case categories this camera is best suited to demonstrate. */
+  useCases?: string[]
 }
 
 export const CAMERA_SOURCES: CameraSource[] = [
   {
-    id: 'cusco',
-    label: 'Cusco — Plaza de Armas',
-    location: 'Cusco, Peru',
-    src: '/sim/cusco.mp4',
+    id: 'intersection',
+    label: 'Intersección Urbana — Tráfico y Peatones',
+    location: 'Ciudad, Perú',
+    src: '/sim/urban-intersection.mp4',
+    useCases: ['traffic', 'pedestrians', 'vehicles', 'crowd'],
   },
   {
-    id: 'lima',
-    label: 'Lima — Jirón de la Unión',
-    location: 'Lima, Peru',
-    src: '/sim/lima.mp4',
+    id: 'crosswalk',
+    label: 'Cruce Peatonal — Multitud',
+    location: 'Centro, Perú',
+    src: '/sim/urban-crosswalk.mp4',
+    useCases: ['pedestrians', 'crowd', 'queue'],
   },
   {
-    id: 'arequipa',
-    label: 'Arequipa — Plaza Mayor',
-    location: 'Arequipa, Peru',
-    src: '/sim/arequipa.mp4',
+    id: 'street',
+    label: 'Calle Comercial — Tráfico',
+    location: 'Av. Principal, Perú',
+    src: '/sim/urban-street.mp4',
+    useCases: ['vehicles', 'pedestrians', 'parking'],
+  },
+  {
+    id: 'pedestrians',
+    label: 'Avenida — Peatones y Vehículos',
+    location: 'Jr. de la Unión, Perú',
+    src: '/sim/urban-pedestrians.mp4',
+    useCases: ['pedestrians', 'vehicles', 'flow'],
   },
 ]
 
