@@ -46,13 +46,14 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
   const t = useTranslations()
   const [downloading, setDownloading] = useState(false)
   const [downloadingV2, setDownloadingV2] = useState(false)
+  const [downloadingV3, setDownloadingV3] = useState(false)
 
-  const handleDownloadPptx = useCallback(async (version: 'v1' | 'v2' = 'v1') => {
-    const setter = version === 'v2' ? setDownloadingV2 : setDownloading
+  const handleDownloadPptx = useCallback(async (version: 'v1' | 'v2' | 'v3' = 'v1') => {
+    const setter = version === 'v3' ? setDownloadingV3 : version === 'v2' ? setDownloadingV2 : setDownloading
     setter(true)
     try {
-      const endpoint = version === 'v2' ? '/api/export-pptx-v2' : '/api/export-pptx'
-      const filename = version === 'v2' ? 'vision-agent-infographic.pptx' : 'vision-agent-strategic-brief.pptx'
+      const endpoint = version === 'v3' ? '/api/export-pptx-v3' : version === 'v2' ? '/api/export-pptx-v2' : '/api/export-pptx'
+      const filename = version === 'v3' ? 'vision-agent-bcp-evolution.pptx' : version === 'v2' ? 'vision-agent-infographic.pptx' : 'vision-agent-strategic-brief.pptx'
       const res = await fetch(endpoint)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const blob = await res.blob()
@@ -65,7 +66,9 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
       toast.success(t('Tab3.download.toastTitle'), {
-        description: version === 'v2'
+        description: version === 'v3'
+          ? `${t('Tab3.download.toastDesc')} · BCP Z-flow`
+          : version === 'v2'
           ? `${t('Tab3.download.toastDesc')} · Infografía`
           : t('Tab3.download.toastDesc'),
         duration: 5000,
@@ -105,6 +108,9 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               </Button>
               <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2} variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
                 {downloadingV2 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Sparkles className="mr-2 h-4 w-4" />{t('Tab3.download.button')} V2</>}
+              </Button>
+              <Button onClick={() => handleDownloadPptx('v3')} disabled={downloadingV3} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                {downloadingV3 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Zap className="mr-2 h-4 w-4" />BCP Z-Flow V3</>}
               </Button>
             </div>
             <p className="mt-3 text-xs text-zinc-400 flex items-center gap-1.5">

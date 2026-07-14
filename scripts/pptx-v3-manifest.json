@@ -1,0 +1,605 @@
+{
+  "slide": {
+    "w": 13.333,
+    "h": 7.5
+  },
+  "elements": [
+    {
+      "id": "hdr_logo",
+      "x": 0.3,
+      "y": 0.1,
+      "w": 0.45,
+      "h": 0.45,
+      "zone": "A",
+      "kind": "roundRect",
+      "label": ""
+    },
+    {
+      "id": "hdr_brand",
+      "x": 0.85,
+      "y": 0.1,
+      "w": 8.5,
+      "h": 0.45,
+      "zone": "A",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "hdr_meta",
+      "x": 10.33,
+      "y": 0.1,
+      "w": 2.7,
+      "h": 0.45,
+      "zone": "A",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "hdr_line",
+      "x": 0.3,
+      "y": 0.6,
+      "w": 12.733,
+      "h": 0.0,
+      "zone": "A",
+      "kind": "line",
+      "label": ""
+    },
+    {
+      "id": "title",
+      "x": 0.3,
+      "y": 0.65,
+      "w": 12.733,
+      "h": 0.4,
+      "zone": "B",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_bg",
+      "x": 0.3,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 4.4,
+      "zone": "C",
+      "kind": "roundRect",
+      "label": ""
+    },
+    {
+      "id": "card1_bar",
+      "x": 0.3,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 0.07,
+      "zone": "C",
+      "kind": "rect",
+      "label": ""
+    },
+    {
+      "id": "card1_badge",
+      "x": 0.38,
+      "y": 1.2000000000000002,
+      "w": 0.28,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "ellipse",
+      "label": ""
+    },
+    {
+      "id": "card1_name",
+      "x": 0.72,
+      "y": 1.2000000000000002,
+      "w": 2.42075,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_para",
+      "x": 0.4,
+      "y": 1.55,
+      "w": 2.72075,
+      "h": 0.7,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_caplabel",
+      "x": 0.4,
+      "y": 2.3,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_capbody",
+      "x": 0.4,
+      "y": 2.46,
+      "w": 2.72075,
+      "h": 0.65,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_vallabel",
+      "x": 0.4,
+      "y": 3.15,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_valbody",
+      "x": 0.4,
+      "y": 3.31,
+      "w": 2.72075,
+      "h": 0.55,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_bcpLabel",
+      "x": 0.4,
+      "y": 3.9,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card1_bcpbody",
+      "x": 0.4,
+      "y": 4.0600000000000005,
+      "w": 2.72075,
+      "h": 1.35,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_bg",
+      "x": 3.57075,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 4.4,
+      "zone": "C",
+      "kind": "roundRect",
+      "label": ""
+    },
+    {
+      "id": "card2_bar",
+      "x": 3.57075,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 0.07,
+      "zone": "C",
+      "kind": "rect",
+      "label": ""
+    },
+    {
+      "id": "card2_badge",
+      "x": 3.65075,
+      "y": 1.2000000000000002,
+      "w": 0.28,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "ellipse",
+      "label": ""
+    },
+    {
+      "id": "card2_name",
+      "x": 3.99075,
+      "y": 1.2000000000000002,
+      "w": 2.42075,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_para",
+      "x": 3.67075,
+      "y": 1.55,
+      "w": 2.72075,
+      "h": 0.7,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_caplabel",
+      "x": 3.67075,
+      "y": 2.3,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_capbody",
+      "x": 3.67075,
+      "y": 2.46,
+      "w": 2.72075,
+      "h": 0.65,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_vallabel",
+      "x": 3.67075,
+      "y": 3.15,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_valbody",
+      "x": 3.67075,
+      "y": 3.31,
+      "w": 2.72075,
+      "h": 0.55,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_bcpLabel",
+      "x": 3.67075,
+      "y": 3.9,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card2_bcpbody",
+      "x": 3.67075,
+      "y": 4.0600000000000005,
+      "w": 2.72075,
+      "h": 1.35,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_bg",
+      "x": 6.8415,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 4.4,
+      "zone": "C",
+      "kind": "roundRect",
+      "label": ""
+    },
+    {
+      "id": "card3_bar",
+      "x": 6.8415,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 0.07,
+      "zone": "C",
+      "kind": "rect",
+      "label": ""
+    },
+    {
+      "id": "card3_badge",
+      "x": 6.9215,
+      "y": 1.2000000000000002,
+      "w": 0.28,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "ellipse",
+      "label": ""
+    },
+    {
+      "id": "card3_name",
+      "x": 7.2615,
+      "y": 1.2000000000000002,
+      "w": 2.42075,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_para",
+      "x": 6.9415,
+      "y": 1.55,
+      "w": 2.72075,
+      "h": 0.7,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_caplabel",
+      "x": 6.9415,
+      "y": 2.3,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_capbody",
+      "x": 6.9415,
+      "y": 2.46,
+      "w": 2.72075,
+      "h": 0.65,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_vallabel",
+      "x": 6.9415,
+      "y": 3.15,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_valbody",
+      "x": 6.9415,
+      "y": 3.31,
+      "w": 2.72075,
+      "h": 0.55,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_bcpLabel",
+      "x": 6.9415,
+      "y": 3.9,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card3_bcpbody",
+      "x": 6.9415,
+      "y": 4.0600000000000005,
+      "w": 2.72075,
+      "h": 1.35,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_bg",
+      "x": 10.112250000000001,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 4.4,
+      "zone": "C",
+      "kind": "roundRect",
+      "label": ""
+    },
+    {
+      "id": "card4_bar",
+      "x": 10.112250000000001,
+      "y": 1.1,
+      "w": 2.92075,
+      "h": 0.07,
+      "zone": "C",
+      "kind": "rect",
+      "label": ""
+    },
+    {
+      "id": "card4_badge",
+      "x": 10.192250000000001,
+      "y": 1.2000000000000002,
+      "w": 0.28,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "ellipse",
+      "label": ""
+    },
+    {
+      "id": "card4_name",
+      "x": 10.532250000000001,
+      "y": 1.2000000000000002,
+      "w": 2.42075,
+      "h": 0.28,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_para",
+      "x": 10.212250000000001,
+      "y": 1.55,
+      "w": 2.72075,
+      "h": 0.7,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_caplabel",
+      "x": 10.212250000000001,
+      "y": 2.3,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_capbody",
+      "x": 10.212250000000001,
+      "y": 2.46,
+      "w": 2.72075,
+      "h": 0.65,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_vallabel",
+      "x": 10.212250000000001,
+      "y": 3.15,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_valbody",
+      "x": 10.212250000000001,
+      "y": 3.31,
+      "w": 2.72075,
+      "h": 0.55,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_bcpLabel",
+      "x": 10.212250000000001,
+      "y": 3.9,
+      "w": 2.72075,
+      "h": 0.15,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "card4_bcpbody",
+      "x": 10.212250000000001,
+      "y": 4.0600000000000005,
+      "w": 2.72075,
+      "h": 1.35,
+      "zone": "C",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "arrow1",
+      "x": 3.22075,
+      "y": 3.0500000000000003,
+      "w": 0.35,
+      "h": 0.5,
+      "zone": "C",
+      "kind": "pentagon",
+      "label": ""
+    },
+    {
+      "id": "arrow2",
+      "x": 6.4915,
+      "y": 3.0500000000000003,
+      "w": 0.35,
+      "h": 0.5,
+      "zone": "C",
+      "kind": "pentagon",
+      "label": ""
+    },
+    {
+      "id": "arrow3",
+      "x": 9.76225,
+      "y": 3.0500000000000003,
+      "w": 0.35,
+      "h": 0.5,
+      "zone": "C",
+      "kind": "pentagon",
+      "label": ""
+    },
+    {
+      "id": "value_strip",
+      "x": 0.3,
+      "y": 5.55,
+      "w": 12.733,
+      "h": 0.45,
+      "zone": "D",
+      "kind": "rect",
+      "label": ""
+    },
+    {
+      "id": "value_text",
+      "x": 0.44999999999999996,
+      "y": 5.58,
+      "w": 12.433,
+      "h": 0.39,
+      "zone": "D",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "bcp_target",
+      "x": 0.3,
+      "y": 6.1,
+      "w": 6.0,
+      "h": 0.25,
+      "zone": "E",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "sources",
+      "x": 0.3,
+      "y": 6.38,
+      "w": 12.733,
+      "h": 0.25,
+      "zone": "E",
+      "kind": "text",
+      "label": ""
+    },
+    {
+      "id": "footer_line",
+      "x": 0.3,
+      "y": 6.7,
+      "w": 12.733,
+      "h": 0.0,
+      "zone": "E",
+      "kind": "line",
+      "label": ""
+    },
+    {
+      "id": "copyright",
+      "x": 0.3,
+      "y": 7.05,
+      "w": 12.733,
+      "h": 0.25,
+      "zone": "E",
+      "kind": "text",
+      "label": ""
+    }
+  ],
+  "tests": [
+    {
+      "name": "Overflow",
+      "passed": true,
+      "details": "0 issues"
+    },
+    {
+      "name": "Overlap",
+      "passed": true,
+      "details": "0 issues"
+    },
+    {
+      "name": "Arrow alignment",
+      "passed": true,
+      "details": "0 issues"
+    }
+  ]
+}

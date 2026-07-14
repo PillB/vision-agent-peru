@@ -574,3 +574,41 @@ VALIDATION
 - curl tests: all 5 endpoint tests pass
 - PPTX V2 Spanish: 9/9 content checks pass
 - No simulation code remains in camera-view.tsx (only comments mentioning "no simulation")
+
+---
+Task ID: pptx-v3-bcp-zflow
+Agent: orchestrator
+Task: Create V3 PPTX — BCP-targeted Z-flow infographic with connector arrows
+
+Work Log:
+- Wrote Python geometry engine V3: /home/z/my-project/scripts/geometry-engine-v3.py
+  - 58 elements across 5 zones (A-E)
+  - 4 era cards + 3 pentagon connector arrows (left-to-right flow)
+  - All 3 test suites pass: ✅ 0 overflow, ✅ 0 overlap, ✅ 0 misaligned arrows
+- Created content module: /home/z/my-project/src/lib/pptx-v3-content.ts
+  - 4 era cards with: name, paragraph, capabilities, differential value, BCP use cases
+  - Target: VP de seguridad de sedes BCP con cámaras
+  - Peruvian Spanish, no dates, no money
+- Created /api/export-pptx-v3 route: /home/z/my-project/src/app/api/export-pptx-v3/route.ts
+  - 63 native shapes (all editable)
+  - 79 text runs
+  - 3 pentagon arrows connecting cards
+  - Validated: 0 overflow, 16/16 content checks, 3 pentagon arrows, no dates/money
+- Added V3 download button to Tab 3 (emerald, Zap icon, "BCP Z-Flow V3")
+- Content highlights:
+  - Card 1 (Tradicional): reglas deterministas, conteo, intrusión, bóveda
+  - Card 2 (ML/DL): percepción, grafiti, fuego, cajeros, resbalones
+  - Card 3 (Cognitiva): entendimiento, descripción, resumen, clasificación
+  - Card 4 (IA Autónoma): acción autónoma, reporte auto-generado, juez LLM, malla multicámara
+  - Value strip: "De REACTIVA → PERCEPTIVA → COGNITIVA → AUTÓNOMA"
+  - BCP target: "VP de Seguridad de Sedes BCP"
+- Lint: 0 errors, 0 warnings. TypeScript: 0 errors.
+- LibreOffice render: 1280×720 PNG, all 5 zones populated
+
+Stage Summary:
+- V3 PPTX delivered: BCP-targeted Z-flow infographic with connector arrows
+- 4 era cards flow left-to-right with pentagon arrows between them
+- Each card has: paragraph + capabilities + differential value + BCP use cases
+- Target audience explicit: VP Seguridad Sedes BCP
+- No dates, no money, Peruvian Spanish
+- 100% native editable PowerPoint shapes (63 shapes, 79 text runs)
