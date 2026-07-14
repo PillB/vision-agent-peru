@@ -40,6 +40,12 @@ export interface UseCase {
   indeciReport?: boolean
   /** Icon for UI. */
   icon: string
+  /** Tier for UI display (derived from actions — highest action tier). */
+  tier?: number
+  /** Signal description for UI display. */
+  signal?: string
+  /** Value statement for UI display. */
+  value?: string
 }
 
 export const USE_CASES: UseCase[] = [

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { decide } from '@/lib/agent'
+import { USE_CASES } from '@/lib/use-cases'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
 
@@ -69,6 +70,10 @@ export function CameraView() {
   const runAgentLoop = (canvas: HTMLCanvasElement | null, dets: Detection[]) => {
     const state = usePrototypeStore.getState()
     if (!state.stats) return
+
+    // Find the active use case
+    const useCase = USE_CASES.find((uc) => uc.id === state.activeUseCaseId) || USE_CASES[0]
+
     const decision = decide(
       {
         stats: state.stats,
@@ -78,6 +83,11 @@ export function CameraView() {
         escalationHistory: state.escalationHistory,
         acknowledgedUntil: state.acknowledgedUntil,
         llmJudgeEnabled: state.llmJudgeEnabled,
+        useCase,
+        capabilityLevel: state.capabilityLevel,
+        detections: dets,
+        canvasW: canvas?.width ?? 480,
+        canvasH: canvas?.height ?? 270,
       },
       state.agentConfig
     )

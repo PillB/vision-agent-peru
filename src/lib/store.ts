@@ -218,8 +218,10 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   setCapabilityLevel: (level) => set({ capabilityLevel: level }),
 
   pushDetections: (dets) => {
-    const persons = dets.filter((d) => d.class === 'person')
-    const count = persons.length
+    // Count all detections (not just persons) — the agent loop filters by
+    // useCase.detectionClasses. The anomaly stats track total detection count
+    // so that vehicle-heavy use cases (parking, intrusion) also produce z-scores.
+    const count = dets.length
     const sample: AnomalySample = { t: Date.now(), count }
     set((state) => {
       const samples = [...state.samples, sample].slice(-MAX_SAMPLES)
@@ -228,7 +230,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
       const wasAnom = stats.peakZ > state.agentConfig.t1Z
       const sustainCount = wasAnom ? state.sustainCount + 1 : 0
       return {
-        detections: persons,
+        detections: dets,
         personCount: count,
         samples,
         stats,

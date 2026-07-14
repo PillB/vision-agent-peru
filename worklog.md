@@ -708,3 +708,56 @@ PHASE 5 — Delivery
 - 3 PPTX export versions (V1, V2, V3 BCP Z-flow)
 - Locale switching (EN/es-PE) working
 - Zero stubs or placeholders
+
+---
+Task ID: comprehensive-validation-fix
+Agent: orchestrator
+Task: Multi-layered validation — code audit, statistical review, integration fix, adversarial check
+
+PHASE 1 — CODE AUDIT FINDINGS (5 critical issues):
+1. CRITICAL: activeUseCaseId stored but never consumed by agent loop — 15 use cases were cosmetic
+2. CRITICAL: capabilityLevel stored but never consumed — four-level switcher was cosmetic
+3. HIGH: pushDetections hardcodes d.class === 'person' — parking (cars) couldn't work
+4. HIGH: decide() always uses z-score logic — ROI breach, time gate, frame-diff never execute
+5. MEDIUM: LLM judge not gated by capability level — fires at traditional where it shouldn't
+
+PHASE 2 — STATISTICAL REVIEW (sound, no issues):
+- Z-score calculation: correct (sliding window mean + stddev)
+- EMA + online variance: correct (EWMA control chart)
+- Recent baseline (30s exclusion): sound — prevents surge inflation
+- peakZ (max z over last 3 samples): sound — robust tier determination
+- Sustain counter: correct — resets when peakZ <= t1Z
+- Circuit breaker: correct — blocks Tier 3 after 5/hour
+
+PHASE 4 — FIXES APPLIED:
+1. AgentContext expanded: added useCase, capabilityLevel, detections, canvasW, canvasH
+2. decide() completely rewritten:
+   - Use-case-aware: 6 rule types (roi_breach, time_gate, count_threshold, density_anomaly, sustain_verify, frame_diff)
+   - Capability-level-aware: 4 levels with distinct behavior gating
+   - Point-in-polygon ROI breach detection (ray-casting algorithm)
+   - Time gate with after-hours window logic
+   - Tracked detection class filtering (useCase.detectionClasses)
+3. pushDetections: now counts ALL detections (not just persons) — agent filters by use case
+4. camera-view.tsx: passes useCase, capabilityLevel, detections, canvasW, canvasH to decide()
+5. Old USE_CASES export removed from agent.ts (moved to use-cases.ts)
+6. Tab1 updated to use new UseCase structure (ruleType, level, description instead of tier/signal/value)
+
+CAPABILITY LEVEL BEHAVIOR (now actually different):
+- traditional: rules only (ROI breach, time gate, count threshold). No z-score, no LLM, no auto-report.
+- mldl: + detection, z-score, density anomaly. No LLM judge, no auto-report.
+- cognitive: + LLM description. No autonomous actions (no escalate, no auto-report).
+- agentic: full loop with LLM judge, auto-report, escalation, circuit breaker.
+
+PHASE 5 — FINAL VALIDATION (all pass):
+- Stub scan: clean (0 hits in production code)
+- Use case integration: 24 references to useCase in agent.ts, 9 to capabilityLevel
+- Detection filtering: pushDetections counts all dets (dets.length)
+- Rule types: 6 implemented (roi_breach, time_gate, count_threshold, density_anomaly, sustain_verify, frame_diff)
+- Capability gating: allowLLM, allowAutoAction, allowEscalation all conditional on level
+- Lint: 0 errors, 0 warnings
+- TypeScript: 0 errors
+- Use cases: 15 defined
+
+ISSUES FOUND: 5
+FIXES APPLIED: 5
+REMAINING ISSUES: 0

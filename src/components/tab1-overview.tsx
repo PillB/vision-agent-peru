@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { USE_CASES } from '@/lib/agent'
+import { USE_CASES } from '@/lib/use-cases'
 
 interface Props {
   onTryPrototype: () => void
@@ -467,17 +467,17 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 className="rounded-xl border border-zinc-200 bg-white p-6 hover:border-zinc-300 hover:shadow-md transition flex flex-col"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className={`h-2 w-2 rounded-full ${uc.tier === 3 ? 'bg-rose-600' : 'bg-amber-500'}`} />
-                  <Badge variant="outline" className="text-xs font-mono">Tier {uc.tier}</Badge>
+                  <span className={`h-2 w-2 rounded-full ${uc.actions.includes('escalate') ? 'bg-rose-600' : 'bg-amber-500'}`} />
+                  <Badge variant="outline" className="text-xs font-mono">{uc.category === 'disaster' ? 'Desastre' : 'Comercial'}</Badge>
                 </div>
                 <h3 className="text-base font-semibold text-zinc-950 mb-2">{uc.name}</h3>
                 <div className="text-xs font-mono text-emerald-700 bg-emerald-50 rounded px-2 py-1 mb-3">
-                  {uc.signal}
+                  {uc.ruleType} · {uc.level}
                 </div>
-                <p className="text-sm text-zinc-600 leading-relaxed flex-1">{uc.value}</p>
+                <p className="text-sm text-zinc-600 leading-relaxed flex-1">{uc.description}</p>
                 <div className="mt-4 pt-4 border-t border-zinc-100 text-xs text-zinc-500 flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>v1 ready · live in prototype</span>
+                  <span>{uc.actions.length} acciones · {uc.detectionClasses.length} clases</span>
                 </div>
               </div>
             ))}
