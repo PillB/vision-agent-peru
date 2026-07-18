@@ -968,3 +968,31 @@ SUBSCRIPTION TIER RECOMMENDATIONS:
 
 DELIVERABLES:
 - /home/z/my-project/download/USER_INSIGHTS_FEATURE_REPORT.md (full report with 14 sources)
+
+---
+Task ID: adversarial-unit-test-sweep
+Agent: orchestrator
+Task: Comprehensive adversarial unit test sweep — edge cases, malformed inputs, race conditions, boundary values, resource exhaustion, state corruption
+
+TEST SUITE: /home/z/my-project/scripts/adversarial-tests.ts
+- 221 assertions across 48 test cases in 6 categories
+- All 221 assertions pass with 0 failures
+
+CATEGORIES TESTED:
+1. Anomaly Detection (12 tests): empty arrays, single samples, zero variance, negative counts, large outliers, window boundaries, sliding window, insufficient baseline, extreme thresholds, NaN inputs, EMA convergence, sustained surge with recent baseline
+2. Agent Decision Engine (15 tests): silenced state, all 6 rule types (density_anomaly, roi_breach inside/outside polygon, time_gate, count_threshold above/below, sustain_verify sufficient/insufficient), all 4 capability levels (traditional/mldl/cognitive/agentic), circuit breaker, LLM judge disabled
+3. Identity Management (12 tests): empty detections, stable IDs, distant detection new ID, tracker reset, class filtering, empty gallery, same track same ID, different appearances different IDs, TTL expiry, cross-camera matching
+4. Use Cases (5 tests): all 15 use cases have required fields, valid rule types, valid capability levels, level labels exist, disaster use cases have INDECI flag
+5. Stress Tests (3 tests): 1000 anomaly samples <100ms, 100 tracker detections <50ms, 500 identity gallery <500ms
+6. Race Conditions & State (3 tests): rapid tracker updates, concurrent identity matching, class switching
+
+BUGS FOUND: 5 (all in test expectations, not in production code)
+1. Test had wrong sample order (negative count not at last position)
+2. Test expected peakZ >100 but outlier inflates mean+stddev, z-score is only ~3.3
+3. Test used identical normal samples → zero stddev → peakZ=0; fixed with varied values
+4. Test used proportional color histograms → cosine similarity=1.0; fixed with varied geometry
+5. Test had timing issue: 30 normal samples → only 9 baseline samples after 30s cutoff (< 10 minimum); fixed with 35 normal samples
+
+PRODUCTION CODE BUGS: 0 (all issues were test bugs, not code bugs)
+
+REGRESSION TESTS ADDED: All 48 test cases serve as permanent regression tests.
