@@ -46,11 +46,11 @@ export function RealMlLoader({ videoRef, canvasRef, onModelStatus, onModelReady 
             const canvas = canvasRef.current
             const model = modelRef.current
             if (!video || !canvas || !model) {
-              console.log('[RealMlLoader] detect: missing', { video: !!video, canvas: !!canvas, model: !!model })
+              if (process.env.NODE_ENV === 'development') console.log('[RealMlLoader] detect: missing', { video: !!video, canvas: !!canvas, model: !!model })
               return null
             }
             if (video.readyState < 2 || video.videoWidth === 0) {
-              console.log('[RealMlLoader] detect: video not ready', { readyState: video.readyState, videoWidth: video.videoWidth })
+              if (process.env.NODE_ENV === 'development') console.log('[RealMlLoader] detect: video not ready', { readyState: video.readyState, videoWidth: video.videoWidth })
               return null
             }
 
@@ -68,7 +68,7 @@ export function RealMlLoader({ videoRef, canvasRef, onModelStatus, onModelReady 
             const predictions = await model.detect(canvas, 20)
             const latency = performance.now() - t0
 
-            console.log('[RealMlLoader] detect result', {
+            if (process.env.NODE_ENV === 'development') console.log('[RealMlLoader] detect result', {
               predictions: predictions.length,
               latency: latency.toFixed(0) + 'ms',
               classes: predictions.slice(0, 5).map((p) => `${p.class}:${p.score.toFixed(2)}`),

@@ -8,7 +8,7 @@
  *   x=0.3" ←── margin ──→ x=13.03"   (content width = 12.73")
  *
  *   y=0.15" ┌─────────────────────────────────────────────────────────────┐
- *           │ [CV logo]  Cusco Vision Agent — Strategic Brief   v1.0 ... │ h=0.5"
+ *           │ [CV logo]  Vision Agent — Strategic Brief   v1.0 ... │ h=0.5"
  *   y=0.65" ├─────────────────────────────────────────────────────────────┤
  *           │                                                             │
  *   y=0.75" │  "AI has crossed four thresholds in 70 years — and the     │ h=0.6"
@@ -25,7 +25,7 @@
  *           │  ┌─ THE LEAP: Agentic AI adds the loop ──────────────────┐  │ h=1.0"
  *   y=5.55" │  │ perceive → reason → act → reflect                     │  │
  *           │  │ Reactive→Proactive · Single→Multi · Tool→Collaborator │  │
- *   y=6.55" │  │ Cusco Vision Agent operates at Stage 4 (L5 autonomy)  │  │
+ *   y=6.55" │  │ Vision Agent operates at Stage 4 (L5 autonomy)  │  │
  *           │  └────────────────────────────────────────────────────────┘  │
  *   y=6.65" ├─────────────────────────────────────────────────────────────┤
  *           │  Sources: McKinsey · BCG · Bain · Gartner · Deloitte ...   │ h=0.3"

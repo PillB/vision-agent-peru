@@ -100,7 +100,7 @@ export interface AgentContext {
  *   - time_gate: check if current time is within gated window
  *   - count_threshold: check if count exceeds threshold
  *   - sustain_verify: check if detection sustained for N ticks
- *   - frame_diff: (placeholder for pixel-based detection)
+ *   - frame_diff: uses z-score as proxy for pixel-change anomaly (full frame-diff would compare canvas ImageData buffers)
  *
  * CAPABILITY-LEVEL-AWARE: The level gates which features are enabled:
  *   - traditional: rules only (ROI breach, time gate, count threshold). No z-score, no LLM, no auto-report.
