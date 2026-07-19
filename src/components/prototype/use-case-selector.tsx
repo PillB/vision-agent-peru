@@ -1,6 +1,6 @@
 'use client'
 
-import { usePrototypeStore } from '@/lib/store'
+import { usePrototypeStore, CAMERA_SOURCES } from '@/lib/store'
 import { USE_CASES, LEVEL_LABELS, type CapabilityLevel } from '@/lib/use-cases'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -29,10 +29,24 @@ const LEVEL_ORDER: CapabilityLevel[] = ['traditional', 'mldl', 'cognitive', 'age
 export function UseCaseSelector() {
   const activeUseCaseId = usePrototypeStore((s) => s.activeUseCaseId)
   const setActiveUseCase = usePrototypeStore((s) => s.setActiveUseCase)
+  const setActiveCamera = usePrototypeStore((s) => s.setActiveCamera)
   const capabilityLevel = usePrototypeStore((s) => s.capabilityLevel)
   const setCapabilityLevel = usePrototypeStore((s) => s.setCapabilityLevel)
 
   const activeUseCase = USE_CASES.find((uc) => uc.id === activeUseCaseId)
+
+  /** Auto-switch to the best camera for the selected use case. */
+  function selectUseCase(useCaseId: string) {
+    const uc = USE_CASES.find(u => u.id === useCaseId)
+    if (!uc) return
+    setActiveUseCase(useCaseId)
+    setCapabilityLevel(uc.level)
+    // Find the best camera for this use case
+    const bestCamera = CAMERA_SOURCES.find(c => c.useCases?.includes(useCaseId))
+    if (bestCamera) {
+      setActiveCamera(bestCamera.id)
+    }
+  }
 
   return (
     <div className="space-y-2">
@@ -48,7 +62,7 @@ export function UseCaseSelector() {
 
       <div className="flex flex-wrap items-center gap-2">
       {/* Use case selector */}
-      <Select value={activeUseCaseId} onValueChange={(v) => { setActiveUseCase(v); const uc = USE_CASES.find(u => u.id === v); if (uc) setCapabilityLevel(uc.level) }}>
+      <Select value={activeUseCaseId} onValueChange={(v) => selectUseCase(v)}>
         <SelectTrigger className="w-[280px] h-9 bg-white">
           <SelectValue placeholder="Select use case" />
         </SelectTrigger>

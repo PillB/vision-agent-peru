@@ -63,38 +63,126 @@ export interface CameraSource {
   location: string
   src: string
   poster?: string
-  /** Use case categories this camera is best suited to demonstrate. */
+  /** Use case IDs this camera is best suited to demonstrate. */
   useCases?: string[]
+  /** Category for grouping in the UI. */
+  category: 'urban' | 'usecase'
 }
 
 export const CAMERA_SOURCES: CameraSource[] = [
+  // ─── Urban Traffic Feeds (general purpose) ───
   {
     id: 'intersection',
     label: 'Intersección Urbana — Tráfico y Peatones',
     location: 'Ciudad, Perú',
     src: '/sim/urban-intersection.mp4',
-    useCases: ['traffic', 'pedestrians', 'vehicles', 'crowd'],
+    useCases: ['crowd_surge', 'incident_description', 'auto_report', 'visual_memory', 'intrusion'],
+    category: 'urban',
   },
   {
     id: 'crosswalk',
     label: 'Cruce Peatonal — Multitud',
     location: 'Centro, Perú',
     src: '/sim/urban-crosswalk.mp4',
-    useCases: ['pedestrians', 'crowd', 'queue'],
+    useCases: ['crowd_surge', 'queue_anomaly', 'incident_description'],
+    category: 'urban',
   },
   {
     id: 'street',
     label: 'Calle Comercial — Tráfico',
     location: 'Av. Principal, Perú',
     src: '/sim/urban-street.mp4',
-    useCases: ['vehicles', 'pedestrians', 'parking'],
+    useCases: ['parking', 'after_hours', 'intrusion'],
+    category: 'urban',
   },
   {
     id: 'pedestrians',
     label: 'Avenida — Peatones y Vehículos',
     location: 'Jr. de la Unión, Perú',
     src: '/sim/urban-pedestrians.mp4',
-    useCases: ['pedestrians', 'vehicles', 'flow'],
+    useCases: ['visual_memory', 'intrusion', 'auto_report'],
+    category: 'urban',
+  },
+  // ─── Use Case Specific Feeds ───
+  {
+    id: 'uc-graffiti',
+    label: 'Grafiti — Vandalismo con Spray',
+    location: 'Muro urbano, Perú',
+    src: '/sim/uc-graffiti.mp4',
+    useCases: ['graffiti'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-fire',
+    label: 'Fuego y Humo — Fogata al Aire Libre',
+    location: 'Exterior, Perú',
+    src: '/sim/uc-fire.mp4',
+    useCases: ['fire_smoke'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-parking',
+    label: 'Estacionamiento — Vista Aérea',
+    location: 'Parking, Perú',
+    src: '/sim/uc-parking.mp4',
+    useCases: ['parking'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-night-parking',
+    label: 'Estacionamiento Nocturno — Auto Sospechoso',
+    location: 'Parking nocturno, Perú',
+    src: '/sim/uc-night-parking.mp4',
+    useCases: ['after_hours', 'intrusion'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-queue',
+    label: 'Cola — Personas Esperando en Fila',
+    location: 'Acceso, Perú',
+    src: '/sim/uc-queue.mp4',
+    useCases: ['queue_anomaly'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-backpack',
+    label: 'Objeto Abandonado — Persona con Mochila',
+    location: 'Vía urbana, Perú',
+    src: '/sim/uc-backpack.mp4',
+    useCases: ['abandoned_object'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-flood',
+    label: 'Inundación — Lluvia Torrencial',
+    location: 'Vía inundada, Perú',
+    src: '/sim/uc-flood.mp4',
+    useCases: ['flood_watch', 'landslide_watch', 'slip_hazard'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-foggy-night',
+    label: 'Calle Nebulosa Nocturna — Vehículo',
+    location: 'Calle nocturna, Perú',
+    src: '/sim/uc-foggy-night.mp4',
+    useCases: ['after_hours', 'intrusion'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-demolished',
+    label: 'Edificio Dañado — Estructura Post-Sismo',
+    location: 'Edificio, Perú',
+    src: '/sim/uc-demolished.mp4',
+    useCases: ['post_quake'],
+    category: 'usecase',
+  },
+  {
+    id: 'uc-crack',
+    label: 'Grieta en Concreto — Daño Estructural',
+    location: 'Muro de concreto, Perú',
+    src: '/sim/uc-crack.mp4',
+    useCases: ['post_quake'],
+    category: 'usecase',
   },
 ]
 
