@@ -11,6 +11,7 @@ import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
 import { computePixelAnomaly, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
+import { runSpecializedDetection, hasSpecializedModel, getSpecializedModelInfo } from '@/lib/specialized-models'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
 
@@ -192,15 +193,29 @@ export function CameraView() {
 
           // ===== PIXEL ANOMALY DETECTION (for non-COCO use cases) =====
           // For fire, flood, landslide, post-quake: COCO-SSD can't detect these.
-          // Use pixel-based detection (color analysis, frame differencing, edge density).
+          // Use specialized HuggingFace models (if available) or pixel-based detection.
           const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
           let pixelAnomaly: PixelAnomalyResult | null = null
           if (useCase) {
+            // Try specialized HuggingFace model first (fire detection)
+            if (hasSpecializedModel(useCase.id)) {
+              const specResult = await runSpecializedDetection(canvas, useCase.id)
+              if (specResult) {
+                pushTrace(`HF Model [${specResult.modelName}]: ${specResult.label} (${(specResult.confidence * 100).toFixed(1)}%) ${specResult.detected ? '⚠ DETECTED' : ''}`)
+                if (specResult.detected && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
+                  dets.push({
+                    bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                    class: useCase.detectionClasses[0] || 'person',
+                    score: specResult.confidence,
+                  })
+                }
+              }
+            }
+
+            // Fall back to pixel anomaly detection for use cases without HF models
             const anomalyType = getPixelAnomalyType(useCase.id)
-            if (anomalyType) {
+            if (anomalyType && !hasSpecializedModel(useCase.id)) {
               pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
-              // If pixel anomaly detected AND COCO found 0 relevant objects,
-              // inject a synthetic detection so the agent pipeline triggers
               if (pixelAnomaly.score > 0.3 && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
                 dets.push({
                   bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],

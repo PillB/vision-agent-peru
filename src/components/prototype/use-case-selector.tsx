@@ -2,6 +2,8 @@
 
 import { usePrototypeStore, CAMERA_SOURCES } from '@/lib/store'
 import { USE_CASES, LEVEL_LABELS, type CapabilityLevel } from '@/lib/use-cases'
+import { hasSpecializedModel, getSpecializedModelInfo } from '@/lib/specialized-models'
+import { getPixelAnomalyType } from '@/lib/pixel-anomaly'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Shield, Users, Car, Flame, Package, Mountain, Droplet, Activity, Zap, Brain, MessageSquare, Moon, List, AlertTriangle, SprayCan } from 'lucide-react'
@@ -103,11 +105,21 @@ export function UseCaseSelector() {
 
       {/* Active use case description */}
       {activeUseCase && (
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
           <span className="font-mono">Regla:</span>
           <span>{activeUseCase.ruleType}</span>
           <span>·</span>
           <span>Nivel: {LEVEL_LABELS[activeUseCase.level].es}</span>
+          {hasSpecializedModel(activeUseCase.id) && (
+            <Badge className="text-[9px] h-4 px-1 bg-purple-100 text-purple-800 hover:bg-purple-100">
+              🤗 HF Model: {getSpecializedModelInfo(activeUseCase.id)?.modelName}
+            </Badge>
+          )}
+          {!hasSpecializedModel(activeUseCase.id) && getPixelAnomalyType(activeUseCase.id) && (
+            <Badge className="text-[9px] h-4 px-1 bg-blue-100 text-blue-800 hover:bg-blue-100">
+              📊 Pixel: {getPixelAnomalyType(activeUseCase.id)}
+            </Badge>
+          )}
         </div>
       )}
       </div>
