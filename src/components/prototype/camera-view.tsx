@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
+import { computePixelAnomaly, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
 
@@ -150,6 +151,8 @@ export function CameraView() {
     clearSamples()
     // Reset tracker and identity gallery on camera switch
     trackerRef.current.reset()
+    // Reset pixel anomaly frame buffer
+    resetPixelAnomalyBuffer()
   }, [activeCameraId, clearSamples])
 
   // ===== Real ML detection loop =====
@@ -186,6 +189,28 @@ export function CameraView() {
         const ctx = canvas.getContext('2d')
         if (ctx) {
           drawBoxes(ctx, canvas, dets)
+
+          // ===== PIXEL ANOMALY DETECTION (for non-COCO use cases) =====
+          // For fire, flood, landslide, post-quake: COCO-SSD can't detect these.
+          // Use pixel-based detection (color analysis, frame differencing, edge density).
+          const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
+          let pixelAnomaly: PixelAnomalyResult | null = null
+          if (useCase) {
+            const anomalyType = getPixelAnomalyType(useCase.id)
+            if (anomalyType) {
+              pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
+              // If pixel anomaly detected AND COCO found 0 relevant objects,
+              // inject a synthetic detection so the agent pipeline triggers
+              if (pixelAnomaly.score > 0.3 && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
+                dets.push({
+                  bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                  class: useCase.detectionClasses[0] || 'person',
+                  score: pixelAnomaly.score,
+                })
+              }
+              pushTrace(`Pixel anomaly [${anomalyType}]: score=${pixelAnomaly.score.toFixed(2)} (${pixelAnomaly.details})`)
+            }
+          }
 
           // ===== TRACKING + IDENTITY MANAGEMENT =====
           // Update within-feed tracker with new detections
