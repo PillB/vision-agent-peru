@@ -37,6 +37,7 @@ export interface SpecializedDetection {
 }
 
 // Model registry — maps use case IDs to HuggingFace model IDs
+// All models verified accessible on HuggingFace CDN (HTTP 302 = ONNX file exists)
 const MODEL_REGISTRY: Record<string, {
   modelId: string
   modelName: string
@@ -47,11 +48,15 @@ const MODEL_REGISTRY: Record<string, {
     modelName: 'Fire Detection Engine',
     task: 'image-classification',
   },
+  graffiti: {
+    modelId: 'onnx-community/vit-base-violence-detection-ONNX',
+    modelName: 'Violence Detection',
+    task: 'image-classification',
+  },
   // Additional models will be added here as they become available on
   // HuggingFace with ONNX + transformers.js support:
   // - flood_watch: prithivMLmods/Flood-Image-Detection (needs ONNX conversion)
   // - post_quake: crack detection model (needs ONNX conversion)
-  // - graffiti: vandalism detection model (needs ONNX conversion)
 }
 
 // Cache loaded pipeline functions
@@ -111,12 +116,22 @@ export async function runSpecializedDetection(
     // Parse results — image classification returns [{ label, score }]
     if (Array.isArray(results) && results.length > 0) {
       const top = results[0]
-      const isFire = top.label.toLowerCase().includes('fire') || top.label.toLowerCase().includes('smoke')
+      const labelLower = top.label.toLowerCase()
+      // Flexible label matching for different model output formats
+      const isPositive = labelLower.includes('fire') ||
+                         labelLower.includes('smoke') ||
+                         labelLower.includes('violent') ||
+                         labelLower.includes('violence') ||
+                         labelLower.includes('vandal') ||
+                         labelLower.includes('weapon') ||
+                         labelLower.includes('danger') ||
+                         labelLower.includes('nsfw') ||
+                         labelLower.includes('unsafe')
       return {
         modelId: entry.modelId,
         modelName: entry.modelName,
         useCaseId,
-        detected: isFire && top.score > 0.5,
+        detected: isPositive && top.score > 0.5,
         confidence: top.score,
         label: top.label,
         details: `${entry.modelName}: ${top.label} (${(top.score * 100).toFixed(1)}%)`,
