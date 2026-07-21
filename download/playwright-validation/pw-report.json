@@ -1,0 +1,421 @@
+{
+  "startedAt": "2026-07-21T20:14:46.125Z",
+  "base": "http://localhost:3000",
+  "tests": [
+    {
+      "name": "1. Home page loads with no console errors",
+      "status": "pass",
+      "note": "title=\"Vision Agent \u2014 Agentic Camera Intelligence for Peru\", page errors=0, console errors=0",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "2. Strategic Brief tab renders content",
+      "status": "pass",
+      "note": "H2 count=10, page errors=0",
+      "h2s": [
+        "Each AI era solved the previous era's ceiling \u2014 rules lacked learning, learning ",
+        "Four stages, nested not sequential \u2014 every agentic system still contains rules, ",
+        "Agentic AI adds the loop the previous eras lacked: perceive, reason, act, reflec",
+        "Generative AI produces output; agentic AI pursues goals \u2014 the difference is tool",
+        "True agency begins only at Level 5 \u2014 when the system can loop, retry, and self-c",
+        "AI agents sit at the Peak of Inflated Expectations \u2014 the most aggressive adoptio",
+        "85% of employees are stuck at stages 2\u20133 of AI adoption \u2014 only 10% have reached ",
+        "Vision Agent is built natively on Stage 4 \u2014 every plaza camera is a perceive-rea"
+      ]
+    },
+    {
+      "name": "3. Prototype tab + COCO-SSD model load",
+      "status": "pass",
+      "note": "COCO-SSD ready",
+      "state": {
+        "url": "http://localhost:3000/",
+        "videoSrc": "http://localhost:3000/sim/urban-intersection.mp4",
+        "videoPaused": true,
+        "videoTime": 0,
+        "canvasCount": 1,
+        "activeUseCaseId": "crowd_surge",
+        "activeCameraId": "intersection",
+        "capabilityLevel": "agentic",
+        "isRunning": false,
+        "modelStatus": "ready",
+        "fps": 0,
+        "personCount": 0,
+        "lastDetectionLatencyMs": 0,
+        "currentTier": 0,
+        "samplesCount": 0,
+        "hitsCount": 0,
+        "actionLogCount": 0,
+        "reportsCount": 0,
+        "agentTraceCount": 0,
+        "trackedIdentitiesCount": 0,
+        "llmJudgeEnabled": true
+      },
+      "pageErrors": []
+    },
+    {
+      "name": "4. Start analysis + detection cycle",
+      "status": "pass",
+      "note": "video paused=false, page errors=0",
+      "state": {
+        "url": "http://localhost:3000/",
+        "videoSrc": "http://localhost:3000/sim/urban-intersection.mp4",
+        "videoPaused": false,
+        "videoTime": 14.917372,
+        "canvasCount": 1,
+        "activeUseCaseId": "crowd_surge",
+        "activeCameraId": "intersection",
+        "capabilityLevel": "agentic",
+        "isRunning": true,
+        "modelStatus": "ready",
+        "fps": 0,
+        "personCount": 10,
+        "lastDetectionLatencyMs": 4069.899999999907,
+        "currentTier": 0,
+        "samplesCount": 4,
+        "hitsCount": 0,
+        "actionLogCount": 4,
+        "reportsCount": 0,
+        "agentTraceCount": 4,
+        "trackedIdentitiesCount": 2,
+        "llmJudgeEnabled": true
+      },
+      "pageErrors": []
+    },
+    {
+      "name": "5.intrusion: Intrusi\u00f3n en Zona Restringida",
+      "status": "pass",
+      "note": "OK (9924ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.after_hours: Intrusi\u00f3n Vehicular Fuera de Horario",
+      "status": "pass",
+      "note": "OK (9100ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.crowd_surge: Avalancha de Multitud",
+      "status": "pass",
+      "note": "OK (8679ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.parking: Estacionamiento \u2014 Espacios Disponibles",
+      "status": "pass",
+      "note": "OK (10914ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.queue_anomaly: Anomal\u00eda de Cola en Cajeros",
+      "status": "pass",
+      "note": "OK (12993ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.abandoned_object: Objeto Abandonado",
+      "status": "pass",
+      "note": "OK (8456ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.slip_hazard: Resbal\u00f3n y Superficie Mojada",
+      "status": "pass",
+      "note": "OK (11782ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.incident_description: Descripci\u00f3n Autom\u00e1tica de Incidentes",
+      "status": "pass",
+      "note": "OK (8135ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.auto_report: Reporte Auto-Generado",
+      "status": "pass",
+      "note": "OK (12297ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.visual_memory: Memoria Visual \u2014 Incidentes Similares",
+      "status": "pass",
+      "note": "OK (8705ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.flood_watch: Vigilancia de Inundaci\u00f3n",
+      "status": "pass",
+      "note": "OK (9914ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.landslide_watch: Vigilancia de Deslizamiento",
+      "status": "pass",
+      "note": "OK (11663ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "5.post_quake: Escan\u00e9o Post-Sismo",
+      "status": "pass",
+      "note": "OK (11479ms)",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "6.intersection: camera switch",
+      "status": "pass",
+      "note": "OK (9358ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.crosswalk: camera switch",
+      "status": "pass",
+      "note": "OK (10168ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.street: camera switch",
+      "status": "pass",
+      "note": "OK (13397ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.pedestrians: camera switch",
+      "status": "pass",
+      "note": "OK (9413ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-graffiti: camera switch",
+      "status": "pass",
+      "note": "OK (17588ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-fire: camera switch",
+      "status": "pass",
+      "note": "OK (10130ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-parking: camera switch",
+      "status": "pass",
+      "note": "OK (8890ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-night-parking: camera switch",
+      "status": "pass",
+      "note": "OK (9468ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-queue: camera switch",
+      "status": "pass",
+      "note": "OK (9018ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-backpack: camera switch",
+      "status": "pass",
+      "note": "OK (9048ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-flood: camera switch",
+      "status": "pass",
+      "note": "OK (7699ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-foggy-night: camera switch",
+      "status": "pass",
+      "note": "OK (10093ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-demolished: camera switch",
+      "status": "pass",
+      "note": "OK (10924ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "6.uc-crack: camera switch",
+      "status": "pass",
+      "note": "OK (9788ms)",
+      "pageErrors": []
+    },
+    {
+      "name": "7.Reglas Tradicionales",
+      "status": "pass",
+      "note": "OK",
+      "pageErrors": []
+    },
+    {
+      "name": "7.ML / Deep Learning",
+      "status": "pass",
+      "note": "OK",
+      "pageErrors": []
+    },
+    {
+      "name": "7.Cognitiva / GenAI",
+      "status": "pass",
+      "note": "OK",
+      "pageErrors": []
+    },
+    {
+      "name": "7.IA Aut\u00f3noma",
+      "status": "pass",
+      "note": "OK",
+      "pageErrors": []
+    },
+    {
+      "name": "8a. Snapshot button",
+      "status": "pass",
+      "note": "OK"
+    },
+    {
+      "name": "8b. Reset baseline button",
+      "status": "pass",
+      "note": "OK"
+    },
+    {
+      "name": "8c. Clear button (controls)",
+      "status": "pass",
+      "note": "OK"
+    },
+    {
+      "name": "8d. Silence 5m button",
+      "status": "pass",
+      "note": "OK"
+    },
+    {
+      "name": "9. HuggingFace fire detection model loads",
+      "status": "pass",
+      "note": "HF model trace visible",
+      "traceSnippet": ":51:54] HF Model [Fire Detection Engine]: Normal Conditions (38.7%) \n[20:51:48] [Fuego y Humo] Lmldl | count=0 z=0.00 peakZ=0.00 | sustain=0\n[20:51:48] HF Model [Fire Detection Engine]: Normal Conditions (38.7%) \n[20:51:44] [Fuego y Humo] Lmldl | count=0 z=0.00 peakZ=0.00 | sustain=0\n[20:51:44] HF Model [Fire Detection Engine]: Normal Conditions (38.7%) \n[20:51:38] [Fuego y Humo] Lmldl | count=0 z=0.00 peakZ=0.00 | sustain=0\n[20:51:38] HF Model [Fire Detection Engine]: Normal Conditions (38.7%) ",
+      "state": {
+        "url": "http://localhost:3000/",
+        "videoSrc": "http://localhost:3000/sim/uc-fire.mp4",
+        "videoPaused": true,
+        "videoTime": 0.024644,
+        "canvasCount": 1,
+        "activeUseCaseId": "fire_smoke",
+        "activeCameraId": "uc-fire",
+        "capabilityLevel": "mldl",
+        "isRunning": false,
+        "modelStatus": "ready",
+        "fps": 0,
+        "personCount": 0,
+        "lastDetectionLatencyMs": 3131.5,
+        "currentTier": 0,
+        "samplesCount": 7,
+        "hitsCount": 0,
+        "actionLogCount": 7,
+        "reportsCount": 0,
+        "agentTraceCount": 14,
+        "trackedIdentitiesCount": 0,
+        "llmJudgeEnabled": true
+      }
+    },
+    {
+      "name": "10. HuggingFace violence detection model loads",
+      "status": "pass",
+      "note": "HF model trace visible",
+      "traceSnippet": "0 peakZ=0.00 | sustain=0\n[20:53:56] HF Model [Violence Detection]: LABEL_1 (72.5%) \n[20:53:52] [Grafiti y Vandalismo] Lmldl | count=1 z=0.00 peakZ=0.00 | sustain=0\n[20:53:52] HF Model [Violence Detection]: LABEL_1 (71.9%) \n[20:53:48] [Grafiti y Vandalismo] Lmldl | count=1 z=0.00 peakZ=0.00 | sustain=0\n[20:53:48] HF Model [Violence Detection]: LABEL_1 (73.1%) \n[20:53:43] [Grafiti y Vandalismo] Lmldl | count=1 z=0.00 peakZ=0.00 | sustain=0\n[20:53:43] HF Model [Violence Detection]: LABEL_1 (73.0%) ",
+      "state": {
+        "url": "http://localhost:3000/",
+        "videoSrc": "http://localhost:3000/sim/uc-graffiti.mp4",
+        "videoPaused": true,
+        "videoTime": 14.326165,
+        "canvasCount": 1,
+        "activeUseCaseId": "graffiti",
+        "activeCameraId": "uc-graffiti",
+        "capabilityLevel": "mldl",
+        "isRunning": false,
+        "modelStatus": "ready",
+        "fps": 0,
+        "personCount": 1,
+        "lastDetectionLatencyMs": 4035.2000000001863,
+        "currentTier": 0,
+        "samplesCount": 8,
+        "hitsCount": 0,
+        "actionLogCount": 8,
+        "reportsCount": 0,
+        "agentTraceCount": 16,
+        "trackedIdentitiesCount": 1,
+        "llmJudgeEnabled": true
+      }
+    },
+    {
+      "name": "11. Pixel anomaly fallback (flood)",
+      "status": "pass",
+      "note": "Pixel anomaly trace visible",
+      "traceSnippet": "ncia de Inundaci\u00f3n] Lmldl | count=1 z=0.00 peakZ=0.00 | sustain=0\n[20:54:36] Pixel anomaly [flood]: score=1.00 (147168 water-like pixels (100.0% anomaly))\n[20:54:32] [Vigilancia de Inundaci\u00f3n] Lmldl | count=1 z=0.00 peakZ=0.00 | sustain=0\n[20:54:32] Pixel anomaly [flood]: score=1.00 (147168 water-like pixels (100.0% anomaly))\n[20:54:28] [Vigilancia de Inundaci\u00f3n] Lmldl | count=1 z=0.00 peakZ=0.00 | sustain=0\n[20:54:28] Pixel anomaly [flood]: score=1.00 (147168 water-like pixels (100.0% anomaly))"
+    },
+    {
+      "name": "12a. Toggle LLM judge OFF",
+      "status": "pass",
+      "note": "OK"
+    },
+    {
+      "name": "12b. Toggle LLM judge ON",
+      "status": "pass",
+      "note": "OK"
+    },
+    {
+      "name": "13. Locale switch toggle",
+      "status": "pass",
+      "note": "OK \u2014 button label changed to \"English\"",
+      "beforeButton": "Espa\u00f1ol",
+      "afterButton": "English",
+      "afterSnippet": "Vision Agentv1.0 \u00b7 Per\u00faEnglishSistema listoReferencia: SkylineWebcams Per\u00fa \u2197Resumen de la soluci\u00f3nRe"
+    },
+    {
+      "name": "14. 30s stability run",
+      "status": "pass",
+      "note": "page errors=0, isRunning=true, hits=0, actions=9",
+      "state": {
+        "url": "http://localhost:3000/",
+        "videoSrc": "http://localhost:3000/sim/urban-intersection.mp4",
+        "videoPaused": false,
+        "videoTime": 0.156111,
+        "canvasCount": 1,
+        "activeUseCaseId": "crowd_surge",
+        "activeCameraId": "intersection",
+        "capabilityLevel": "agentic",
+        "isRunning": true,
+        "modelStatus": "ready",
+        "fps": 0,
+        "personCount": 5,
+        "lastDetectionLatencyMs": 3651,
+        "currentTier": 0,
+        "samplesCount": 9,
+        "hitsCount": 0,
+        "actionLogCount": 9,
+        "reportsCount": 0,
+        "agentTraceCount": 9,
+        "trackedIdentitiesCount": 2,
+        "llmJudgeEnabled": true
+      }
+    }
+  ],
+  "summary": {
+    "total": 46,
+    "passed": 46,
+    "failed": 0
+  },
+  "finishedAt": "2026-07-21T21:00:07.815147Z"
+}

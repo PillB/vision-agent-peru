@@ -1,0 +1,61 @@
+{
+  "startedAt": "2026-07-21T19:59:46.186Z",
+  "base": "http://localhost:3000",
+  "tests": [
+    {
+      "name": "1. Home page loads with no console errors",
+      "status": "pass",
+      "note": "title=\"Vision Agent — Agentic Camera Intelligence for Peru\", page errors=0, console errors=0",
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "2. Strategic Brief tab renders content",
+      "status": "pass",
+      "note": "H2 count=10, page errors=0",
+      "h2s": [
+        "Each AI era solved the previous era's ceiling — rules lacked learning, learning ",
+        "Four stages, nested not sequential — every agentic system still contains rules, ",
+        "Agentic AI adds the loop the previous eras lacked: perceive, reason, act, reflec",
+        "Generative AI produces output; agentic AI pursues goals — the difference is tool",
+        "True agency begins only at Level 5 — when the system can loop, retry, and self-c",
+        "AI agents sit at the Peak of Inflated Expectations — the most aggressive adoptio",
+        "85% of employees are stuck at stages 2–3 of AI adoption — only 10% have reached ",
+        "Vision Agent is built natively on Stage 4 — every plaza camera is a perceive-rea"
+      ]
+    },
+    {
+      "name": "3. Prototype tab + COCO-SSD model load",
+      "status": "pass",
+      "note": "COCO-SSD ready",
+      "state": {
+        "url": "http://localhost:3000/",
+        "videoSrc": "http://localhost:3000/sim/urban-intersection.mp4",
+        "videoPaused": true,
+        "videoTime": 0,
+        "canvasCount": 1,
+        "bodyText": "Vision Agentv1.0 · PeruEspañolSystem readyReference: SkylineWebcams Peru ↗Solution OverviewStrategic BriefLive PrototypeAnalytics/IA layer (TF.js COCO-SSD detection + z-score/EMA statistics) feeds the Agentic layer (rule engine + LLM-as-judge + 3-tier escalation). Every action is logged in the audit trail. Switch cameras, tune thresholds, trigger anomalies.Paused💡 ¿Cómo usar esto? Elija un caso de uso (qué quiere detectar) y un nivel de capacidad (qué tan autónomo es el sistema): Tradicional = "
+      },
+      "pageErrors": []
+    },
+    {
+      "name": "4. Start analysis + detection cycle",
+      "status": "fail",
+      "note": "video paused=undefined, page errors=1",
+      "state": {
+        "url": "http://localhost:3000/",
+        "videoSrc": "",
+        "canvasCount": 0,
+        "bodyText": "Vision Agentv1.0 · PeruEspañolSystem readyReference: SkylineWebcams Peru ↗Solution OverviewStrategic BriefLive PrototypeExecutive SummaryCusco · Lima · ArequipaAn agentic camera intelligence system that converts Peru's public plaza feeds into automated, auditable incident response — running entirely in the browser.The system pairs a traditional computer-vision layer (TF.js COCO-SSD, 90-class object detection) with an agentic reasoning layer (rule engine + LLM-as-judge) that perceives, decides, a"
+      },
+      "pageErrors": [
+        "Invalid or unexpected token"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 3,
+    "failed": 1
+  }
+}

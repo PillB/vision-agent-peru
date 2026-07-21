@@ -384,3 +384,39 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
 
   setTrackedIdentities: (identities) => set({ trackedIdentities: identities }),
 }))
+
+// ─── Dev-only global hook for Playwright tests ───
+// Exposes the store's getState/setState on `window.__visionStore` so automated
+// tests can drive state transitions (use case / camera / capability switches)
+// without going through slow radix-Select UI clicks. In production builds this
+// code still runs but `window` is undefined on the server, so the guard is
+// required.
+if (typeof window !== 'undefined') {
+  // @ts-expect-error — augmenting window for dev tooling
+  window.__visionStore = {
+    getState: usePrototypeStore.getState,
+    setState: usePrototypeStore.setState,
+    subscribe: usePrototypeStore.subscribe,
+    // Convenience helpers — these replicate the React component's logic so
+    // tests get the same side-effects (camera auto-switch, capability level
+    // sync) without going through the UI.
+    setActiveUseCase: (id: string) => {
+      const store = usePrototypeStore.getState()
+      store.setActiveUseCase(id)
+      // Sync capability level to the use case's level
+      // (mirrors UseCaseSelector.tsx behavior)
+      const uc = (window as any).__USE_CASES__?.find((u: any) => u.id === id)
+      if (uc?.level) store.setCapabilityLevel(uc.level)
+      // Auto-switch to the best camera for this use case
+      const cams = (window as any).__CAMERA_SOURCES__ as any[] | undefined
+      if (cams) {
+        const bestCam = cams.find(c => c.useCases?.includes(id))
+        if (bestCam) store.setActiveCamera(bestCam.id)
+      }
+    },
+    setActiveCamera: (id: string) => usePrototypeStore.getState().setActiveCamera(id),
+    setCapabilityLevel: (lvl: string) => usePrototypeStore.getState().setCapabilityLevel(lvl as any),
+    setRunning: (r: boolean) => usePrototypeStore.getState().setRunning(r),
+    setLlmJudgeEnabled: (b: boolean) => usePrototypeStore.getState().setLlmJudgeEnabled(b),
+  };
+}

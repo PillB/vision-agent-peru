@@ -1140,3 +1140,48 @@ VALIDATION:
 NOTE: The fire detection model loads from HuggingFace CDN on first use (~5-10s).
 In the 4GB sandbox environment, loading the model may cause OOM when combined with
 COCO-SSD + dev server. On a machine with 8GB+ RAM, it will load and run correctly.
+
+---
+Task ID: playwright-validation
+Agent: orchestrator
+Task: Run Playwright tests across all use cases, cameras, and models (COCO-SSD, HuggingFace, pixel-anomaly); fix any issues found; keep workspace active for user validation.
+
+Work Log:
+- Started Next.js dev server (PID 8431) on http://localhost:3000 — kept alive via nohup+disown pattern; survived all subsequent code edits via Fast Refresh.
+- Built Playwright test harness in /home/z/my-project/scripts/ using chunked scripts (pw-chunk-a through pw-chunk-h) to stay under the 2-minute Bash tool timeout. Helpers in pw-helpers.js.
+- Added dev-only `window.__visionStore` hook in src/lib/store.ts so tests can drive Zustand state transitions (use case / camera / capability switches) directly — bypasses slow radix-Select UI clicks (30s/click → 1s/click).
+- Added `window.__USE_CASES__` + `window.__CAMERA_SOURCES__` exposure in use-case-selector.tsx so the dev hook can replicate the React component's auto-camera-switch logic.
+- Fixed `clickButton` to use `page.evaluate(() => element.click())` instead of Playwright's `.click()` — the canvas redraw loop was making Playwright's actionability checks never settle (8s timeouts → instant).
+
+BUGS FOUND AND FIXED:
+
+1. HuggingFace models failed to load in headless Chromium (no WebGPU adapter):
+   - Before: `src/lib/specialized-models.ts` hardcoded `device: 'webgpu', dtype: 'q4'`.
+   - The check `!!navigator.gpu` was misleading — Chromium exposes the API even without a GPU adapter.
+   - Fix: Properly probe `navigator.gpu.requestAdapter()` first. Try webgpu → wasm/q8 → wasm (default). Added `failedModels` Set to skip retries after first failure.
+   - Verified: Fire Detection Engine (prithivMLmods/Fire-Detection-Engine-ONNX) now loads via WASM and runs inference ("HF Model [Fire Detection Engine]: Normal Conditions (44.7%)").
+
+2. No pixel-anomaly fallback when HF model unavailable:
+   - Before: `camera-view.tsx` only ran pixel-anomaly when `!hasSpecializedModel(useCase.id)`. If HF model failed to load, neither detector ran.
+   - Fix: Added `hfHandled` flag. If HF model returns `label === 'load_failed'`, fall through to pixel-anomaly. Now fire_smoke and graffiti use cases have working detection even in headless environments.
+
+3. Dev-only store hook missed camera auto-switch:
+   - Before: `window.__visionStore.setActiveUseCase(id)` only set the use case, not the camera or capability level (the React component did those side-effects).
+   - Fix: Updated the hook to also call `setCapabilityLevel(uc.level)` and `setActiveCamera(bestCamera.id)`, mirroring `UseCaseSelector.tsx` behavior.
+
+TEST RESULTS:
+- 46/46 tests PASS (0 failures)
+- Coverage: 3 tabs (Overview, Brief, Prototype), 15 use cases, 14 cameras, 4 capability levels, 4 control buttons, 2 HuggingFace models, 1 pixel-anomaly fallback, LLM judge toggle, locale switch, 30s stability.
+- All screenshots saved to /home/z/my-project/download/playwright-validation/screenshots/
+- Full JSON report: /home/z/my-project/download/playwright-validation/pw-report.json
+
+Stage Summary:
+- All 15 use cases (2 traditional + 7 ML/DL + 1 cognitive + 2 agentic + 3 disaster) verified working.
+- All 14 cameras (4 urban + 10 use-case-specific) load and switch without errors.
+- COCO-SSD model loads in ~8s, runs at 1.5s/inference throttle, no console errors.
+- HuggingFace Fire Detection Engine loads via WASM fallback, runs inference every cycle.
+- HuggingFace Violence Detection (graffiti) loads via WASM fallback, runs inference every cycle.
+- Pixel-anomaly detection runs for flood/landslide/post-quake/graffiti/slip_hazard use cases.
+- LLM judge toggle works (on/off) without errors.
+- 30s stability run: 0 page errors, 9 actions logged, isRunning stays true.
+- Dev server is alive at http://localhost:3000 for user validation.

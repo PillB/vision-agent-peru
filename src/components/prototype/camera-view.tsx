@@ -193,28 +193,38 @@ export function CameraView() {
 
           // ===== PIXEL ANOMALY DETECTION (for non-COCO use cases) =====
           // For fire, flood, landslide, post-quake: COCO-SSD can't detect these.
-          // Use specialized HuggingFace models (if available) or pixel-based detection.
+          // Strategy: try HuggingFace ONNX model first; if it fails (e.g.,
+          // headless browser without WebGPU/WASM), fall back to pixel-anomaly.
           const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
           let pixelAnomaly: PixelAnomalyResult | null = null
           if (useCase) {
-            // Try specialized HuggingFace model first (fire detection)
+            let hfHandled = false
+            // Try specialized HuggingFace model first (fire, graffiti/violence)
             if (hasSpecializedModel(useCase.id)) {
               const specResult = await runSpecializedDetection(canvas, useCase.id)
               if (specResult) {
-                pushTrace(`HF Model [${specResult.modelName}]: ${specResult.label} (${(specResult.confidence * 100).toFixed(1)}%) ${specResult.detected ? '⚠ DETECTED' : ''}`)
-                if (specResult.detected && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
-                  dets.push({
-                    bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
-                    class: useCase.detectionClasses[0] || 'person',
-                    score: specResult.confidence,
-                  })
+                if (specResult.label === 'load_failed') {
+                  // HF model unavailable in this environment — log once and
+                  // fall through to pixel-anomaly below.
+                  pushTrace(`HF Model [${specResult.modelName}]: unavailable — using pixel fallback`)
+                } else {
+                  hfHandled = true
+                  pushTrace(`HF Model [${specResult.modelName}]: ${specResult.label} (${(specResult.confidence * 100).toFixed(1)}%) ${specResult.detected ? '⚠ DETECTED' : ''}`)
+                  if (specResult.detected && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
+                    dets.push({
+                      bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                      class: useCase.detectionClasses[0] || 'person',
+                      score: specResult.confidence,
+                    })
+                  }
                 }
               }
             }
 
-            // Fall back to pixel anomaly detection for use cases without HF models
+            // Pixel-anomaly fallback: for use cases without HF model OR when
+            // the HF model failed to load.
             const anomalyType = getPixelAnomalyType(useCase.id)
-            if (anomalyType && !hasSpecializedModel(useCase.id)) {
+            if (anomalyType && !hfHandled) {
               pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
               if (pixelAnomaly.score > 0.3 && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
                 dets.push({

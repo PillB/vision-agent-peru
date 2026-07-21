@@ -62,6 +62,10 @@ const MODEL_REGISTRY: Record<string, {
 // Cache loaded pipeline functions
 const pipelineCache: Map<string, any> = new Map()
 
+// Track models that have repeatedly failed to load — avoids retrying every
+// detect cycle (1.5s) when the environment clearly doesn't support them.
+const failedModels: Set<string> = new Set()
+
 /**
  * Check if a specialized model is available for this use case.
  */
@@ -95,19 +99,87 @@ export async function runSpecializedDetection(
   const entry = MODEL_REGISTRY[useCaseId]
   if (!entry) return null
 
+  // If we've previously failed to load this model, return a "load_failed"
+  // sentinel quickly — avoids re-trying on every detect cycle (1.5s).
+  if (failedModels.has(entry.modelId)) {
+    return {
+      modelId: entry.modelId,
+      modelName: entry.modelName,
+      useCaseId,
+      detected: false,
+      confidence: 0,
+      label: 'load_failed',
+      details: `${entry.modelName}: model unavailable in this environment`,
+    }
+  }
+
   try {
     // Dynamic import — code-split so transformers.js only loads when needed
-    const { pipeline } = await import('@huggingface/transformers')
+    const { pipeline, env } = await import('@huggingface/transformers')
 
     // Get or create pipeline
     let classifier = pipelineCache.get(entry.modelId)
     if (!classifier) {
       console.log(`[SpecializedModels] Loading ${entry.modelName} (${entry.modelId})...`)
-      classifier = await pipeline('image-classification', entry.modelId, {
-        device: 'webgpu',
-        dtype: 'q4',
-      })
+
+      // Allow remote model download from HuggingFace CDN
+      env.allowLocalModels = false
+      env.useBrowserCache = true
+
+      // Try WebGPU first (if a real adapter is available), then fall back to WASM.
+      // The check `!!navigator.gpu` is NOT sufficient — Chromium exposes the API
+      // even when no GPU adapter is available (e.g., headless without GPU).
+      let lastErr: unknown = null
+      // transformers.js requires dtype to be one of a specific union, not string.
+      type Dtype = 'q4' | 'q8' | 'fp32' | 'fp16' | 'auto' | 'int8' | 'uint8'
+      const tryLoad = async (device: 'webgpu' | 'wasm', dtype?: Dtype) => {
+        console.log(`[SpecializedModels] Trying backend: ${device}${dtype ? ` (dtype=${dtype})` : ''}`)
+        try {
+          const opts: Record<string, unknown> = { device }
+          if (dtype) opts.dtype = dtype
+          return await pipeline('image-classification', entry.modelId, opts as any)
+        } catch (e) {
+          lastErr = e
+          console.warn(`[SpecializedModels] ${device} backend failed:`, e instanceof Error ? e.message : e)
+          return null
+        }
+      }
+
+      // 1. Check WebGPU availability by requesting an adapter
+      let webgpuAvailable = false
+      if (typeof navigator !== 'undefined' && navigator.gpu) {
+        try {
+          const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'low-power' })
+          webgpuAvailable = !!adapter
+        } catch {
+          webgpuAvailable = false
+        }
+      }
+
+      // 2. Try the appropriate backend
+      if (webgpuAvailable) {
+        classifier = await tryLoad('webgpu', 'q4') ?? await tryLoad('webgpu')
+      }
+      if (!classifier) {
+        classifier = await tryLoad('wasm', 'q8') ?? await tryLoad('wasm')
+      }
+
+      if (!classifier) {
+        console.error(`[SpecializedModels] All backends failed for ${entry.modelId}. Last error:`, lastErr)
+        failedModels.add(entry.modelId)
+        return {
+          modelId: entry.modelId,
+          modelName: entry.modelName,
+          useCaseId,
+          detected: false,
+          confidence: 0,
+          label: 'load_failed',
+          details: `${entry.modelName}: model unavailable in this environment`,
+        }
+      }
+
       pipelineCache.set(entry.modelId, classifier)
+      console.log(`[SpecializedModels] ${entry.modelName} loaded successfully`)
     }
 
     // Run inference
@@ -155,9 +227,11 @@ export async function runSpecializedDetection(
 
 /**
  * Clear the pipeline cache (e.g., on camera switch or session end).
+ * Also resets the failed-models set so retries can happen on a fresh session.
  */
 export function clearSpecializedModelCache() {
   pipelineCache.clear()
+  failedModels.clear()
 }
 
 /**
