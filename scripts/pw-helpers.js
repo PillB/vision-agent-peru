@@ -89,6 +89,29 @@ async function makeBrowser() {
       '--no-sandbox', '--disable-setuid-sandbox',
       '--use-gl=swiftshader', '--enable-unsafe-swiftshader',
       '--enable-webgl', '--ignore-gpu-blocklist',
+      // Memory-constrained env (4GB cgroup): reduce Chromium's per-tab memory
+      '--memory-pressure-off',
+      '--disable-dev-shm-usage',
+      '--disable-extensions',
+      '--disable-background-networking',
+      '--disable-default-apps',
+      '--disable-translate',
+      '--disable-features=TranslateUI',
+      '--disable-sync',
+      '--disable-component-update',
+      '--no-first-run',
+      '--disable-breakpad',
+      '--disable-prompt-on-repost',
+      '--disable-renderer-backgrounding',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-ipc-flooding-protection',
+      '--renderer-process-limit=2',
+      // CRITICAL: Enable software video decoding so drawImage(video) produces
+      // actual frames instead of black. Without these, headless Chromium with
+      // swiftshader GL silently fails to decode video frames to canvases.
+      '--enable-features=VaapiVideoDecoder,VaapiVideoEncoder',
+      '--use-fake-ui-for-media-stream',
+      '--autoplay-policy=no-user-gesture-required',
     ],
   });
 }

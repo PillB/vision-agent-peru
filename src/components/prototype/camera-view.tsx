@@ -36,6 +36,7 @@ const RealMlLoader = dynamic(
 
 export function CameraView() {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const realMlHandleRef = useRef<RealMlHandle | null>(null)
   const rafRef = useRef<number | null>(null)
@@ -80,12 +81,23 @@ export function CameraView() {
     // Find the active use case
     const useCase = USE_CASES.find((uc) => uc.id === state.activeUseCaseId) || USE_CASES[0]
 
+    // For sustain_verify AND frame_diff use cases, increment sustainCount
+    // based on whether the specialized model or COCO-SSD detected something.
+    // sustain_verify: fire, abandoned_object
+    // frame_diff: graffiti, flood_watch, landslide_watch, post_quake, slip_hazard
+    // Both rule types need sustainCount to escalate from T1 to T2.
+    const hasTrackedDetections = dets.filter(d => useCase.detectionClasses.includes(d.class)).length > 0
+    const usesDetectionBasedSustain = useCase.ruleType === 'sustain_verify' || useCase.ruleType === 'frame_diff'
+    const newSustainCount = usesDetectionBasedSustain
+      ? (hasTrackedDetections ? state.sustainCount + 1 : 0)
+      : state.sustainCount
+
     const decision = decide(
       {
         stats: state.stats,
         cameraId: activeCamera.id,
         cameraLabel: activeCamera.label,
-        sustainCount: state.sustainCount,
+        sustainCount: newSustainCount,
         escalationHistory: state.escalationHistory,
         acknowledgedUntil: state.acknowledgedUntil,
         llmJudgeEnabled: state.llmJudgeEnabled,
@@ -98,7 +110,7 @@ export function CameraView() {
       state.agentConfig
     )
     setAgentState({
-      sustainCount: state.sustainCount,
+      sustainCount: newSustainCount,
       currentTier: decision.tier,
       agentReasoning: decision.reasoning,
       agentCycleCount: state.agentCycleCount + 1,
@@ -189,17 +201,16 @@ export function CameraView() {
         setLatency(latency)
         const ctx = canvas.getContext('2d')
         if (ctx) {
-          drawBoxes(ctx, canvas, dets)
-
-          // ===== PIXEL ANOMALY DETECTION (for non-COCO use cases) =====
-          // For fire, flood, landslide, post-quake: COCO-SSD can't detect these.
-          // Strategy: try HuggingFace ONNX model first; if it fails (e.g.,
-          // headless browser without WebGPU/WASM), fall back to pixel-anomaly.
+          // ===== SPECIALIZED MODEL DETECTION (HF ONNX / CLIP zero-shot) =====
+          // For fire, graffiti, flood, landslide, post-quake, slip: COCO-SSD
+          // can't detect these. Strategy:
+          //   1. Try specialized HuggingFace model (dedicated ViT or CLIP zero-shot)
+          //   2. If HF model fails to load (headless env), fall back to pixel-anomaly
           const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
           let pixelAnomaly: PixelAnomalyResult | null = null
           if (useCase) {
             let hfHandled = false
-            // Try specialized HuggingFace model first (fire, graffiti/violence)
+            // Try specialized HuggingFace model first
             if (hasSpecializedModel(useCase.id)) {
               const specResult = await runSpecializedDetection(canvas, useCase.id)
               if (specResult) {
@@ -207,9 +218,16 @@ export function CameraView() {
                   // HF model unavailable in this environment — log once and
                   // fall through to pixel-anomaly below.
                   pushTrace(`HF Model [${specResult.modelName}]: unavailable — using pixel fallback`)
+                } else if (specResult.label === 'inference_error') {
+                  // Transient inference error — log and fall through to pixel
+                  pushTrace(`HF Model [${specResult.modelName}]: inference error — using pixel fallback`)
                 } else {
                   hfHandled = true
-                  pushTrace(`HF Model [${specResult.modelName}]: ${specResult.label} (${(specResult.confidence * 100).toFixed(1)}%) ${specResult.detected ? '⚠ DETECTED' : ''}`)
+                  // Use the rich details field already formatted by the model
+                  pushTrace(`HF Model [${specResult.modelName}]: ${specResult.details}`)
+                  // If the HF model detected something AND COCO-SSD didn't already
+                  // detect a relevant class, inject a synthetic detection so the
+                  // agent loop can trigger on it.
                   if (specResult.detected && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
                     dets.push({
                       bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
@@ -236,6 +254,10 @@ export function CameraView() {
               pushTrace(`Pixel anomaly [${anomalyType}]: score=${pixelAnomaly.score.toFixed(2)} (${pixelAnomaly.details})`)
             }
           }
+
+          // Now draw boxes (AFTER specialized detection so the HF model
+          // sees the raw image, not boxes/cleared canvas)
+          drawBoxes(ctx, canvas, dets, videoRef.current ?? undefined, imgRef.current ?? undefined)
 
           // ===== TRACKING + IDENTITY MANAGEMENT =====
           // Update within-feed tracker with new detections
@@ -296,12 +318,26 @@ export function CameraView() {
     }
   }, [isRunning, pushDetections, setLatency, setFps, pushTrace])
 
-  // Pause/play video
+  // Pause/play video — also handles headless Chromium where play() may
+  // need an explicit currentTime nudge to start decoding frames.
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
     if (isRunning) {
-      v.play().catch((err) => console.error('[video] play failed:', err))
+      // Nudge currentTime forward slightly to force a frame decode in headless
+      if (v.currentTime === 0 && v.readyState >= 1) {
+        v.currentTime = 0.1
+      }
+      const playPromise = v.play()
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch((err) => {
+          console.warn('[video] play failed (will retry):', err instanceof Error ? err.message : err)
+          // Retry after a short delay — sometimes the video element isn't ready
+          setTimeout(() => {
+            v.play().catch(() => {})
+          }, 500)
+        })
+      }
     } else {
       v.pause()
     }
@@ -323,7 +359,9 @@ export function CameraView() {
       {/* Real ML loader — always loaded */}
       <RealMlLoader
         videoRef={videoRef}
+        imgRef={imgRef}
         canvasRef={canvasRef}
+        isStatic={activeCamera.isStatic}
         onModelStatus={(s, err = null) => setModelStatus(s, err)}
         onModelReady={(handle) => {
           realMlHandleRef.current = handle
@@ -401,21 +439,31 @@ export function CameraView() {
         </div>
       </div>
 
-      {/* Video + canvas overlay */}
+      {/* Video OR static image + canvas overlay */}
       <div className="relative rounded-xl overflow-hidden border border-zinc-200 bg-black aspect-video">
-        <video
-          ref={videoRef}
-          src={activeCamera.src}
-          className="absolute inset-0 w-full h-full object-cover"
-          loop
-          muted
-          playsInline
-          crossOrigin="anonymous"
-          preload="auto"
-          onLoadedData={() => {
-            if (isRunning) videoRef.current?.play().catch(() => {})
-          }}
-        />
+        {activeCamera.isStatic ? (
+          <img
+            ref={imgRef}
+            src={activeCamera.src}
+            className="absolute inset-0 w-full h-full object-cover"
+            crossOrigin="anonymous"
+            alt={activeCamera.label}
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            src={activeCamera.src}
+            className="absolute inset-0 w-full h-full object-cover"
+            loop
+            muted
+            playsInline
+            crossOrigin="anonymous"
+            preload="auto"
+            onLoadedData={() => {
+              if (isRunning) videoRef.current?.play().catch(() => {})
+            }}
+          />
+        )}
         <canvas
           ref={canvasRef}
           className="absolute inset-0 w-full h-full pointer-events-none"
@@ -504,11 +552,15 @@ function drawBoxes(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   dets: Detection[],
-  video?: HTMLVideoElement
+  video?: HTMLVideoElement,
+  img?: HTMLImageElement
 ) {
-  // Re-draw the current video frame to clear previous boxes
-  if (video && video.readyState >= 2) {
+  // Re-draw the current frame to clear previous boxes. Use video if available,
+  // otherwise fall back to static image (for isStatic cameras).
+  if (video && video.readyState >= 2 && video.videoWidth > 0) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+  } else if (img && img.complete && img.naturalWidth > 0) {
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
   } else {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }

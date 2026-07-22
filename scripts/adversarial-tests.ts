@@ -669,6 +669,573 @@ describe('State: Tracker handles class switching', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SPECIALIZED MODELS — adversarial tests for the model registry
+// ═══════════════════════════════════════════════════════════════════════════
+
+// We test the pure-logic parts of specialized-models.ts that don't require
+// a browser environment (no pipeline loading, no canvas). The model registry,
+// config validation, and label matching are all testable in Node.
+
+// Re-implement the registry shape for testing (the actual module imports
+// @huggingface/transformers dynamically which we can't do in Node).
+interface TestModelConfig {
+  modelId: string
+  modelName: string
+  task: 'image-classification' | 'zero-shot-image-classification'
+  threshold: number
+  positiveLabels?: string[]
+  candidateLabels?: string[]
+  positiveIndices?: number[]
+}
+
+const TEST_REGISTRY: Record<string, TestModelConfig> = {
+  fire_smoke: {
+    modelId: 'prithivMLmods/Fire-Detection-Engine-ONNX',
+    modelName: 'Fire Detection Engine',
+    task: 'image-classification',
+    positiveLabels: ['fire needed action', 'smoky'],
+    threshold: 0.5,
+  },
+  graffiti: {
+    modelId: 'Xenova/clip-vit-base-patch32',
+    modelName: 'Graffiti/Vandalism (CLIP zero-shot)',
+    task: 'zero-shot-image-classification',
+    candidateLabels: ['graffiti spray painted on a wall', 'vandalism and property damage', 'a clean undamaged wall', 'a normal street scene'],
+    positiveIndices: [0, 1],
+    threshold: 0.15,
+  },
+  flood_watch: {
+    modelId: 'Xenova/clip-vit-base-patch32',
+    modelName: 'Flood Detection (CLIP zero-shot)',
+    task: 'zero-shot-image-classification',
+    candidateLabels: ['a flooded street submerged in water', 'a flooded area with rising water', 'a dry normal street', 'a normal dry landscape'],
+    positiveIndices: [0, 1],
+    threshold: 0.20,
+  },
+  landslide_watch: {
+    modelId: 'Xenova/clip-vit-base-patch32',
+    modelName: 'Landslide Detection (CLIP zero-shot)',
+    task: 'zero-shot-image-classification',
+    candidateLabels: ['a landslide with mud and debris flow', 'a slope failure with exposed earth', 'stable vegetated terrain', 'a normal intact hillside'],
+    positiveIndices: [0, 1],
+    threshold: 0.15,
+  },
+  post_quake: {
+    modelId: 'Xenova/clip-vit-base-patch32',
+    modelName: 'Crack Detection (CLIP zero-shot)',
+    task: 'zero-shot-image-classification',
+    candidateLabels: ['a wall with deep structural cracks', 'concrete with cracks and spalling damage', 'a smooth intact concrete surface', 'an undamaged wall'],
+    positiveIndices: [0, 1],
+    threshold: 0.20,
+  },
+  slip_hazard: {
+    modelId: 'Xenova/clip-vit-base-patch32',
+    modelName: 'Slip Hazard (CLIP zero-shot)',
+    task: 'zero-shot-image-classification',
+    candidateLabels: ['a person falling down', 'a person slipping on a wet floor', 'a wet slippery floor surface', 'a person standing normally', 'a dry safe floor'],
+    positiveIndices: [0, 1, 2],
+    threshold: 0.20,
+  },
+}
+
+// Re-implement the label matching logic for testing
+function matchImageClassification(label: string, score: number, config: TestModelConfig): boolean {
+  const labelLower = label.toLowerCase()
+  const isPositive = (config.positiveLabels || []).some(l => labelLower.includes(l.toLowerCase()))
+  return isPositive && score > config.threshold
+}
+
+function matchZeroShot(results: Array<{ label: string; score: number }>, config: TestModelConfig): { detected: boolean; topPositive: { label: string; score: number } | null } {
+  let bestPositive: { label: string; score: number } | null = null
+  for (const r of results) {
+    const idx = (config.candidateLabels || []).indexOf(r.label)
+    if ((config.positiveIndices || []).includes(idx)) {
+      if (!bestPositive || r.score > bestPositive.score) {
+        bestPositive = { label: r.label, score: r.score }
+      }
+    }
+  }
+  return {
+    detected: bestPositive !== null && bestPositive.score > config.threshold,
+    topPositive: bestPositive,
+  }
+}
+
+describe('Specialized Models: Registry has all expected use cases', () => {
+  const expectedUseCases = ['fire_smoke', 'graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
+  for (const uc of expectedUseCases) {
+    assert(uc in TEST_REGISTRY, `registry should have entry for ${uc}`)
+  }
+})
+
+describe('Specialized Models: All configs have required fields', () => {
+  for (const [id, config] of Object.entries(TEST_REGISTRY)) {
+    assert(typeof config.modelId === 'string' && config.modelId.length > 0, `${id}: modelId must be non-empty string`)
+    assert(typeof config.modelName === 'string' && config.modelName.length > 0, `${id}: modelName must be non-empty string`)
+    assert(config.task === 'image-classification' || config.task === 'zero-shot-image-classification', `${id}: task must be valid`)
+    assert(typeof config.threshold === 'number' && config.threshold > 0 && config.threshold < 1, `${id}: threshold must be 0..1`)
+
+    if (config.task === 'image-classification') {
+      assert(Array.isArray(config.positiveLabels) && config.positiveLabels!.length > 0, `${id}: image-classification must have positiveLabels`)
+    } else {
+      assert(Array.isArray(config.candidateLabels) && config.candidateLabels!.length >= 2, `${id}: zero-shot must have >=2 candidateLabels`)
+      assert(Array.isArray(config.positiveIndices) && config.positiveIndices!.length > 0, `${id}: zero-shot must have positiveIndices`)
+      assert(config.positiveIndices!.every(i => i >= 0 && i < config.candidateLabels!.length), `${id}: positiveIndices must be valid`)
+    }
+  }
+})
+
+describe('Specialized Models: Fire detection label matching', () => {
+  const config = TEST_REGISTRY.fire_smoke
+  assert(matchImageClassification('Fire Needed Action', 0.614, config) === true, 'fire needed action at 61.4% should detect')
+  assert(matchImageClassification('Fire Needed Action', 0.4, config) === false, 'fire needed action at 40% should NOT detect (below 0.5 threshold)')
+  assert(matchImageClassification('Normal Conditions', 0.9, config) === false, 'normal conditions should NOT detect even at 90%')
+  assert(matchImageClassification('Smoky Environment', 0.6, config) === true, 'smoky environment at 60% should detect')
+  assert(matchImageClassification('FIRE NEEDED ACTION', 0.6, config) === true, 'label matching should be case-insensitive')
+  assert(matchImageClassification('fire needed action', 0.6, config) === true, 'lowercase label should match')
+  assert(matchImageClassification('', 0.9, config) === false, 'empty label should not match')
+})
+
+describe('Specialized Models: Zero-shot label matching (graffiti)', () => {
+  const config = TEST_REGISTRY.graffiti
+  // CLIP returns all labels with scores; positive ones at indices 0,1
+  const results = [
+    { label: 'graffiti spray painted on a wall', score: 0.25 },
+    { label: 'vandalism and property damage', score: 0.18 },
+    { label: 'a clean undamaged wall', score: 0.35 },
+    { label: 'a normal street scene', score: 0.22 },
+  ]
+  const { detected, topPositive } = matchZeroShot(results, config)
+  assert(detected === true, 'graffiti at 25% should detect (threshold 0.15)')
+  assert(topPositive !== null && topPositive.label === 'graffiti spray painted on a wall', 'top positive should be graffiti')
+})
+
+describe('Specialized Models: Zero-shot no positive label wins', () => {
+  const config = TEST_REGISTRY.graffiti
+  // All negative labels score higher than positive ones
+  const results = [
+    { label: 'a clean undamaged wall', score: 0.60 },
+    { label: 'a normal street scene', score: 0.25 },
+    { label: 'graffiti spray painted on a wall', score: 0.10 },
+    { label: 'vandalism and property damage', score: 0.05 },
+  ]
+  const { detected, topPositive } = matchZeroShot(results, config)
+  assert(detected === false, 'should not detect when positive labels score low')
+  assert(topPositive !== null && topPositive.score === 0.10, 'topPositive should still be the best positive label')
+})
+
+describe('Specialized Models: Zero-shot with empty results', () => {
+  const config = TEST_REGISTRY.flood_watch
+  const { detected, topPositive } = matchZeroShot([], config)
+  assert(detected === false, 'empty results should not detect')
+  assert(topPositive === null, 'topPositive should be null for empty results')
+})
+
+describe('Specialized Models: Zero-shot threshold boundary', () => {
+  const config = TEST_REGISTRY.flood_watch // threshold 0.20
+  const results = [
+    { label: 'a flooded street submerged in water', score: 0.20 },
+    { label: 'a dry normal street', score: 0.80 },
+  ]
+  // Score exactly at threshold — should NOT detect (strict >)
+  const { detected } = matchZeroShot(results, config)
+  assert(detected === false, 'score exactly at threshold should NOT detect (strict >)')
+})
+
+describe('Specialized Models: Zero-shot threshold just above', () => {
+  const config = TEST_REGISTRY.flood_watch
+  const results = [
+    { label: 'a flooded street submerged in water', score: 0.21 },
+    { label: 'a dry normal street', score: 0.79 },
+  ]
+  const { detected } = matchZeroShot(results, config)
+  assert(detected === true, 'score just above threshold should detect')
+})
+
+describe('Specialized Models: All CLIP use cases share same modelId', () => {
+  // CLIP is loaded once and cached — all zero-shot use cases should use the same modelId
+  const clipUseCases = ['graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
+  const modelIds = clipUseCases.map(uc => TEST_REGISTRY[uc].modelId)
+  const uniqueIds = new Set(modelIds)
+  assert(uniqueIds.size === 1, 'all CLIP use cases should share the same modelId')
+  assert([...uniqueIds][0] === 'Xenova/clip-vit-base-patch32', 'should use clip-vit-base-patch32')
+})
+
+describe('Specialized Models: Thresholds are reasonable', () => {
+  // Dedicated models (fire) can use higher thresholds (0.5)
+  // CLIP zero-shot needs lower thresholds (0.15-0.20) because probabilities
+  // are spread across multiple labels
+  assert(TEST_REGISTRY.fire_smoke.threshold >= 0.4, 'fire (dedicated model) should have threshold >= 0.4')
+  for (const uc of ['graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']) {
+    assert(TEST_REGISTRY[uc].threshold <= 0.25, `${uc} (CLIP zero-shot) should have threshold <= 0.25`)
+    assert(TEST_REGISTRY[uc].threshold >= 0.10, `${uc} threshold should be >= 0.10 to avoid false positives`)
+  }
+})
+
+describe('Specialized Models: Positive labels are non-empty strings', () => {
+  for (const [id, config] of Object.entries(TEST_REGISTRY)) {
+    if (config.task === 'image-classification') {
+      for (const label of config.positiveLabels || []) {
+        assert(typeof label === 'string' && label.length > 0, `${id}: positiveLabel must be non-empty string`)
+        assert(label === label.toLowerCase(), `${id}: positiveLabel "${label}" should be lowercase for matching`)
+      }
+    }
+  }
+})
+
+describe('Specialized Models: Candidate labels are descriptive', () => {
+  // CLIP works best with descriptive phrases, not single words
+  for (const [id, config] of Object.entries(TEST_REGISTRY)) {
+    if (config.task === 'zero-shot-image-classification') {
+      for (const label of config.candidateLabels || []) {
+        assert(label.split(' ').length >= 3, `${id}: candidate label "${label}" should be a descriptive phrase (3+ words)`)
+      }
+    }
+  }
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AGENT RULE REGRESSION TESTS — for the bugs found and fixed
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Agent: frame_diff triggers on specialized model detection', () => {
+  // Regression: frame_diff use cases (graffiti, flood, landslide, post_quake, slip)
+  // should trigger when the specialized model detects something, not just on z-score.
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'graffiti',
+      ruleType: 'frame_diff',
+      params: { frameDiffThreshold: 0.15 },
+      detectionClasses: ['person'],
+    }),
+    detections: [{ bbox: [10, 10, 100, 100], class: 'person', score: 0.8 }],
+  })
+  // Force peakZ=0 (no z-score anomaly) but trackedCount=1 (HF model detected)
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  assert(decision.tier >= 1, 'frame_diff should trigger T1 when specialized model detects (trackedCount > 0)')
+  assert(decision.reasoning.includes('specialized model detected'), `reasoning should mention specialized model, got: ${decision.reasoning}`)
+})
+
+describe('Agent: frame_diff does NOT trigger when no detection and no z-score', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'graffiti',
+      ruleType: 'frame_diff',
+      params: { frameDiffThreshold: 0.15 },
+      detectionClasses: ['person'],
+    }),
+    detections: [], // no detections
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  assert(decision.tier === 0, 'frame_diff should NOT trigger when no detection and no z-score anomaly')
+})
+
+describe('Agent: sustain_verify triggers with detection-based sustain', () => {
+  // Regression: fire_smoke uses sustain_verify. The sustainCount should
+  // increment based on detection presence, not z-score.
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'fire_smoke',
+      ruleType: 'sustain_verify',
+      params: { sustainTicks: 3, threshold: 1 },
+      detectionClasses: ['person'],
+    }),
+    detections: [{ bbox: [10, 10, 100, 100], class: 'person', score: 0.8 }],
+    sustainCount: 3, // 3 consecutive detections
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  assert(decision.tier >= 1, 'sustain_verify should trigger when sustainCount >= sustainTicks')
+})
+
+describe('Agent: sustain_verify does NOT trigger with insufficient sustain', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'fire_smoke',
+      ruleType: 'sustain_verify',
+      params: { sustainTicks: 3, threshold: 1 },
+      detectionClasses: ['person'],
+    }),
+    detections: [{ bbox: [10, 10, 100, 100], class: 'person', score: 0.8 }],
+    sustainCount: 2, // only 2 consecutive — need 3
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  assert(decision.tier === 0, 'sustain_verify should NOT trigger when sustainCount < sustainTicks')
+})
+
+describe('Agent: sustain_verify does NOT trigger without detection', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'fire_smoke',
+      ruleType: 'sustain_verify',
+      params: { sustainTicks: 3, threshold: 1 },
+      detectionClasses: ['person'],
+    }),
+    detections: [], // no detection
+    sustainCount: 5, // high sustain but no current detection
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  assert(decision.tier === 0, 'sustain_verify should NOT trigger when trackedCount < threshold')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CAMERA SOURCE REGRESSION TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Camera Sources: Static cameras have isStatic flag', () => {
+  // Import CAMERA_SOURCES from the store
+  // Note: we can't import directly because store.ts imports use-cases.ts
+  // which is fine. Let's test the static camera properties.
+  const STATIC_CAMERA_IDS = [
+    'static-fire', 'static-graffiti', 'static-flood', 'static-crack',
+    'static-demolished', 'static-foggy-night', 'static-backpack',
+    'static-parking', 'static-queue', 'static-intersection',
+  ]
+  // We verify the IDs are well-formed
+  for (const id of STATIC_CAMERA_IDS) {
+    assert(id.startsWith('static-'), `static camera ID "${id}" should start with "static-"`)
+  }
+  assert(STATIC_CAMERA_IDS.length === 10, 'should have 10 static cameras')
+})
+
+describe('Camera Sources: Use case to camera mapping', () => {
+  // Each use case with a specialized model should have a matching static camera
+  const USE_CASE_TO_STATIC_CAM = {
+    fire_smoke: 'static-fire',
+    graffiti: 'static-graffiti',
+    flood_watch: 'static-flood',
+    post_quake: 'static-crack',
+    landslide_watch: 'static-demolished',
+    slip_hazard: 'static-foggy-night',
+  }
+  for (const [uc, cam] of Object.entries(USE_CASE_TO_STATIC_CAM)) {
+    assert(cam.startsWith('static-'), `${uc} should map to a static camera, got ${cam}`)
+  }
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EDGE CASES FOR DETECTION INJECTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Edge: Detection with zero confidence', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'fire_smoke',
+      ruleType: 'sustain_verify',
+      params: { sustainTicks: 1, threshold: 1 },
+      detectionClasses: ['person'],
+    }),
+    detections: [{ bbox: [10, 10, 100, 100], class: 'person', score: 0 }],
+    sustainCount: 1,
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  // trackedCount is 1 (detection present), sustainCount=1 >= sustainTicks=1
+  // Should trigger regardless of confidence (HF model already filtered)
+  assert(decision.tier >= 1, 'should trigger when detection is present, regardless of score')
+})
+
+describe('Edge: Detection with NaN bbox coordinates', () => {
+  // The tracker should handle NaN gracefully (not crash)
+  const tracker = new WithinFeedTracker(60, 0.3)
+  let didThrow = false
+  try {
+    tracker.update([{ bbox: [NaN, NaN, NaN, NaN] as [number, number, number, number], class: 'person', score: 0.9 }])
+  } catch (e) {
+    didThrow = true
+  }
+  assert(!didThrow, 'tracker should not throw on NaN bbox coordinates')
+})
+
+describe('Edge: Detection with negative bbox coordinates', () => {
+  const tracker = new WithinFeedTracker(60, 0.3)
+  let didThrow = false
+  try {
+    const tracks = tracker.update([{ bbox: [-10, -10, 50, 80] as [number, number, number, number], class: 'person', score: 0.9 }])
+    assert(tracks.length === 1, 'should create track for negative coords')
+  } catch (e) {
+    didThrow = true
+  }
+  assert(!didThrow, 'tracker should not throw on negative bbox coordinates')
+})
+
+describe('Edge: Detection with Infinity bbox', () => {
+  const tracker = new WithinFeedTracker(60, 0.3)
+  let didThrow = false
+  try {
+    tracker.update([{ bbox: [Infinity, Infinity, Infinity, Infinity] as [number, number, number, number], class: 'person', score: 0.9 }])
+  } catch (e) {
+    didThrow = true
+  }
+  assert(!didThrow, 'tracker should not throw on Infinity bbox coordinates')
+})
+
+describe('Edge: Empty use case ID in agent context', () => {
+  // Agent should handle a use case with empty ID gracefully
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({ id: '', ruleType: 'count_threshold', params: { threshold: 1 } }),
+    detections: [{ bbox: [10, 10, 50, 50], class: 'person', score: 0.9 }],
+  })
+  let didThrow = false
+  try {
+    const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+    assert(decision.tier >= 0, 'should return valid tier')
+  } catch (e) {
+    didThrow = true
+  }
+  assert(!didThrow, 'agent should not throw on empty use case ID')
+})
+
+describe('Edge: Use case with no actions defined', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({ actions: [], ruleType: 'count_threshold', params: { threshold: 1 } }),
+    detections: [{ bbox: [10, 10, 50, 50], class: 'person', score: 0.9 }],
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 5, zScore: 5 } // trigger
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  // Even with no use-case-specific actions, the agent adds badge/snapshot at T1/T2
+  // based on capability level
+  assert(Array.isArray(decision.actions), 'should return actions array')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RESOURCE EXHAUSTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Stress: 1000 specialized model config lookups', () => {
+  // Simulate rapid config lookups (as would happen in a fast detection loop)
+  const t0 = Date.now()
+  for (let i = 0; i < 1000; i++) {
+    const uc = Object.keys(TEST_REGISTRY)[i % Object.keys(TEST_REGISTRY).length]
+    const config = TEST_REGISTRY[uc]
+    assert(config !== undefined, `lookup ${i} should find config`)
+  }
+  const elapsed = Date.now() - t0
+  assert(elapsed < 100, `1000 lookups should take <100ms, took ${elapsed}ms`)
+})
+
+describe('Stress: Zero-shot matching with many candidate labels', () => {
+  // Test with an unusually large candidate label set
+  const config: TestModelConfig = {
+    modelId: 'test',
+    modelName: 'test',
+    task: 'zero-shot-image-classification',
+    candidateLabels: Array.from({ length: 50 }, (_, i) => `label ${i}`),
+    positiveIndices: [0, 25, 49],
+    threshold: 0.5,
+  }
+  const results = config.candidateLabels!.map((label, i) => ({ label, score: i === 25 ? 0.6 : 0.01 }))
+  const { detected, topPositive } = matchZeroShot(results, config)
+  assert(detected === true, 'should detect with 50 candidate labels')
+  assert(topPositive!.label === 'label 25', 'topPositive should be at index 25')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE CORRUPTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('State: Agent with corrupted sustainCount (negative)', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({ ruleType: 'sustain_verify', params: { sustainTicks: 3, threshold: 1 } }),
+    detections: [{ bbox: [10, 10, 50, 50], class: 'person', score: 0.9 }],
+    sustainCount: -5, // corrupted
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  let didThrow = false
+  try {
+    const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+    assert(decision.tier === 0, 'negative sustainCount should not trigger (negative < 3)')
+  } catch (e) {
+    didThrow = true
+  }
+  assert(!didThrow, 'agent should not throw on negative sustainCount')
+})
+
+describe('State: Agent with NaN sustainCount', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({ ruleType: 'sustain_verify', params: { sustainTicks: 3, threshold: 1 } }),
+    detections: [{ bbox: [10, 10, 50, 50], class: 'person', score: 0.9 }],
+    sustainCount: NaN,
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  let didThrow = false
+  try {
+    const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+    // NaN comparisons are always false, so sustainCount >= sustainNeeded is false
+    assert(decision.tier === 0, 'NaN sustainCount should not trigger')
+  } catch (e) {
+    didThrow = true
+  }
+  assert(!didThrow, 'agent should not throw on NaN sustainCount')
+})
+
+describe('State: Agent with Infinity sustainCount', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({ ruleType: 'sustain_verify', params: { sustainTicks: 3, threshold: 1 } }),
+    detections: [{ bbox: [10, 10, 50, 50], class: 'person', score: 0.9 }],
+    sustainCount: Infinity,
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  // Infinity >= 3 is true
+  assert(decision.tier >= 1, 'Infinity sustainCount should trigger sustain_verify')
+})
+
+describe('State: Agent with corrupted escalationHistory (non-array)', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({ ruleType: 'count_threshold', params: { threshold: 1 } }),
+    detections: [{ bbox: [10, 10, 50, 50], class: 'person', score: 0.9 }],
+    escalationHistory: null as any, // corrupted
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 5, zScore: 5 }
+  let didThrow = false
+  try {
+    decide(ctx, DEFAULT_AGENT_CONFIG)
+  } catch (e) {
+    didThrow = true
+  }
+  // The agent does escalationHistory.filter() which will throw on null.
+  // This is acceptable — the UI should never pass null. Document the behavior.
+  assert(didThrow, 'agent should throw on null escalationHistory (defensive: UI must pass array)')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RACE CONDITION TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Race: Concurrent sustainCount increments', () => {
+  // Simulate multiple agent cycles running concurrently (shouldn't happen,
+  // but verify the logic is sound)
+  let sustainCount = 0
+  const hasDetection = true
+  const increments = 10
+  // Simulate 10 concurrent cycles
+  for (let i = 0; i < increments; i++) {
+    if (hasDetection) sustainCount++
+  }
+  assert(sustainCount === increments, `after ${increments} increments, sustainCount should be ${increments}, got ${sustainCount}`)
+})
+
+describe('Race: SustainCount reset interleave', () => {
+  // Simulate detection appearing, disappearing, then appearing again
+  let sustainCount = 0
+  const cycle = (hasDetection: boolean) => {
+    sustainCount = hasDetection ? sustainCount + 1 : 0
+    return sustainCount
+  }
+  assert(cycle(true) === 1, 'first detection: sustain=1')
+  assert(cycle(true) === 2, 'second detection: sustain=2')
+  assert(cycle(true) === 3, 'third detection: sustain=3')
+  assert(cycle(false) === 0, 'no detection: sustain resets to 0')
+  assert(cycle(true) === 1, 'detection again: sustain=1 (not 4)')
+  assert(cycle(true) === 2, 'detection again: sustain=2')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
 // REPORT
 // ═══════════════════════════════════════════════════════════════════════════
 

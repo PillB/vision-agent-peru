@@ -12,6 +12,7 @@ import type { AnomalySample, AnomalyStats, AnomalyConfig } from './anomaly'
 import { computeAnomalyStats, DEFAULT_ANOMALY_CONFIG } from './anomaly'
 import type { Action, Tier, AgentConfig } from './agent'
 import { DEFAULT_AGENT_CONFIG } from './agent'
+import { USE_CASES } from './use-cases'
 
 export interface Detection {
   bbox: [number, number, number, number]  // [x, y, w, h] in source pixels
@@ -67,6 +68,11 @@ export interface CameraSource {
   useCases?: string[]
   /** Category for grouping in the UI. */
   category: 'urban' | 'usecase'
+  /** When true, src is a static JPEG (not a video). Used for environments
+   * where video decoding is unreliable (e.g., headless Chromium with
+   * software GL). The camera-view draws the image to canvas once per
+   * detect cycle instead of relying on video.currentTime. */
+  isStatic?: boolean
 }
 
 export const CAMERA_SOURCES: CameraSource[] = [
@@ -183,6 +189,100 @@ export const CAMERA_SOURCES: CameraSource[] = [
     src: '/sim/uc-crack.mp4',
     useCases: ['post_quake'],
     category: 'usecase',
+  },
+  // ─── Static-frame cameras (for environments without video decode) ───
+  // Pre-extracted JPEG frames from the corresponding .mp4 files. Used as
+  // fallback when headless Chromium can't decode video frames to canvas.
+  // Tagged with isStatic:true so camera-view knows to use Image instead of video.
+  {
+    id: 'static-fire',
+    label: '[Static] Fuego y Humo',
+    location: 'Exterior, Perú (frame)',
+    src: '/sim/frames/uc-fire.jpg',
+    useCases: ['fire_smoke'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-graffiti',
+    label: '[Static] Grafiti',
+    location: 'Muro urbano, Perú (frame)',
+    src: '/sim/frames/uc-graffiti.jpg',
+    useCases: ['graffiti'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-flood',
+    label: '[Static] Inundación',
+    location: 'Calle inundada, Perú (frame)',
+    src: '/sim/frames/uc-flood.jpg',
+    useCases: ['flood_watch'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-crack',
+    label: '[Static] Grieta',
+    location: 'Concreto, Perú (frame)',
+    src: '/sim/frames/uc-crack.jpg',
+    useCases: ['post_quake'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-demolished',
+    label: '[Static] Escombros',
+    location: 'Terreno, Perú (frame)',
+    src: '/sim/frames/uc-demolished.jpg',
+    useCases: ['landslide_watch', 'post_quake'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-foggy-night',
+    label: '[Static] Noche Niebla',
+    location: 'Exterior, Perú (frame)',
+    src: '/sim/frames/uc-foggy-night.jpg',
+    useCases: ['slip_hazard'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-backpack',
+    label: '[Static] Mochila',
+    location: 'Estación, Perú (frame)',
+    src: '/sim/frames/uc-backpack.jpg',
+    useCases: ['abandoned_object'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-parking',
+    label: '[Static] Estacionamiento',
+    location: 'Parqueo, Perú (frame)',
+    src: '/sim/frames/uc-parking.jpg',
+    useCases: ['parking'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-queue',
+    label: '[Static] Cola',
+    location: 'Cajero, Perú (frame)',
+    src: '/sim/frames/uc-queue.jpg',
+    useCases: ['queue_anomaly'],
+    category: 'usecase',
+    isStatic: true,
+  },
+  {
+    id: 'static-intersection',
+    label: '[Static] Intersección',
+    location: 'Ciudad, Perú (frame)',
+    src: '/sim/frames/urban-intersection.jpg',
+    useCases: ['crowd_surge', 'incident_description', 'auto_report', 'visual_memory', 'intrusion'],
+    category: 'urban',
+    isStatic: true,
   },
 ]
 
@@ -327,9 +427,21 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
     set((state) => {
       const samples = [...state.samples, sample].slice(-MAX_SAMPLES)
       const stats = computeAnomalyStats(samples, state.anomalyConfig)
-      // sustain counter: increments when peakZ > t1Z, resets when back to normal
+      // sustain counter: increments when peakZ > t1Z, resets when back to normal.
+      // NOTE: For sustain_verify AND frame_diff use cases, the camera-view's
+      // runAgentLoop manages sustainCount directly (based on detection
+      // presence, not z-score). To avoid pushDetections overwriting that
+      // value, we only update sustainCount here when peakZ actually crossed
+      // the t1Z threshold OR when the use case uses density_anomaly /
+      // count_threshold / roi_breach / time_gate (z-score-based rules).
+      // For sustain_verify and frame_diff use cases, preserve the existing
+      // sustainCount — camera-view will update it.
+      const activeUseCase = USE_CASES.find((uc) => uc.id === state.activeUseCaseId)
+      const usesDetectionBasedSustain = activeUseCase?.ruleType === 'sustain_verify' || activeUseCase?.ruleType === 'frame_diff'
       const wasAnom = stats.peakZ > state.agentConfig.t1Z
-      const sustainCount = wasAnom ? state.sustainCount + 1 : 0
+      const sustainCount = usesDetectionBasedSustain
+        ? state.sustainCount  // preserve — camera-view manages it
+        : (wasAnom ? state.sustainCount + 1 : 0)
       return {
         detections: dets,
         personCount: count,
