@@ -11,7 +11,7 @@ import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
 import { computePixelAnomaly, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
-import { runSpecializedDetection, hasSpecializedModel, getSpecializedModelInfo } from '@/lib/specialized-models'
+import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
 
@@ -204,61 +204,62 @@ export function CameraView() {
         setLatency(latency)
         const ctx = canvas.getContext('2d')
         if (ctx) {
-          // ===== SPECIALIZED MODEL DETECTION (HF ONNX / CLIP zero-shot) =====
-          // For fire, graffiti, flood, landslide, post-quake, slip: COCO-SSD
-          // can't detect these. Strategy:
-          //   1. Try specialized HuggingFace model (dedicated ViT or CLIP zero-shot)
-          //   2. If HF model fails to load (headless env), fall back to pixel-anomaly
-          // The synthetic detection uses specializedClassName (e.g., 'fire', 'graffiti')
-          // NOT detectionClasses[0] (which was 'person' — a COCO-SSD class).
+          // ===== MULTI-MODEL ENSEMBLE DETECTION (MoE-style) =====
+          // Every use case runs MULTIPLE models simultaneously:
+          //   1. COCO-SSD (already ran above) — persons, cars, backpacks
+          //   2. Specialized HF models (1-2 per use case) — fire, CLIP zero-shot, etc.
+          //   3. Pixel-anomaly — HSV/frame-diff fallback (always runs as supplementary)
+          //
+          // Detections from ALL models are merged. If ANY model detects the
+          // target event, a synthetic detection is injected. The trace shows
+          // each model's result so the user can see multi-model agreement.
           const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
           let pixelAnomaly: PixelAnomalyResult | null = null
           if (useCase) {
-            let hfHandled = false
-            // Try specialized HuggingFace model first
+            let anyHfModelLoaded = false
+            const className = useCase.specializedClassName || useCase.id
+
+            // ─── Run ALL specialized HF models in parallel (ensemble) ───
             if (hasSpecializedModel(useCase.id)) {
-              const specResult = await runSpecializedDetection(canvas, useCase.id)
-              if (specResult) {
+              const ensembleResults = await runSpecializedDetectionEnsemble(canvas, useCase.id)
+
+              for (const specResult of ensembleResults) {
                 if (specResult.label === 'load_failed') {
-                  pushTrace(`HF Model [${specResult.modelName}]: unavailable — using pixel fallback`)
+                  pushTrace(`HF Model [${specResult.modelName}]: unavailable — pixel fallback will supplement`)
                 } else if (specResult.label === 'inference_error') {
-                  pushTrace(`HF Model [${specResult.modelName}]: inference error — using pixel fallback`)
+                  pushTrace(`HF Model [${specResult.modelName}]: inference error — pixel fallback will supplement`)
                 } else {
-                  hfHandled = true
+                  anyHfModelLoaded = true
                   pushTrace(`HF Model [${specResult.modelName}]: ${specResult.details}`)
-                  // Inject a synthetic detection with the CORRECT class name
-                  // (e.g., 'fire', not 'person') so the UI shows the right label.
-                  if (specResult.detected) {
-                    const className = useCase.specializedClassName || useCase.id
-                    // Only inject if no existing detection has this class
-                    if (dets.filter(d => d.class === className).length === 0) {
-                      dets.push({
-                        bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
-                        class: className,
-                        score: specResult.confidence,
-                      })
-                    }
+                  // Inject synthetic detection if this model detected something
+                  // AND no existing detection has this class (avoid duplicates)
+                  if (specResult.detected && dets.filter(d => d.class === className).length === 0) {
+                    dets.push({
+                      bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                      class: className,
+                      score: specResult.confidence,
+                    })
                   }
                 }
               }
             }
 
-            // Pixel-anomaly fallback: for use cases without HF model OR when
-            // the HF model failed to load.
+            // ─── Pixel-anomaly: ALWAYS runs as supplementary detection ───
+            // (not just as fallback — it provides additional signal for the ensemble)
             const anomalyType = getPixelAnomalyType(useCase.id)
-            if (anomalyType && !hfHandled) {
+            if (anomalyType) {
               pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
-              if (pixelAnomaly.score > 0.3) {
-                const className = useCase.specializedClassName || useCase.id
-                if (dets.filter(d => d.class === className).length === 0) {
-                  dets.push({
-                    bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
-                    class: className,
-                    score: pixelAnomaly.score,
-                  })
-                }
-              }
               pushTrace(`Pixel anomaly [${anomalyType}]: score=${pixelAnomaly.score.toFixed(2)} (${pixelAnomaly.details})`)
+
+              // If pixel anomaly is strong AND no HF model detected, inject
+              // a pixel-based detection (fallback when HF models unavailable)
+              if (pixelAnomaly.score > 0.3 && dets.filter(d => d.class === className).length === 0) {
+                dets.push({
+                  bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                  class: className,
+                  score: pixelAnomaly.score,
+                })
+              }
             }
           }
 
@@ -391,20 +392,26 @@ export function CameraView() {
           </SelectContent>
         </Select>
 
-        {/* Dynamic model badge — shows the primary model for the active use case */}
+        {/* Dynamic multi-model badge — shows the ensemble running for this use case */}
         <div
           className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5"
-          title={activeUseCase?.primaryModel || 'Real ML detection'}
+          title={(() => {
+            const hfModels = getAllModelNames(activeUseCaseId)
+            const parts = ['COCO-SSD (always)']
+            if (hfModels.length > 0) parts.push(...hfModels)
+            const anomalyType = getPixelAnomalyType(activeUseCaseId)
+            if (anomalyType) parts.push(`Pixel-anomaly (${anomalyType})`)
+            return `Ensemble: ${parts.join(' + ')}`
+          })()}
         >
           <Cpu className="h-3 w-3 text-emerald-600" />
           <span className="text-xs font-medium text-emerald-700">
             {activeUseCase?.primaryModel ? activeUseCase.primaryModel.split('(')[0].trim() : 'Real ML'}
           </span>
-          {hasSpecializedModel(activeUseCaseId) && (
-            <span className="text-[9px] text-amber-600 font-mono ml-0.5" title="Specialized HF model active">
-              + HF
-            </span>
-          )}
+          {/* Show model count badge — e.g., "3 models" for COCO-SSD + HF + pixel */}
+          <span className="text-[9px] text-amber-600 font-mono ml-0.5" title="Number of models in ensemble">
+            ×{1 + (hasSpecializedModel(activeUseCaseId) ? getAllModelNames(activeUseCaseId).length : 0) + (getPixelAnomalyType(activeUseCaseId) ? 1 : 0)}
+          </span>
         </div>
 
         <Button

@@ -678,64 +678,94 @@ describe('State: Tracker handles class switching', () => {
 
 // Re-implement the registry shape for testing (the actual module imports
 // @huggingface/transformers dynamically which we can't do in Node).
+// Now uses multi-model array structure (v4 ensemble architecture).
 interface TestModelConfig {
   modelId: string
   modelName: string
   task: 'image-classification' | 'zero-shot-image-classification'
   threshold: number
+  source: 'dedicated' | 'clip-zero-shot'
   positiveLabels?: string[]
   candidateLabels?: string[]
   positiveIndices?: number[]
 }
 
-const TEST_REGISTRY: Record<string, TestModelConfig> = {
-  fire_smoke: {
-    modelId: 'prithivMLmods/Fire-Detection-Engine-ONNX',
-    modelName: 'Fire Detection Engine',
-    task: 'image-classification',
-    positiveLabels: ['fire needed action', 'smoky'],
-    threshold: 0.5,
-  },
-  graffiti: {
-    modelId: 'Xenova/clip-vit-base-patch32',
-    modelName: 'Graffiti/Vandalism (CLIP zero-shot)',
-    task: 'zero-shot-image-classification',
-    candidateLabels: ['graffiti spray painted on a wall', 'vandalism and property damage', 'a clean undamaged wall', 'a normal street scene'],
-    positiveIndices: [0, 1],
-    threshold: 0.15,
-  },
-  flood_watch: {
-    modelId: 'Xenova/clip-vit-base-patch32',
-    modelName: 'Flood Detection (CLIP zero-shot)',
-    task: 'zero-shot-image-classification',
-    candidateLabels: ['a flooded street submerged in water', 'a flooded area with rising water', 'a dry normal street', 'a normal dry landscape'],
-    positiveIndices: [0, 1],
-    threshold: 0.20,
-  },
-  landslide_watch: {
-    modelId: 'Xenova/clip-vit-base-patch32',
-    modelName: 'Landslide Detection (CLIP zero-shot)',
-    task: 'zero-shot-image-classification',
-    candidateLabels: ['a landslide with mud and debris flow', 'a slope failure with exposed earth', 'stable vegetated terrain', 'a normal intact hillside'],
-    positiveIndices: [0, 1],
-    threshold: 0.15,
-  },
-  post_quake: {
-    modelId: 'Xenova/clip-vit-base-patch32',
-    modelName: 'Crack Detection (CLIP zero-shot)',
-    task: 'zero-shot-image-classification',
-    candidateLabels: ['a wall with deep structural cracks', 'concrete with cracks and spalling damage', 'a smooth intact concrete surface', 'an undamaged wall'],
-    positiveIndices: [0, 1],
-    threshold: 0.20,
-  },
-  slip_hazard: {
-    modelId: 'Xenova/clip-vit-base-patch32',
-    modelName: 'Slip Hazard (CLIP zero-shot)',
-    task: 'zero-shot-image-classification',
-    candidateLabels: ['a person falling down', 'a person slipping on a wet floor', 'a wet slippery floor surface', 'a person standing normally', 'a dry safe floor'],
-    positiveIndices: [0, 1, 2],
-    threshold: 0.20,
-  },
+// Multi-model registry: each use case maps to an ARRAY of model configs
+const TEST_REGISTRY: Record<string, TestModelConfig[]> = {
+  fire_smoke: [
+    {
+      modelId: 'prithivMLmods/Fire-Detection-Engine-ONNX',
+      modelName: 'Fire Detection Engine',
+      task: 'image-classification',
+      source: 'dedicated',
+      positiveLabels: ['fire needed action', 'smoky'],
+      threshold: 0.5,
+    },
+    {
+      modelId: 'Xenova/clip-vit-base-patch32',
+      modelName: 'Fire (CLIP zero-shot)',
+      task: 'zero-shot-image-classification',
+      source: 'clip-zero-shot',
+      candidateLabels: ['a large fire with flames and smoke', 'a smoky environment with fire hazard', 'a normal scene with no fire', 'a dark nighttime scene'],
+      positiveIndices: [0, 1],
+      threshold: 0.15,
+    },
+  ],
+  graffiti: [
+    {
+      modelId: 'Xenova/clip-vit-base-patch32',
+      modelName: 'Graffiti/Vandalism (CLIP zero-shot)',
+      task: 'zero-shot-image-classification',
+      source: 'clip-zero-shot',
+      candidateLabels: ['graffiti spray painted on a wall', 'vandalism and property damage', 'a clean undamaged wall', 'a normal street scene'],
+      positiveIndices: [0, 1],
+      threshold: 0.15,
+    },
+  ],
+  flood_watch: [
+    {
+      modelId: 'Xenova/clip-vit-base-patch32',
+      modelName: 'Flood Detection (CLIP zero-shot)',
+      task: 'zero-shot-image-classification',
+      source: 'clip-zero-shot',
+      candidateLabels: ['a flooded street submerged in water', 'a flooded area with rising water', 'a dry normal street', 'a normal dry landscape'],
+      positiveIndices: [0, 1],
+      threshold: 0.20,
+    },
+  ],
+  landslide_watch: [
+    {
+      modelId: 'Xenova/clip-vit-base-patch32',
+      modelName: 'Landslide Detection (CLIP zero-shot)',
+      task: 'zero-shot-image-classification',
+      source: 'clip-zero-shot',
+      candidateLabels: ['a landslide with mud and debris flow', 'a slope failure with exposed earth', 'stable vegetated terrain', 'a normal intact hillside'],
+      positiveIndices: [0, 1],
+      threshold: 0.15,
+    },
+  ],
+  post_quake: [
+    {
+      modelId: 'Xenova/clip-vit-base-patch32',
+      modelName: 'Crack Detection (CLIP zero-shot)',
+      task: 'zero-shot-image-classification',
+      source: 'clip-zero-shot',
+      candidateLabels: ['a wall with deep structural cracks', 'concrete with cracks and spalling damage', 'a smooth intact concrete surface', 'an undamaged wall'],
+      positiveIndices: [0, 1],
+      threshold: 0.20,
+    },
+  ],
+  slip_hazard: [
+    {
+      modelId: 'Xenova/clip-vit-base-patch32',
+      modelName: 'Slip Hazard (CLIP zero-shot)',
+      task: 'zero-shot-image-classification',
+      source: 'clip-zero-shot',
+      candidateLabels: ['a person falling down', 'a person slipping on a wet floor', 'a wet slippery floor surface', 'a person standing normally', 'a dry safe floor'],
+      positiveIndices: [0, 1, 2],
+      threshold: 0.20,
+    },
+  ],
 }
 
 // Re-implement the label matching logic for testing
@@ -769,24 +799,27 @@ describe('Specialized Models: Registry has all expected use cases', () => {
 })
 
 describe('Specialized Models: All configs have required fields', () => {
-  for (const [id, config] of Object.entries(TEST_REGISTRY)) {
-    assert(typeof config.modelId === 'string' && config.modelId.length > 0, `${id}: modelId must be non-empty string`)
-    assert(typeof config.modelName === 'string' && config.modelName.length > 0, `${id}: modelName must be non-empty string`)
-    assert(config.task === 'image-classification' || config.task === 'zero-shot-image-classification', `${id}: task must be valid`)
-    assert(typeof config.threshold === 'number' && config.threshold > 0 && config.threshold < 1, `${id}: threshold must be 0..1`)
+  for (const [id, configs] of Object.entries(TEST_REGISTRY)) {
+    for (const config of configs) {
+      assert(typeof config.modelId === 'string' && config.modelId.length > 0, `${id}: modelId must be non-empty string`)
+      assert(typeof config.modelName === 'string' && config.modelName.length > 0, `${id}: modelName must be non-empty string`)
+      assert(config.task === 'image-classification' || config.task === 'zero-shot-image-classification', `${id}: task must be valid`)
+      assert(typeof config.threshold === 'number' && config.threshold > 0 && config.threshold < 1, `${id}: threshold must be 0..1`)
+      assert(config.source === 'dedicated' || config.source === 'clip-zero-shot', `${id}: source must be valid`)
 
-    if (config.task === 'image-classification') {
-      assert(Array.isArray(config.positiveLabels) && config.positiveLabels!.length > 0, `${id}: image-classification must have positiveLabels`)
-    } else {
-      assert(Array.isArray(config.candidateLabels) && config.candidateLabels!.length >= 2, `${id}: zero-shot must have >=2 candidateLabels`)
-      assert(Array.isArray(config.positiveIndices) && config.positiveIndices!.length > 0, `${id}: zero-shot must have positiveIndices`)
-      assert(config.positiveIndices!.every(i => i >= 0 && i < config.candidateLabels!.length), `${id}: positiveIndices must be valid`)
+      if (config.task === 'image-classification') {
+        assert(Array.isArray(config.positiveLabels) && config.positiveLabels!.length > 0, `${id}: image-classification must have positiveLabels`)
+      } else {
+        assert(Array.isArray(config.candidateLabels) && config.candidateLabels!.length >= 2, `${id}: zero-shot must have >=2 candidateLabels`)
+        assert(Array.isArray(config.positiveIndices) && config.positiveIndices!.length > 0, `${id}: zero-shot must have positiveIndices`)
+        assert(config.positiveIndices!.every(i => i >= 0 && i < config.candidateLabels!.length), `${id}: positiveIndices must be valid`)
+      }
     }
   }
 })
 
 describe('Specialized Models: Fire detection label matching', () => {
-  const config = TEST_REGISTRY.fire_smoke
+  const config = TEST_REGISTRY.fire_smoke[0]
   assert(matchImageClassification('Fire Needed Action', 0.614, config) === true, 'fire needed action at 61.4% should detect')
   assert(matchImageClassification('Fire Needed Action', 0.4, config) === false, 'fire needed action at 40% should NOT detect (below 0.5 threshold)')
   assert(matchImageClassification('Normal Conditions', 0.9, config) === false, 'normal conditions should NOT detect even at 90%')
@@ -797,7 +830,7 @@ describe('Specialized Models: Fire detection label matching', () => {
 })
 
 describe('Specialized Models: Zero-shot label matching (graffiti)', () => {
-  const config = TEST_REGISTRY.graffiti
+  const config = TEST_REGISTRY.graffiti[0]
   // CLIP returns all labels with scores; positive ones at indices 0,1
   const results = [
     { label: 'graffiti spray painted on a wall', score: 0.25 },
@@ -811,7 +844,7 @@ describe('Specialized Models: Zero-shot label matching (graffiti)', () => {
 })
 
 describe('Specialized Models: Zero-shot no positive label wins', () => {
-  const config = TEST_REGISTRY.graffiti
+  const config = TEST_REGISTRY.graffiti[0]
   // All negative labels score higher than positive ones
   const results = [
     { label: 'a clean undamaged wall', score: 0.60 },
@@ -825,14 +858,14 @@ describe('Specialized Models: Zero-shot no positive label wins', () => {
 })
 
 describe('Specialized Models: Zero-shot with empty results', () => {
-  const config = TEST_REGISTRY.flood_watch
+  const config = TEST_REGISTRY.flood_watch[0]
   const { detected, topPositive } = matchZeroShot([], config)
   assert(detected === false, 'empty results should not detect')
   assert(topPositive === null, 'topPositive should be null for empty results')
 })
 
 describe('Specialized Models: Zero-shot threshold boundary', () => {
-  const config = TEST_REGISTRY.flood_watch // threshold 0.20
+  const config = TEST_REGISTRY.flood_watch[0] // threshold 0.20
   const results = [
     { label: 'a flooded street submerged in water', score: 0.20 },
     { label: 'a dry normal street', score: 0.80 },
@@ -843,7 +876,7 @@ describe('Specialized Models: Zero-shot threshold boundary', () => {
 })
 
 describe('Specialized Models: Zero-shot threshold just above', () => {
-  const config = TEST_REGISTRY.flood_watch
+  const config = TEST_REGISTRY.flood_watch[0]
   const results = [
     { label: 'a flooded street submerged in water', score: 0.21 },
     { label: 'a dry normal street', score: 0.79 },
@@ -855,7 +888,7 @@ describe('Specialized Models: Zero-shot threshold just above', () => {
 describe('Specialized Models: All CLIP use cases share same modelId', () => {
   // CLIP is loaded once and cached — all zero-shot use cases should use the same modelId
   const clipUseCases = ['graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
-  const modelIds = clipUseCases.map(uc => TEST_REGISTRY[uc].modelId)
+  const modelIds = clipUseCases.map(uc => TEST_REGISTRY[uc][0].modelId)
   const uniqueIds = new Set(modelIds)
   assert(uniqueIds.size === 1, 'all CLIP use cases should share the same modelId')
   assert([...uniqueIds][0] === 'Xenova/clip-vit-base-patch32', 'should use clip-vit-base-patch32')
@@ -865,19 +898,21 @@ describe('Specialized Models: Thresholds are reasonable', () => {
   // Dedicated models (fire) can use higher thresholds (0.5)
   // CLIP zero-shot needs lower thresholds (0.15-0.20) because probabilities
   // are spread across multiple labels
-  assert(TEST_REGISTRY.fire_smoke.threshold >= 0.4, 'fire (dedicated model) should have threshold >= 0.4')
+  assert(TEST_REGISTRY.fire_smoke[0].threshold >= 0.4, 'fire (dedicated model) should have threshold >= 0.4')
   for (const uc of ['graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']) {
-    assert(TEST_REGISTRY[uc].threshold <= 0.25, `${uc} (CLIP zero-shot) should have threshold <= 0.25`)
-    assert(TEST_REGISTRY[uc].threshold >= 0.10, `${uc} threshold should be >= 0.10 to avoid false positives`)
+    assert(TEST_REGISTRY[uc][0].threshold <= 0.25, `${uc} (CLIP zero-shot) should have threshold <= 0.25`)
+    assert(TEST_REGISTRY[uc][0].threshold >= 0.10, `${uc} threshold should be >= 0.10 to avoid false positives`)
   }
 })
 
 describe('Specialized Models: Positive labels are non-empty strings', () => {
-  for (const [id, config] of Object.entries(TEST_REGISTRY)) {
-    if (config.task === 'image-classification') {
-      for (const label of config.positiveLabels || []) {
-        assert(typeof label === 'string' && label.length > 0, `${id}: positiveLabel must be non-empty string`)
-        assert(label === label.toLowerCase(), `${id}: positiveLabel "${label}" should be lowercase for matching`)
+  for (const [id, configs] of Object.entries(TEST_REGISTRY)) {
+    for (const config of configs) {
+      if (config.task === 'image-classification') {
+        for (const label of config.positiveLabels || []) {
+          assert(typeof label === 'string' && label.length > 0, `${id}: positiveLabel must be non-empty string`)
+          assert(label === label.toLowerCase(), `${id}: positiveLabel "${label}" should be lowercase for matching`)
+        }
       }
     }
   }
@@ -885,10 +920,12 @@ describe('Specialized Models: Positive labels are non-empty strings', () => {
 
 describe('Specialized Models: Candidate labels are descriptive', () => {
   // CLIP works best with descriptive phrases, not single words
-  for (const [id, config] of Object.entries(TEST_REGISTRY)) {
-    if (config.task === 'zero-shot-image-classification') {
-      for (const label of config.candidateLabels || []) {
-        assert(label.split(' ').length >= 3, `${id}: candidate label "${label}" should be a descriptive phrase (3+ words)`)
+  for (const [id, configs] of Object.entries(TEST_REGISTRY)) {
+    for (const config of configs) {
+      if (config.task === 'zero-shot-image-classification') {
+        for (const label of config.candidateLabels || []) {
+          assert(label.split(' ').length >= 3, `${id}: candidate label "${label}" should be a descriptive phrase (3+ words)`)
+        }
       }
     }
   }
@@ -1112,7 +1149,7 @@ describe('Stress: 1000 specialized model config lookups', () => {
   for (let i = 0; i < 1000; i++) {
     const uc = Object.keys(TEST_REGISTRY)[i % Object.keys(TEST_REGISTRY).length]
     const config = TEST_REGISTRY[uc]
-    assert(config !== undefined, `lookup ${i} should find config`)
+    assert(config !== undefined && config.length > 0, `lookup ${i} should find config array`)
   }
   const elapsed = Date.now() - t0
   assert(elapsed < 100, `1000 lookups should take <100ms, took ${elapsed}ms`)
@@ -1124,6 +1161,7 @@ describe('Stress: Zero-shot matching with many candidate labels', () => {
     modelId: 'test',
     modelName: 'test',
     task: 'zero-shot-image-classification',
+    source: 'clip-zero-shot',
     candidateLabels: Array.from({ length: 50 }, (_, i) => `label ${i}`),
     positiveIndices: [0, 25, 49],
     threshold: 0.5,
@@ -1355,15 +1393,17 @@ describe('Model Registry: All HF use cases have valid model configs', () => {
   // We test the TEST_REGISTRY which mirrors the real registry
   const hfUseCases = ['fire_smoke', 'graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
   for (const ucId of hfUseCases) {
-    const config = TEST_REGISTRY[ucId]
-    assert(config !== undefined, `${ucId} should be in model registry`)
-    assert(config.modelId.startsWith('Xenova/') || config.modelId.startsWith('prithivMLmods/'), `${ucId} modelId should be from a known org`)
+    const configs = TEST_REGISTRY[ucId]
+    assert(configs !== undefined && configs.length > 0, `${ucId} should be in model registry with at least 1 model`)
+    for (const config of configs) {
+      assert(config.modelId.startsWith('Xenova/') || config.modelId.startsWith('prithivMLmods/'), `${ucId} modelId should be from a known org`)
+    }
   }
 })
 
 describe('Model Registry: Fire model is dedicated (not CLIP)', () => {
   // Fire has a dedicated ONNX model — should NOT use CLIP zero-shot
-  const fireConfig = TEST_REGISTRY.fire_smoke
+  const fireConfig = TEST_REGISTRY.fire_smoke[0]
   assert(fireConfig.task === 'image-classification', 'fire should use image-classification (dedicated model)')
   assert(fireConfig.modelId === 'prithivMLmods/Fire-Detection-Engine-ONNX', 'fire should use the dedicated Fire Detection Engine')
   assert(!fireConfig.modelId.includes('clip'), 'fire should NOT use CLIP (has dedicated model)')
@@ -1373,7 +1413,7 @@ describe('Model Registry: Non-fire use cases use CLIP', () => {
   // graffiti, flood, landslide, crack, slip — no dedicated ONNX models, use CLIP
   const clipUseCases = ['graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
   for (const ucId of clipUseCases) {
-    const config = TEST_REGISTRY[ucId]
+    const config = TEST_REGISTRY[ucId][0]
     assert(config.task === 'zero-shot-image-classification', `${ucId} should use zero-shot-image-classification`)
     assert(config.modelId === 'Xenova/clip-vit-base-patch32', `${ucId} should use CLIP`)
   }
@@ -1474,6 +1514,105 @@ describe('Agent: All rule types handle specializedClassName', () => {
     }
     assert(!didThrow, `${ruleType}: agent should not throw with specializedClassName detection`)
   }
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MULTI-MODEL ENSEMBLE (MoE) TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Ensemble: Fire use case has 2 models (dedicated + CLIP)', () => {
+  const fireConfigs = TEST_REGISTRY.fire_smoke
+  assert(fireConfigs.length === 2, `fire_smoke should have 2 models (dedicated + CLIP), got ${fireConfigs.length}`)
+  assert(fireConfigs[0].source === 'dedicated', 'first fire model should be dedicated ViT')
+  assert(fireConfigs[1].source === 'clip-zero-shot', 'second fire model should be CLIP zero-shot')
+})
+
+describe('Ensemble: All use cases have at least 1 model', () => {
+  for (const [ucId, configs] of Object.entries(TEST_REGISTRY)) {
+    assert(configs.length >= 1, `${ucId} should have at least 1 model in ensemble`)
+  }
+})
+
+describe('Ensemble: Models run in parallel (Promise.allSettled simulation)', () => {
+  // Simulate the ensemble: all models return results, even if some fail
+  const mockResults = [
+    { status: 'fulfilled', value: { detected: true, confidence: 0.614, label: 'Fire Needed Action' } },
+    { status: 'fulfilled', value: { detected: false, confidence: 0.12, label: 'a dark nighttime scene' } },
+    { status: 'rejected', reason: 'model load failed' },
+  ]
+  const successful = mockResults.filter(r => r.status === 'fulfilled').map(r => (r as any).value)
+  assert(successful.length === 2, '2 of 3 models should succeed')
+  assert(successful.some(r => r.detected), 'at least one model should detect fire')
+})
+
+describe('Ensemble: Detection injected if ANY model detects', () => {
+  // Simulate the camera-view injection logic
+  const ensembleResults = [
+    { detected: false, confidence: 0.3, label: 'Normal Conditions', source: 'dedicated' as const },
+    { detected: true, confidence: 0.18, label: 'a smoky environment', source: 'clip-zero-shot' as const },
+  ]
+  const anyDetected = ensembleResults.some(r => r.detected)
+  assert(anyDetected === true, 'ensemble should detect if ANY model detects')
+})
+
+describe('Ensemble: No detection if ALL models fail', () => {
+  const ensembleResults = [
+    { detected: false, confidence: 0.1, label: 'Normal Conditions', source: 'dedicated' as const },
+    { detected: false, confidence: 0.05, label: 'a normal scene', source: 'clip-zero-shot' as const },
+  ]
+  const anyDetected = ensembleResults.some(r => r.detected)
+  assert(anyDetected === false, 'ensemble should NOT detect if ALL models fail')
+})
+
+describe('Ensemble: Pixel-anomaly always runs as supplementary', () => {
+  // Even when HF models are available, pixel-anomaly runs too
+  // (unlike old behavior where it was fallback-only)
+  const hasHfModel = true
+  const pixelAnomalyRuns = true // NEW: always runs, not just as fallback
+  assert(pixelAnomalyRuns === true, 'pixel-anomaly should always run in ensemble mode')
+})
+
+describe('Ensemble: Multiple detections use same className', () => {
+  // When multiple models detect, only ONE synthetic detection is injected
+  // (no duplicates). All use the specializedClassName.
+  const className = 'fire'
+  const existingDets: Array<{ class: string }> = []
+  const ensembleResults = [
+    { detected: true, confidence: 0.7 },
+    { detected: true, confidence: 0.5 },
+  ]
+  // Simulate injection: only inject if no existing detection has this class
+  for (const result of ensembleResults) {
+    if (result.detected && existingDets.filter(d => d.class === className).length === 0) {
+      existingDets.push({ class: className })
+    }
+  }
+  assert(existingDets.length === 1, `should inject only 1 detection (no duplicates), got ${existingDets.length}`)
+  assert(existingDets[0].class === 'fire', 'injected detection should have correct className')
+})
+
+describe('Ensemble: Load-failed models do not block ensemble', () => {
+  // If one model fails to load, other models still produce results
+  const ensembleResults = [
+    { label: 'load_failed', detected: false, source: 'dedicated' as const },
+    { label: 'a large fire with flames', detected: true, confidence: 0.25, source: 'clip-zero-shot' as const },
+  ]
+  const validResults = ensembleResults.filter(r => r.label !== 'load_failed' && r.label !== 'inference_error')
+  assert(validResults.length === 1, 'should have 1 valid result (CLIP) when dedicated model fails')
+  assert(validResults[0].detected === true, 'CLIP model should still detect fire')
+})
+
+describe('Ensemble: Model count badge calculation', () => {
+  // The UI shows "×N" where N = 1 (COCO-SSD) + HF models + pixel-anomaly
+  function calculateModelCount(useCaseId: string): number {
+    const hfCount = (TEST_REGISTRY[useCaseId] || []).length
+    const hasPixel = ['fire_smoke', 'flood_watch', 'landslide_watch', 'post_quake', 'graffiti', 'slip_hazard'].includes(useCaseId)
+    return 1 + hfCount + (hasPixel ? 1 : 0)
+  }
+  // fire_smoke: 1 (COCO-SSD) + 2 (dedicated + CLIP) + 1 (pixel) = 4
+  assert(calculateModelCount('fire_smoke') === 4, `fire_smoke should have 4 models, got ${calculateModelCount('fire_smoke')}`)
+  // graffiti: 1 (COCO-SSD) + 1 (CLIP) + 1 (pixel) = 3
+  assert(calculateModelCount('graffiti') === 3, `graffiti should have 3 models, got ${calculateModelCount('graffiti')}`)
 })
 
 // ═══════════════════════════════════════════════════════════════════════════

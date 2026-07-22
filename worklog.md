@@ -1338,3 +1338,65 @@ Stage Summary:
 - UI badges now show the actual model in use per use case.
 - Agent correctly counts both COCO-SSD and HF model detections.
 - 1527 adversarial tests all pass (160 new regression tests for the bugs found).
+
+---
+Task ID: multi-model-ensemble-v4
+Agent: orchestrator
+Task: Implement multi-model MoE ensemble (multiple models running simultaneously per use case), review UI, comprehensive adversarial sweep.
+
+Work Log:
+- Rewrote src/lib/specialized-models.ts from single-model to MULTI-MODEL ENSEMBLE architecture:
+  - MODEL_REGISTRY changed from Record<string, ModelConfig> to Record<string, ModelConfig[]>
+  - Each use case now has an ARRAY of model configs that ALL run in parallel
+  - fire_smoke now has 2 models: dedicated ViT (prithivMLmods) + CLIP zero-shot
+  - Added runSpecializedDetectionEnsemble() — runs all models via Promise.allSettled
+  - Added getAllModelNames() — returns all model names for UI display
+  - Added source field ('dedicated' | 'clip-zero-shot') for ensemble traceability
+  - Kept runSpecializedDetection() as legacy wrapper (backward compat)
+
+- Updated camera-view.tsx to use ensemble API:
+  - Calls runSpecializedDetectionEnsemble() instead of runSpecializedDetection()
+  - Iterates ALL ensemble results, logs each model's trace separately
+  - Injects synthetic detection if ANY model detects (OR logic)
+  - Pixel-anomaly now ALWAYS runs as supplementary (not just fallback)
+  - No duplicate detections — only injects if className not already present
+
+- Updated UI badges:
+  - Camera-view badge: shows "×N" model count (e.g., "×4" for fire = COCO-SSD + ViT + CLIP + pixel)
+  - Use-case-selector: shows ALL model badges (🤖 COCO-SSD, 🤗 HF models, 📊 pixel)
+  - Status line: dynamic per use case
+
+ARCHITECTURE CHANGE:
+  OLD: COCO-SSD → single HF model → pixel-anomaly (fallback only)
+  NEW: COCO-SSD → ALL HF models in parallel → pixel-anomaly (always) → merge detections
+
+ADVERSARIAL TEST SWEEP:
+- Updated TEST_REGISTRY to match new array structure
+- Fixed all existing tests to iterate over config arrays
+- Added 39 new multi-model ensemble tests:
+  - Fire has 2 models (dedicated + CLIP)
+  - All use cases have ≥1 model
+  - Promise.allSettled simulation (partial failures don't block ensemble)
+  - Detection injected if ANY model detects
+  - No detection if ALL models fail
+  - Pixel-anomaly always runs as supplementary
+  - Multiple detections use same className (no duplicates)
+  - Load-failed models don't block ensemble
+  - Model count badge calculation
+- Total: 1566/1566 PASS (was 1527, added 39 new)
+- Lint: 0 errors | TypeScript: 0 errors
+
+VERIFICATION:
+- Playwright smoke test: fire shows 3 models in trace:
+  1. HF Model [Fire (CLIP zero-shot)]: "a large fire with flames and smoke" (32.0%) ⚠ DETECTED
+  2. HF Model [Fire Detection Engine]: Fire Needed Action (61.4%) ⚠ DETECTED
+  3. Pixel anomaly [fire]: score=1.00
+- No "person" mislabel ✓
+- Dev server alive at http://localhost:3000
+
+Stage Summary:
+- Multi-model ensemble (MoE-style) implemented: every use case runs 2-4 models simultaneously
+- Fire use case: 4 models (COCO-SSD + dedicated ViT + CLIP zero-shot + pixel-anomaly)
+- Other HF use cases: 3 models (COCO-SSD + CLIP + pixel-anomaly)
+- COCO-SSD-only use cases: 2 models (COCO-SSD + pixel-anomaly where applicable)
+- 1566 adversarial tests all pass

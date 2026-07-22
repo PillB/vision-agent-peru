@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { usePrototypeStore, CAMERA_SOURCES } from '@/lib/store'
 import { USE_CASES, LEVEL_LABELS, type CapabilityLevel } from '@/lib/use-cases'
-import { hasSpecializedModel, getSpecializedModelInfo } from '@/lib/specialized-models'
+import { hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
 import { getPixelAnomalyType } from '@/lib/pixel-anomaly'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -123,12 +123,17 @@ export function UseCaseSelector() {
           <span>{activeUseCase.ruleType}</span>
           <span>·</span>
           <span>Nivel: {LEVEL_LABELS[activeUseCase.level].es}</span>
-          {hasSpecializedModel(activeUseCase.id) && (
-            <Badge className="text-[9px] h-4 px-1 bg-purple-100 text-purple-800 hover:bg-purple-100">
-              🤗 HF Model: {getSpecializedModelInfo(activeUseCase.id)?.modelName}
+          <span>·</span>
+          {/* Multi-model ensemble badge — shows ALL models running for this use case */}
+          <Badge className="text-[9px] h-4 px-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+            🤖 COCO-SSD
+          </Badge>
+          {hasSpecializedModel(activeUseCase.id) && getAllModelNames(activeUseCase.id).map((name, i) => (
+            <Badge key={i} className="text-[9px] h-4 px-1 bg-purple-100 text-purple-800 hover:bg-purple-100">
+              🤗 {name}
             </Badge>
-          )}
-          {!hasSpecializedModel(activeUseCase.id) && getPixelAnomalyType(activeUseCase.id) && (
+          ))}
+          {getPixelAnomalyType(activeUseCase.id) && (
             <Badge className="text-[9px] h-4 px-1 bg-blue-100 text-blue-800 hover:bg-blue-100">
               📊 Pixel: {getPixelAnomalyType(activeUseCase.id)}
             </Badge>
