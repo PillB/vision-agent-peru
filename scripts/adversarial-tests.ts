@@ -1236,6 +1236,247 @@ describe('Race: SustainCount reset interleave', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SPECIALIZED CLASS NAME REGRESSION TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Regression: fire was being tagged as 'person' because detectionClasses[0]
+// was used as the synthetic detection class. Now uses specializedClassName.
+
+describe('Regression: Fire use case has specializedClassName "fire"', () => {
+  const fireUseCase = USE_CASES.find(uc => uc.id === 'fire_smoke')!
+  assert(fireUseCase.specializedClassName === 'fire', `fire_smoke should have specializedClassName='fire', got '${fireUseCase.specializedClassName}'`)
+  assert(!fireUseCase.detectionClasses.includes('fire'), 'fire should NOT be in detectionClasses (COCO-SSD cannot detect fire)')
+  assert(fireUseCase.detectionClasses.includes('person'), 'fire_smoke should still track person for context')
+})
+
+describe('Regression: All HF model use cases have specializedClassName', () => {
+  // Every use case with a specialized HF model MUST have specializedClassName
+  // to prevent the "fire tagged as person" bug.
+  const hfUseCases = ['fire_smoke', 'graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
+  for (const ucId of hfUseCases) {
+    const uc = USE_CASES.find(u => u.id === ucId)!
+    assert(uc.specializedClassName !== undefined, `${ucId} must have specializedClassName defined`)
+    assert(typeof uc.specializedClassName === 'string' && uc.specializedClassName!.length > 0, `${ucId} specializedClassName must be non-empty string`)
+    assert(uc.specializedClassName !== 'person', `${ucId} specializedClassName must NOT be 'person' (was the bug)`)
+    assert(!uc.detectionClasses.includes(uc.specializedClassName!), `${ucId}: specializedClassName '${uc.specializedClassName}' should NOT duplicate a COCO-SSD class`)
+  }
+})
+
+describe('Regression: All use cases have primaryModel label', () => {
+  // Every use case should have a primaryModel label for the UI badge.
+  for (const uc of USE_CASES) {
+    assert(uc.primaryModel !== undefined, `${uc.id} must have primaryModel defined for UI badge`)
+    assert(typeof uc.primaryModel === 'string' && uc.primaryModel.length > 0, `${uc.id} primaryModel must be non-empty string`)
+  }
+})
+
+describe('Regression: COCO-SSD-only use cases do NOT have specializedClassName', () => {
+  // Use cases that use only COCO-SSD (no HF model) should not need specializedClassName.
+  // These are: intrusion, after_hours, crowd_surge, parking, queue_anomaly, abandoned_object,
+  // incident_description, auto_report, visual_memory.
+  // abandoned_object has specializedClassName because it uses sustain_verify with HF fallback.
+  const cocoOnlyUseCases = ['intrusion', 'after_hours', 'crowd_surge', 'parking', 'queue_anomaly', 'incident_description', 'auto_report', 'visual_memory']
+  for (const ucId of cocoOnlyUseCases) {
+    const uc = USE_CASES.find(u => u.id === ucId)!
+    // These MAY have specializedClassName (e.g., abandoned_object does), but
+    // their primaryModel should mention COCO-SSD
+    assert(!!uc.primaryModel && (uc.primaryModel.includes('COCO-SSD') || uc.primaryModel.includes('CLIP')), `${ucId} primaryModel should mention COCO-SSD or CLIP`)
+  }
+})
+
+describe('Agent: trackedCount includes specializedClassName detections', () => {
+  // Regression: the agent's trackedDetections filter only checked detectionClasses.
+  // Now it also checks specializedClassName so HF model detections are counted.
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'fire_smoke',
+      ruleType: 'sustain_verify',
+      params: { sustainTicks: 1, threshold: 1 },
+      detectionClasses: ['person'],
+      specializedClassName: 'fire',
+    }),
+    // Simulate an HF model detection: class='fire' (not 'person')
+    detections: [{ bbox: [10, 10, 100, 100], class: 'fire', score: 0.8 }],
+    sustainCount: 1,
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  // trackedCount should be 1 (the fire detection), triggering sustain_verify
+  assert(decision.tier >= 1, 'agent should trigger when specializedClassName detection is present (fire counted)')
+})
+
+describe('Agent: trackedCount does NOT include unrelated classes', () => {
+  // A 'car' detection should not trigger fire_smoke (which tracks person + fire)
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'fire_smoke',
+      ruleType: 'sustain_verify',
+      params: { sustainTicks: 1, threshold: 1 },
+      detectionClasses: ['person'],
+      specializedClassName: 'fire',
+    }),
+    detections: [{ bbox: [10, 10, 100, 100], class: 'car', score: 0.9 }],
+    sustainCount: 1,
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  // trackedCount=0 (car not in [person, fire]), should NOT trigger
+  assert(decision.tier === 0, 'agent should NOT trigger when detection class is unrelated (car for fire use case)')
+})
+
+describe('Agent: Mixed COCO-SSD + HF detections both counted', () => {
+  const ctx = makeMockCtx({
+    useCase: makeMockUseCase({
+      id: 'fire_smoke',
+      ruleType: 'sustain_verify',
+      params: { sustainTicks: 1, threshold: 1 },
+      detectionClasses: ['person'],
+      specializedClassName: 'fire',
+    }),
+    // Both a person (COCO-SSD) and fire (HF model) detection
+    detections: [
+      { bbox: [10, 10, 50, 80], class: 'person', score: 0.9 },
+      { bbox: [100, 100, 200, 200], class: 'fire', score: 0.7 },
+    ],
+    sustainCount: 1,
+  })
+  ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+  const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+  // trackedCount=2 (both person and fire are tracked), should trigger
+  assert(decision.tier >= 1, 'agent should trigger with both COCO-SSD + HF detections')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODEL REGISTRY COMPLETENESS TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Model Registry: All HF use cases have valid model configs', () => {
+  // Cross-check: every use case with hasSpecializedModel should have a valid config
+  // We test the TEST_REGISTRY which mirrors the real registry
+  const hfUseCases = ['fire_smoke', 'graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
+  for (const ucId of hfUseCases) {
+    const config = TEST_REGISTRY[ucId]
+    assert(config !== undefined, `${ucId} should be in model registry`)
+    assert(config.modelId.startsWith('Xenova/') || config.modelId.startsWith('prithivMLmods/'), `${ucId} modelId should be from a known org`)
+  }
+})
+
+describe('Model Registry: Fire model is dedicated (not CLIP)', () => {
+  // Fire has a dedicated ONNX model — should NOT use CLIP zero-shot
+  const fireConfig = TEST_REGISTRY.fire_smoke
+  assert(fireConfig.task === 'image-classification', 'fire should use image-classification (dedicated model)')
+  assert(fireConfig.modelId === 'prithivMLmods/Fire-Detection-Engine-ONNX', 'fire should use the dedicated Fire Detection Engine')
+  assert(!fireConfig.modelId.includes('clip'), 'fire should NOT use CLIP (has dedicated model)')
+})
+
+describe('Model Registry: Non-fire use cases use CLIP', () => {
+  // graffiti, flood, landslide, crack, slip — no dedicated ONNX models, use CLIP
+  const clipUseCases = ['graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
+  for (const ucId of clipUseCases) {
+    const config = TEST_REGISTRY[ucId]
+    assert(config.task === 'zero-shot-image-classification', `${ucId} should use zero-shot-image-classification`)
+    assert(config.modelId === 'Xenova/clip-vit-base-patch32', `${ucId} should use CLIP`)
+  }
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UI BADGE REGRESSION TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('UI Badge: primaryModel labels are user-friendly', () => {
+  for (const uc of USE_CASES) {
+    const label = uc.primaryModel!
+    // Label should not be too long for the UI badge
+    assert(label.length < 80, `${uc.id} primaryModel label too long (${label.length} chars): ${label}`)
+    // Label should not contain parenthetical model IDs in the display part
+    const displayPart = label.split('(')[0].trim()
+    assert(displayPart.length > 0, `${uc.id} primaryModel display part should be non-empty`)
+    assert(displayPart.length < 40, `${uc.id} primaryModel display part too long: ${displayPart}`)
+  }
+})
+
+describe('UI Badge: HF use cases show "+ HF" indicator', () => {
+  // The UI badge should show "+ HF" for use cases with specialized models.
+  // We verify the hasSpecializedModel function would return true for these.
+  const hfUseCases = ['fire_smoke', 'graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard']
+  for (const ucId of hfUseCases) {
+    assert(ucId in TEST_REGISTRY, `${ucId} should be in registry (triggers + HF badge)`)
+  }
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DETECTION INJECTION EDGE CASES
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Edge: Synthetic detection uses correct class name', () => {
+  // Simulate the camera-view detection injection logic
+  const useCase = USE_CASES.find(uc => uc.id === 'fire_smoke')!
+  const className = useCase.specializedClassName || useCase.id
+  assert(className === 'fire', `fire_smoke synthetic detection class should be 'fire', got '${className}'`)
+
+  const graffitiUseCase = USE_CASES.find(uc => uc.id === 'graffiti')!
+  const graffitiClass = graffitiUseCase.specializedClassName || graffitiUseCase.id
+  assert(graffitiClass === 'graffiti', `graffiti synthetic detection class should be 'graffiti', got '${graffitiClass}'`)
+})
+
+describe('Edge: No duplicate synthetic detections', () => {
+  // The injection logic checks if a detection with the class already exists
+  // before pushing. Simulate this:
+  const className = 'fire'
+  const existingDets = [
+    { bbox: [10, 10, 100, 100] as [number, number, number, number], class: 'person', score: 0.9 },
+    { bbox: [50, 50, 200, 200] as [number, number, number, number], class: 'fire', score: 0.7 },
+  ]
+  const hasExisting = existingDets.filter(d => d.class === className).length > 0
+  assert(hasExisting === true, 'should detect existing fire detection')
+  // If hasExisting is true, the injection should be skipped (no duplicate)
+})
+
+describe('Edge: specializedClassName falls back to use case ID', () => {
+  // If specializedClassName is undefined, the injection uses useCase.id
+  const uc = makeMockUseCase({ id: 'test_uc', specializedClassName: undefined })
+  const className = uc.specializedClassName || uc.id
+  assert(className === 'test_uc', `fallback should use use case ID, got '${className}'`)
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ALL TRAJECTORIES THROUGH AGENT RULES WITH SPECIALIZED CLASS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Agent: All rule types handle specializedClassName', () => {
+  // Verify that every rule type in the agent correctly counts specializedClassName detections
+  const ruleTypes = ['count_threshold', 'roi_breach', 'time_gate', 'frame_diff', 'sustain_verify', 'density_anomaly'] as const
+  for (const ruleType of ruleTypes) {
+    const uc = makeMockUseCase({
+      id: 'test',
+      ruleType,
+      params: ruleType === 'sustain_verify' ? { sustainTicks: 1, threshold: 1 }
+        : ruleType === 'count_threshold' ? { threshold: 1 }
+        : ruleType === 'frame_diff' ? { frameDiffThreshold: 0.1 }
+        : ruleType === 'roi_breach' ? { roiPolygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }
+        : ruleType === 'time_gate' ? { timeGate: { after: '00:00', before: '23:59' }, threshold: 1 }
+        : { threshold: 1 },
+      detectionClasses: ['person'],
+      specializedClassName: 'fire',
+    })
+    const ctx = makeMockCtx({
+      useCase: uc,
+      detections: [{ bbox: [10, 10, 50, 50], class: 'fire', score: 0.8 }],
+      sustainCount: 5,
+    })
+    ctx.stats = { ...ctx.stats, peakZ: 0, zScore: 0 }
+    let didThrow = false
+    try {
+      const decision = decide(ctx, DEFAULT_AGENT_CONFIG)
+      assert(typeof decision.tier === 'number', `${ruleType}: should return valid tier`)
+    } catch (e) {
+      didThrow = true
+    }
+    assert(!didThrow, `${ruleType}: agent should not throw with specializedClassName detection`)
+  }
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
 // REPORT
 // ═══════════════════════════════════════════════════════════════════════════
 

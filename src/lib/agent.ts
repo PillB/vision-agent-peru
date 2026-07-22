@@ -122,8 +122,13 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
   const actions: Action[] = []
   let tier: Tier = 0
 
-  // Count detections matching the use case's tracked classes
-  const trackedDetections = detections.filter((d) => useCase.detectionClasses.includes(d.class))
+  // Count detections matching the use case's tracked classes.
+  // Include BOTH COCO-SSD classes (person, car, backpack) AND the
+  // specializedClassName (fire, graffiti, flood) so HF model detections
+  // are counted by the agent's rule engine.
+  const allTrackedClasses = [...useCase.detectionClasses]
+  if (useCase.specializedClassName) allTrackedClasses.push(useCase.specializedClassName)
+  const trackedDetections = detections.filter((d) => allTrackedClasses.includes(d.class))
   const trackedCount = trackedDetections.length
 
   // Always log the tick (low-cost telemetry)

@@ -49,6 +49,7 @@ export function CameraView() {
 
   // Store
   const activeCameraId = usePrototypeStore((s) => s.activeCameraId)
+  const activeUseCaseId = usePrototypeStore((s) => s.activeUseCaseId)
   const modelStatus = usePrototypeStore((s) => s.modelStatus)
   const isRunning = usePrototypeStore((s) => s.isRunning)
   const fps = usePrototypeStore((s) => s.fps)
@@ -72,6 +73,7 @@ export function CameraView() {
   const agentActions = useAgentActions()
 
   const activeCamera = CAMERA_SOURCES.find((c) => c.id === activeCameraId) ?? CAMERA_SOURCES[0]
+  const activeUseCase = USE_CASES.find((uc) => uc.id === activeUseCaseId)
 
   // ===== Agent loop (shared) =====
   const runAgentLoop = (canvas: HTMLCanvasElement | null, dets: Detection[]) => {
@@ -83,10 +85,11 @@ export function CameraView() {
 
     // For sustain_verify AND frame_diff use cases, increment sustainCount
     // based on whether the specialized model or COCO-SSD detected something.
-    // sustain_verify: fire, abandoned_object
-    // frame_diff: graffiti, flood_watch, landslide_watch, post_quake, slip_hazard
-    // Both rule types need sustainCount to escalate from T1 to T2.
-    const hasTrackedDetections = dets.filter(d => useCase.detectionClasses.includes(d.class)).length > 0
+    // Check both the specializedClassName (for HF model detections) AND
+    // detectionClasses (for COCO-SSD detections like person/car/backpack).
+    const allTrackedClasses = [...useCase.detectionClasses]
+    if (useCase.specializedClassName) allTrackedClasses.push(useCase.specializedClassName)
+    const hasTrackedDetections = dets.filter(d => allTrackedClasses.includes(d.class)).length > 0
     const usesDetectionBasedSustain = useCase.ruleType === 'sustain_verify' || useCase.ruleType === 'frame_diff'
     const newSustainCount = usesDetectionBasedSustain
       ? (hasTrackedDetections ? state.sustainCount + 1 : 0)
@@ -206,6 +209,8 @@ export function CameraView() {
           // can't detect these. Strategy:
           //   1. Try specialized HuggingFace model (dedicated ViT or CLIP zero-shot)
           //   2. If HF model fails to load (headless env), fall back to pixel-anomaly
+          // The synthetic detection uses specializedClassName (e.g., 'fire', 'graffiti')
+          // NOT detectionClasses[0] (which was 'person' — a COCO-SSD class).
           const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
           let pixelAnomaly: PixelAnomalyResult | null = null
           if (useCase) {
@@ -215,25 +220,24 @@ export function CameraView() {
               const specResult = await runSpecializedDetection(canvas, useCase.id)
               if (specResult) {
                 if (specResult.label === 'load_failed') {
-                  // HF model unavailable in this environment — log once and
-                  // fall through to pixel-anomaly below.
                   pushTrace(`HF Model [${specResult.modelName}]: unavailable — using pixel fallback`)
                 } else if (specResult.label === 'inference_error') {
-                  // Transient inference error — log and fall through to pixel
                   pushTrace(`HF Model [${specResult.modelName}]: inference error — using pixel fallback`)
                 } else {
                   hfHandled = true
-                  // Use the rich details field already formatted by the model
                   pushTrace(`HF Model [${specResult.modelName}]: ${specResult.details}`)
-                  // If the HF model detected something AND COCO-SSD didn't already
-                  // detect a relevant class, inject a synthetic detection so the
-                  // agent loop can trigger on it.
-                  if (specResult.detected && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
-                    dets.push({
-                      bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
-                      class: useCase.detectionClasses[0] || 'person',
-                      score: specResult.confidence,
-                    })
+                  // Inject a synthetic detection with the CORRECT class name
+                  // (e.g., 'fire', not 'person') so the UI shows the right label.
+                  if (specResult.detected) {
+                    const className = useCase.specializedClassName || useCase.id
+                    // Only inject if no existing detection has this class
+                    if (dets.filter(d => d.class === className).length === 0) {
+                      dets.push({
+                        bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                        class: className,
+                        score: specResult.confidence,
+                      })
+                    }
                   }
                 }
               }
@@ -244,12 +248,15 @@ export function CameraView() {
             const anomalyType = getPixelAnomalyType(useCase.id)
             if (anomalyType && !hfHandled) {
               pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
-              if (pixelAnomaly.score > 0.3 && dets.filter(d => useCase.detectionClasses.includes(d.class)).length === 0) {
-                dets.push({
-                  bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
-                  class: useCase.detectionClasses[0] || 'person',
-                  score: pixelAnomaly.score,
-                })
+              if (pixelAnomaly.score > 0.3) {
+                const className = useCase.specializedClassName || useCase.id
+                if (dets.filter(d => d.class === className).length === 0) {
+                  dets.push({
+                    bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                    class: className,
+                    score: pixelAnomaly.score,
+                  })
+                }
               }
               pushTrace(`Pixel anomaly [${anomalyType}]: score=${pixelAnomaly.score.toFixed(2)} (${pixelAnomaly.details})`)
             }
@@ -384,10 +391,20 @@ export function CameraView() {
           </SelectContent>
         </Select>
 
-        {/* Real ML badge — no simulation option available */}
-        <div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5" title="Un modelo de inteligencia artificial real (COCO-SSD) detecta personas y vehículos en cada fotograma del video. No es simulación.">
+        {/* Dynamic model badge — shows the primary model for the active use case */}
+        <div
+          className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5"
+          title={activeUseCase?.primaryModel || 'Real ML detection'}
+        >
           <Cpu className="h-3 w-3 text-emerald-600" />
-          <span className="text-xs font-medium text-emerald-700">Real ML (COCO-SSD)</span>
+          <span className="text-xs font-medium text-emerald-700">
+            {activeUseCase?.primaryModel ? activeUseCase.primaryModel.split('(')[0].trim() : 'Real ML'}
+          </span>
+          {hasSpecializedModel(activeUseCaseId) && (
+            <span className="text-[9px] text-amber-600 font-mono ml-0.5" title="Specialized HF model active">
+              + HF
+            </span>
+          )}
         </div>
 
         <Button
@@ -421,7 +438,11 @@ export function CameraView() {
           {modelStatus === 'ready' && (
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="font-mono">COCO-SSD ready · WebGL</span>
+              <span className="font-mono">
+                {hasSpecializedModel(activeUseCaseId)
+                  ? `${activeUseCase?.primaryModel?.split('(')[0].trim() || 'HF Model'} + COCO-SSD ready`
+                  : 'COCO-SSD ready · WebGL'}
+              </span>
             </span>
           )}
           {modelStatus === 'error' && (
