@@ -256,12 +256,16 @@ export async function runSpecializedDetectionEnsemble(
   const configs = MODEL_REGISTRY[useCaseId]
   if (!configs || configs.length === 0) return []
 
-  // Run all models in parallel with a 30-second timeout per model (R04 fix).
-  // If a model doesn't complete in 30s, it's treated as failed — the ensemble
-  // continues with the remaining models.
-  const MODEL_TIMEOUT_MS = 30_000
+  // Run all models in parallel with a timeout per model (R04 fix).
+  // First load (model download from HuggingFace CDN) can take 60-120s for
+  // large models (CLIP ~153MB, Fire ViT ~50MB). Subsequent inferences are
+  // fast (2-5s). Use a longer timeout if the model isn't cached yet.
   const results = await Promise.allSettled(
-    configs.map(config => withTimeout(runSingleModel(canvas, useCaseId, config), MODEL_TIMEOUT_MS, config.modelName))
+    configs.map(config => {
+      const isCached = pipelineCache.has(config.modelId)
+      const timeout = isCached ? 30_000 : 120_000 // 30s for cached, 120s for first download
+      return withTimeout(runSingleModel(canvas, useCaseId, config), timeout, config.modelName)
+    })
   )
 
   // Collect successful results; log failures

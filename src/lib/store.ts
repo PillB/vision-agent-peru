@@ -368,7 +368,7 @@ interface PrototypeState {
 const MAX_SAMPLES = 600    // 10 min at 1 fps
 const MAX_HITS = 50
 const MAX_ACTIONS = 200
-const MAX_TRACE = 30
+const MAX_TRACE = 50
 
 export const usePrototypeStore = create<PrototypeState>((set) => ({
   activeCameraId: CAMERA_SOURCES[0].id,
