@@ -619,10 +619,30 @@ function drawBoxes(
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }
 
-  const persons = dets.filter((d) => d.class === 'person')
-  for (const det of persons) {
+  // Color map for different detection classes
+  const CLASS_COLORS: Record<string, string> = {
+    person: '#10b981',     // emerald
+    car: '#3b82f6',        // blue
+    truck: '#3b82f6',      // blue
+    bus: '#3b82f6',        // blue
+    motorcycle: '#3b82f6', // blue
+    bicycle: '#3b82f6',    // blue
+    backpack: '#f59e0b',   // amber
+    suitcase: '#f59e0b',   // amber
+    handbag: '#f59e0b',    // amber
+    fire: '#ef4444',       // red
+    graffiti: '#a855f7',   // purple
+    flood: '#06b6d4',      // cyan
+    landslide: '#f97316',  // orange
+    crack: '#f97316',      // orange
+    slip_hazard: '#eab308', // yellow
+    abandoned_object: '#f59e0b', // amber
+  }
+
+  // Draw ALL detections (not just persons) with class-appropriate colors
+  for (const det of dets) {
     const [x, y, w, h] = det.bbox
-    const color = '#10b981'
+    const color = CLASS_COLORS[det.class] || '#10b981' // default emerald
     ctx.lineWidth = 2
     ctx.strokeStyle = color
     ctx.strokeRect(x, y, w, h)
