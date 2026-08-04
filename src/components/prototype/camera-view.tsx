@@ -12,6 +12,7 @@ import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
 import { computePixelAnomaly, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
+import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
 
@@ -474,7 +475,7 @@ export function CameraView() {
         {activeCamera.isStatic ? (
           <img
             ref={imgRef}
-            src={activeCamera.src}
+            src={prefixPath(activeCamera.src)}
             className="absolute inset-0 w-full h-full object-cover"
             crossOrigin="anonymous"
             alt={activeCamera.label}
@@ -482,7 +483,7 @@ export function CameraView() {
         ) : (
           <video
             ref={videoRef}
-            src={activeCamera.src}
+            src={prefixPath(activeCamera.src)}
             className="absolute inset-0 w-full h-full object-cover"
             loop
             muted

@@ -8,6 +8,7 @@ import type { Action } from '@/lib/agent'
 import type { AnomalyStats } from '@/lib/anomaly'
 import type { Detection } from '@/lib/store'
 import { toast } from 'sonner'
+import { prefixPath } from '@/lib/path-utils'
 
 interface ExecuteCtx {
   cameraId: string
@@ -80,7 +81,7 @@ export function useAgentActions() {
             const to = (action.payload?.to as string) ?? 'ops@cusco-vision.agent'
             const subject = (action.payload?.subject as string) ?? `[${ctx.cameraId}] Anomaly`
             const body = `Incident on ${ctx.cameraLabel}.\n\nPersons detected: ${ctx.stats.count}\nZ-score: ${ctx.stats.zScore.toFixed(2)}\n2-min mean: ${ctx.stats.mean.toFixed(1)} (σ=${ctx.stats.stddev.toFixed(1)})\nReasoning: ${ctx.reasoning}\n\nSee dashboard for snapshot.`
-            const res = await fetch('/api/alert', {
+            const res = await fetch(prefixPath('/api/alert'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -114,7 +115,7 @@ export function useAgentActions() {
             const windowSamples = freshSamples.filter((s) => now - s.t < 5 * 60_000)
             const peak = windowSamples.reduce((acc, s) => (s.count > acc.count ? s : acc), { count: currentState.personCount, t: now })
             const hitIds = freshHits.slice(0, 5).map((h) => h.id)
-            const res = await fetch('/api/report', {
+            const res = await fetch(prefixPath('/api/report'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -169,7 +170,7 @@ export function useAgentActions() {
             break
 
           case 'llm_judge': {
-            const res = await fetch('/api/judge', {
+            const res = await fetch(prefixPath('/api/judge'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
