@@ -5,14 +5,11 @@ const isGitHubPages = process.env.GITHUB_ACTIONS === 'true' || process.env.DEPLO
 const repoName = 'vision-agent-peru'
 
 const nextConfig: NextConfig = {
-  // Use 'standalone' for dev/server, 'export' for GitHub Pages static hosting
   output: isGitHubPages ? "export" : "standalone",
   typescript: {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  // GitHub Pages serves from a subdirectory (/vision-agent-peru/)
-  // basePath + assetPrefix ensure all routes and assets resolve correctly
   ...(isGitHubPages ? {
     basePath: `/${repoName}`,
     assetPrefix: `/${repoName}/`,
@@ -20,10 +17,11 @@ const nextConfig: NextConfig = {
       unoptimized: true,
     },
   } : {}),
-  // trailingSlash helps GitHub Pages serve .html files for nested routes
   trailingSlash: true,
 };
 
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+// Use static i18n config for GitHub Pages (no cookies), normal config for dev
+const i18nConfigPath = isGitHubPages ? './src/i18n/request-static.ts' : './src/i18n/request.ts'
+const withNextIntl = createNextIntlPlugin(i18nConfigPath);
 
 export default withNextIntl(nextConfig);
