@@ -256,9 +256,12 @@ export async function runSpecializedDetectionEnsemble(
   const configs = MODEL_REGISTRY[useCaseId]
   if (!configs || configs.length === 0) return []
 
-  // Run all models in parallel
+  // Run all models in parallel with a 30-second timeout per model (R04 fix).
+  // If a model doesn't complete in 30s, it's treated as failed — the ensemble
+  // continues with the remaining models.
+  const MODEL_TIMEOUT_MS = 30_000
   const results = await Promise.allSettled(
-    configs.map(config => runSingleModel(canvas, useCaseId, config))
+    configs.map(config => withTimeout(runSingleModel(canvas, useCaseId, config), MODEL_TIMEOUT_MS, config.modelName))
   )
 
   // Collect successful results; log failures
@@ -579,4 +582,39 @@ export async function runSpecializedDetection(
   // Return the first non-load-failed detection, or the first overall
   const firstValid = detections.find(d => d.label !== 'load_failed' && d.label !== 'inference_error')
   return firstValid || detections[0]
+}
+
+// ─── Timeout helper (R04: prevent HF model loading from hanging indefinitely) ─
+/**
+ * Wraps a promise with a timeout. If the promise doesn't resolve within
+ * `ms` milliseconds, returns a "timeout" sentinel detection instead of
+ * hanging forever.
+ */
+async function withTimeout(
+  promise: Promise<SpecializedDetection | null>,
+  ms: number,
+  modelName: string
+): Promise<SpecializedDetection | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<SpecializedDetection | null>((resolve) => {
+    timer = setTimeout(() => {
+      console.warn(`[SpecializedModels] ${modelName} timed out after ${ms}ms`)
+      resolve({
+        modelId: '',
+        modelName,
+        useCaseId: '',
+        detected: false,
+        confidence: 0,
+        label: 'timeout',
+        details: `${modelName}: timed out after ${ms}ms`,
+        source: 'dedicated',
+      })
+    }, ms)
+  })
+  try {
+    const result = await Promise.race([promise, timeoutPromise])
+    return result
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
 }

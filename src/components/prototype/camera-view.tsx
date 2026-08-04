@@ -228,6 +228,8 @@ export function CameraView() {
                   pushTrace(`HF Model [${specResult.modelName}]: unavailable — pixel fallback will supplement`)
                 } else if (specResult.label === 'inference_error') {
                   pushTrace(`HF Model [${specResult.modelName}]: inference error — pixel fallback will supplement`)
+                } else if (specResult.label === 'timeout') {
+                  pushTrace(`HF Model [${specResult.modelName}]: timed out — pixel fallback will supplement`)
                 } else {
                   anyHfModelLoaded = true
                   pushTrace(`HF Model [${specResult.modelName}]: ${specResult.details}`)

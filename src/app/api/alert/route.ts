@@ -14,6 +14,23 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+// ─── Rate limiting (R01: prevent alert spam) ───────────────────────────────
+// Max 10 alerts per minute per IP
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX_CALLS = 10
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+    return true
+  }
+  entry.count++
+  return entry.count <= RATE_LIMIT_MAX_CALLS
+}
+
 interface AlertRequestBody {
   to: string
   subject: string
@@ -25,6 +42,15 @@ interface AlertRequestBody {
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Maximum 10 alerts per minute.' },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      )
+    }
+
     const body = (await req.json()) as AlertRequestBody
     if (!body || !body.to || !body.subject) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
