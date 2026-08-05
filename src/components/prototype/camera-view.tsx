@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
-import { computePixelAnomaly, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
+import { computePixelAnomaly, computeAnomalyBbox, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
 import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
@@ -221,8 +221,11 @@ export function CameraView() {
               const pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
               pushTrace(`Pixel anomaly [${anomalyType}]: score=${pixelAnomaly.score.toFixed(2)} (${pixelAnomaly.details})`)
               if (pixelAnomaly.score > 0.3 && dets.filter(d => d.class === className).length === 0) {
+                // Compute ACTUAL anomalous region bbox instead of hard-coded box.
+                // Sample the canvas for anomalous pixels and find their bounding region.
+                const anomalyBbox = computeAnomalyBbox(ctx, canvas.width, canvas.height, anomalyType)
                 dets.push({
-                  bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                  bbox: anomalyBbox,
                   class: className,
                   score: pixelAnomaly.score,
                 })
@@ -269,12 +272,21 @@ export function CameraView() {
           }
 
           // ─── Step 4: Inject HF detection from previous cycle (if any) ───
+          // HF models are whole-image classifiers — they classify the entire
+          // frame, not a specific region. Use the full canvas as the bbox
+          // with a small margin so the box is visible at the edges.
           if (hfDetectionRef.current) {
             const hfDet = hfDetectionRef.current
             // Only inject if it's recent (< 10s old) and no existing detection
             if (Date.now() - hfDet.timestamp < 10_000 && dets.filter(d => d.class === hfDet.class).length === 0) {
               dets.push({
-                bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                // Use full canvas with 5% margin — represents "entire frame classified"
+                bbox: [
+                  canvas.width * 0.05,
+                  canvas.height * 0.05,
+                  canvas.width * 0.9,
+                  canvas.height * 0.9,
+                ] as [number, number, number, number],
                 class: hfDet.class,
                 score: hfDet.score,
               })
