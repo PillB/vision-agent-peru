@@ -228,28 +228,54 @@ export function CameraView() {
       lastDetectRef.current = now
 
       try {
-        // ─── Step 1: COCO-SSD detection (fast, non-blocking for HF) ───
-        const result = await handle.detect()
-        if (!result) {
-          rafRef.current = requestAnimationFrame(loop)
-          return
+        // Read user's model selection from store
+        const storeState = usePrototypeStore.getState()
+        const userModels = storeState.selectedModelIds
+        const useCase = USE_CASES.find((uc) => uc.id === storeState.activeUseCaseId)
+        const className = useCase?.specializedClassName || useCase?.id || 'unknown'
+
+        // Determine which models to run based on user selection
+        const runCocoSSD = userModels.length === 0 || userModels.includes('coco-ssd') || userModels.includes('yolov10n') || userModels.includes('yolos-tiny')
+        const runPixelAnomaly = userModels.length === 0 || userModels.includes('pixel-anomaly')
+        const runHFModels = userModels.length === 0 || userModels.some(id =>
+          ['fire-vit', 'clip-fire', 'clip-zero-shot', 'segformer-b0', 'yolov8n-pose'].includes(id)
+        )
+
+        // ─── Step 1: COCO-SSD detection (only if user selected a detector) ───
+        let dets: Detection[] = []
+        let latency = 0
+        if (runCocoSSD) {
+          const result = await handle.detect()
+          if (!result) {
+            rafRef.current = requestAnimationFrame(loop)
+            return
+          }
+          dets = result.dets
+          latency = result.latency
+        } else {
+          // No COCO-SSD detector selected — just draw the frame for pixel-anomaly
+          const ctx2 = canvas.getContext('2d')
+          if (ctx2) {
+            const video = videoRef.current
+            const img = imgRef.current
+            if (video && video.readyState >= 2 && video.videoWidth > 0) {
+              ctx2.drawImage(video, 0, 0, canvas.width, canvas.height)
+            } else if (img && img.complete && img.naturalWidth > 0) {
+              ctx2.drawImage(img, 0, 0, canvas.width, canvas.height)
+            }
+          }
         }
-        const { dets, latency } = result
+
         const ctx = canvas.getContext('2d')
 
         if (ctx) {
-          const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
-          const className = useCase?.specializedClassName || useCase?.id || 'unknown'
-
-          // ─── Step 2: Pixel-anomaly (synchronous, fast) ───
-          if (useCase) {
+          // ─── Step 2: Pixel-anomaly (only if user selected it) ───
+          if (useCase && runPixelAnomaly) {
             const anomalyType = getPixelAnomalyType(useCase.id)
             if (anomalyType) {
               const pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
               pushTrace(`Pixel anomaly [${anomalyType}]: score=${pixelAnomaly.score.toFixed(2)} (${pixelAnomaly.details})`)
               if (pixelAnomaly.score > 0.3 && dets.filter(d => d.class === className).length === 0) {
-                // Compute ACTUAL anomalous region bbox instead of hard-coded box.
-                // Sample the canvas for anomalous pixels and find their bounding region.
                 const anomalyBbox = computeAnomalyBbox(ctx, canvas.width, canvas.height, anomalyType)
                 dets.push({
                   bbox: anomalyBbox,
@@ -260,11 +286,8 @@ export function CameraView() {
             }
           }
 
-          // ─── Step 3: HF models — FIRE AND FORGET (non-blocking) ───
-          // Run HF model inference in the background. Don't await it — let
-          // COCO-SSD results show immediately. HF results will be injected
-          // into the NEXT cycle's detections via a ref.
-          if (useCase && hasSpecializedModel(useCase.id) && !hfInFlight) {
+          // ─── Step 3: HF models — FIRE AND FORGET (only if user selected) ───
+          if (useCase && runHFModels && hasSpecializedModel(useCase.id) && !hfInFlight) {
             hfInFlight = true
             // Fire and forget — don't block the loop
             runSpecializedDetectionEnsemble(canvas, useCase.id)
@@ -376,6 +399,31 @@ export function CameraView() {
         }
 
         runAgentLoop(canvas, dets)
+
+        // ─── Lifecycle transition: mark resolved when tier drops to 0 ───
+        // If the agent returned tier 0 (no anomaly) but there are active
+        // (confirmed/active) hits for this camera+useCase, transition them
+        // to 'resolved' after a grace period (3 cycles of no detection).
+        const currentState = usePrototypeStore.getState()
+        if (currentState.currentTier === 0) {
+          const activeHits = currentState.hits.filter(h =>
+            !h.acknowledged &&
+            (h.lifecycle === 'confirmed' || h.lifecycle === 'active') &&
+            h.cameraId === activeCamera.id &&
+            (Date.now() - h.timestamp) > 5000 // 5s grace period
+          )
+          if (activeHits.length > 0) {
+            // Mark as resolved
+            usePrototypeStore.setState({
+              hits: currentState.hits.map(h =>
+                activeHits.some(ah => ah.id === h.id)
+                  ? { ...h, lifecycle: 'resolved', resolvedSince: Date.now() }
+                  : h
+              )
+            })
+            pushTrace(`Incident resolved (${activeHits.length} alert(s) cleared)`)
+          }
+        }
       } catch (err) {
         console.error('[CameraView] detect error:', err)
         pushTrace(`detect error: ${err instanceof Error ? err.message : 'unknown'}`)

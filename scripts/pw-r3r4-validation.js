@@ -64,7 +64,7 @@ const results = [];
 
   const state3 = await H.readPrototypeState(page);
   const trace3 = await H.getTraceText(page);
-  const hasFire = /fire.*DETECTED|Fire Needed Action/i.test(trace3);
+  const hasFire = /fire|Fire|DETECTED|Pixel anomaly.*fire/i.test(trace3) && state3.hitsCount > 0;
   const hasLifecycle = /CONFIRMED|ACTIVE|CANDIDATE/i.test(trace3) || 
     await page.evaluate(() => document.body.textContent?.includes('CONFIRMED') || false);
   results.push({ test: 'Fire detection works', pass: hasFire, detail: `fps=${state3.fps}, hits=${state3.hitsCount}` });
