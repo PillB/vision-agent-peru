@@ -11,7 +11,7 @@ import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
 import { computePixelAnomaly, computeAnomalyBbox, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
-import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
+import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
 import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
@@ -187,14 +187,16 @@ export function CameraView() {
     }
   }
 
-  // Reset on camera switch
+  // Reset on camera switch — clear all temporal state and cached models
   useEffect(() => {
-    // Clear baseline when switching cameras
     clearSamples()
-    // Reset tracker and identity gallery on camera switch
     trackerRef.current.reset()
-    // Reset pixel anomaly frame buffer
     resetPixelAnomalyBuffer()
+    // Clear HF model cache on camera switch to free memory
+    // (models will reload from browser cache on next use — fast)
+    clearSpecializedModelCache()
+    // Clear any pending HF detection
+    hfDetectionRef.current = null
   }, [activeCameraId, clearSamples])
 
   // ===== Real ML detection loop =====
