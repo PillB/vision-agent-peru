@@ -11,12 +11,18 @@ export function MetricsRow() {
   const agentCycleCount = usePrototypeStore((s) => s.agentCycleCount)
   const hits = usePrototypeStore((s) => s.hits)
   const activeCameraId = usePrototypeStore((s) => s.activeCameraId)
+  const samples = usePrototypeStore((s) => s.samples)
+  const selectedModelIds = usePrototypeStore((s) => s.selectedModelIds)
 
   const z = stats?.zScore ?? 0
   const mean = stats?.mean ?? 0
   const stddev = stats?.stddev ?? 0
 
   const activeHits = hits.filter((h) => !h.acknowledged).length
+
+  // Build sparkline from last 20 samples
+  const sparklineData = samples.slice(-20).map(s => s.count)
+  const sparklineMax = Math.max(...sparklineData, 1)
 
   const tiles = [
     {
@@ -30,8 +36,10 @@ export function MetricsRow() {
       icon: <TrendingUp className="h-3.5 w-3.5" />,
       label: 'Detections now',
       value: String(personCount),
-      sub: `2-min avg: ${mean.toFixed(1)} (σ ${stddev.toFixed(1)})`,
+      sub: `avg: ${mean.toFixed(1)} (σ ${stddev.toFixed(1)})`,
       tone: 'emerald' as const,
+      sparkline: sparklineData.length > 1 ? sparklineData : undefined,
+      sparklineMax,
     },
     {
       icon: <Gauge className="h-3.5 w-3.5" />,
@@ -61,6 +69,13 @@ export function MetricsRow() {
       sub: `${agentCycleCount} cycles`,
       tone: 'zinc' as const,
     },
+    {
+      icon: <Brain className="h-3.5 w-3.5" />,
+      label: 'Models active',
+      value: String(selectedModelIds.length || 1),
+      sub: selectedModelIds.length > 1 ? 'Ensemble mode' : 'Single model',
+      tone: 'zinc' as const,
+    },
   ]
 
   return (
@@ -81,12 +96,14 @@ export function MetricsRow() {
   )
 }
 
-function Tile({ icon, label, value, sub, tone }: {
+function Tile({ icon, label, value, sub, tone, sparkline, sparklineMax }: {
   icon: React.ReactNode
   label: string
   value: string
   sub: string
   tone: 'zinc' | 'emerald' | 'amber' | 'rose'
+  sparkline?: number[]
+  sparklineMax?: number
 }) {
   const valueColor = {
     zinc: 'text-zinc-950',
@@ -99,6 +116,12 @@ function Tile({ icon, label, value, sub, tone }: {
     emerald: 'bg-emerald-500',
     amber: 'bg-amber-500',
     rose: 'bg-rose-600',
+  }[tone]
+  const sparkColor = {
+    zinc: 'stroke-zinc-400',
+    emerald: 'stroke-emerald-500',
+    amber: 'stroke-amber-500',
+    rose: 'stroke-rose-500',
   }[tone]
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-3">
@@ -113,6 +136,21 @@ function Tile({ icon, label, value, sub, tone }: {
         {value}
       </div>
       <div className="mt-1 text-[10px] text-zinc-500 leading-tight">{sub}</div>
+      {/* Sparkline — detection count trend over last 20 samples */}
+      {sparkline && sparkline.length > 1 && sparklineMax && sparklineMax > 0 && (
+        <svg className="mt-1 w-full h-6" viewBox="0 0 100 20" preserveAspectRatio="none">
+          <polyline
+            className={sparkColor}
+            fill="none"
+            strokeWidth="1.5"
+            points={sparkline.map((v, i) => {
+              const x = (i / (sparkline.length - 1)) * 100
+              const y = 20 - (v / sparklineMax) * 18
+              return `${x},${y}`
+            }).join(' ')}
+          />
+        </svg>
+      )}
     </div>
   )
 }
