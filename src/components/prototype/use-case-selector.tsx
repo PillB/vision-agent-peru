@@ -5,6 +5,7 @@ import { usePrototypeStore, CAMERA_SOURCES } from '@/lib/store'
 import { USE_CASES, LEVEL_LABELS, type CapabilityLevel } from '@/lib/use-cases'
 import { hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
 import { getPixelAnomalyType } from '@/lib/pixel-anomaly'
+import { ModelSelector } from './model-selector'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Shield, Users, Car, Flame, Package, Mountain, Droplet, Activity, Zap, Brain, MessageSquare, Moon, List, AlertTriangle, SprayCan } from 'lucide-react'
@@ -140,6 +141,10 @@ export function UseCaseSelector() {
           )}
         </div>
       )}
+
+      {/* Model selector dropdown — lets user choose which model(s) to use */}
+      {activeUseCase && <ModelSelector />}
+
       </div>
     </div>
   )
