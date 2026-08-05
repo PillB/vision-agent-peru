@@ -234,9 +234,13 @@ export function CameraView() {
         const useCase = USE_CASES.find((uc) => uc.id === storeState.activeUseCaseId)
         const className = useCase?.specializedClassName || useCase?.id || 'unknown'
 
-        // Determine which models to run based on user selection
-        const runCocoSSD = userModels.length === 0 || userModels.includes('coco-ssd') || userModels.includes('yolov10n') || userModels.includes('yolos-tiny')
-        const runPixelAnomaly = userModels.length === 0 || userModels.includes('pixel-anomaly')
+        // Determine which models to run based on user selection.
+        // COCO-SSD always runs as the base detector (it provides the video frame
+        // draw + person/car detections that other models build on).
+        // Pixel-anomaly always runs as supplementary (it's free — no download).
+        // HF models run only if user selected them.
+        const runCocoSSD = true // always run base detector for frame drawing
+        const runPixelAnomaly = true // always run pixel anomaly (free, fast)
         const runHFModels = userModels.length === 0 || userModels.some(id =>
           ['fire-vit', 'clip-fire', 'clip-zero-shot', 'segformer-b0', 'yolov8n-pose'].includes(id)
         )
