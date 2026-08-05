@@ -2426,4 +2426,69 @@ describe('Regression R14: Synthetic detections have varying bbox (not all same)'
   assert(dets[0].bbox[2] !== dets[1].bbox[2], 'pixel-anomaly width should differ from HF width')
 })
 
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ROUND 1: CLAIM-TO-CODE DISCREPANCY REGRESSION TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Round 1: post_quake description does NOT claim YOLOv11', () => {
+  const uc = USE_CASES.find(u => u.id === 'post_quake')!
+  assert(!uc.description.includes('YOLOv11'), 'post_quake should NOT claim YOLOv11 (uses CLIP)')
+  assert(!uc.descriptionEn.includes('YOLOv11'), 'post_quake En should NOT claim YOLOv11')
+  assert(uc.primaryModel?.includes('CLIP'), 'post_quake primaryModel should mention CLIP')
+})
+
+describe('Round 1: flood_watch description does NOT claim segmentation', () => {
+  const uc = USE_CASES.find(u => u.id === 'flood_watch')!
+  assert(!uc.description.includes('Segmentación'), 'flood_watch should NOT claim segmentation')
+  assert(!uc.descriptionEn.includes('segmentation'), 'flood_watch En should NOT claim segmentation')
+  assert(uc.descriptionEn.includes('No level segmentation'), 'flood_watch should explicitly state no segmentation')
+})
+
+describe('Round 1: abandoned_object description does NOT claim 60s', () => {
+  const uc = USE_CASES.find(u => u.id === 'abandoned_object')!
+  assert(!uc.description.includes('60s'), 'abandoned_object should NOT claim 60s')
+  assert(!uc.descriptionEn.includes('60s'), 'abandoned_object En should NOT claim 60s')
+  assert(uc.descriptionEn.includes('5 cycles'), 'abandoned_object should state actual cycle count')
+})
+
+describe('Round 1: visual_memory description acknowledges prototype status', () => {
+  const uc = USE_CASES.find(u => u.id === 'visual_memory')!
+  assert(uc.description.includes('Prototipo') || uc.description.includes('pendiente'), 'visual_memory should acknowledge prototype/pending status')
+  assert(uc.descriptionEn.includes('Prototype') || uc.descriptionEn.includes('pending'), 'visual_memory En should acknowledge prototype/pending')
+})
+
+describe('Round 1: landslide_watch does NOT claim optical flow', () => {
+  const uc = USE_CASES.find(u => u.id === 'landslide_watch')!
+  assert(!uc.descriptionEn.includes('optical flow') || uc.descriptionEn.includes('No optical flow'), 
+    'landslide_watch should NOT claim optical flow OR should explicitly state it is pending')
+})
+
+describe('Round 1: parking description does NOT claim individual slots', () => {
+  const uc = USE_CASES.find(u => u.id === 'parking')!
+  assert(!uc.descriptionEn.includes('spaces freed'), 'parking should NOT claim "spaces freed"')
+  assert(uc.descriptionEn.includes('Does not map individual slots'), 'parking should state it does not map individual slots')
+})
+
+describe('Round 1: All use case primaryModel labels are accurate', () => {
+  // Verify every use case has a primaryModel that matches its actual implementation
+  for (const uc of USE_CASES) {
+    assert(uc.primaryModel !== undefined, `${uc.id} must have primaryModel label`)
+    // COCO-SSD use cases should say COCO-SSD
+    if (['intrusion', 'after_hours', 'crowd_surge', 'parking', 'queue_anomaly'].includes(uc.id)) {
+      assert(uc.primaryModel.includes('COCO-SSD'), `${uc.id} should reference COCO-SSD`)
+    }
+    // CLIP use cases should say CLIP
+    if (['graffiti', 'flood_watch', 'landslide_watch', 'post_quake', 'slip_hazard'].includes(uc.id)) {
+      assert(uc.primaryModel.includes('CLIP'), `${uc.id} should reference CLIP`)
+    }
+    // Fire should reference Fire Detection Engine
+    if (uc.id === 'fire_smoke') {
+      assert(uc.primaryModel.includes('Fire Detection'), 'fire_smoke should reference Fire Detection Engine')
+    }
+  }
+})
+
+
 process.exit(failed > 0 ? 1 : 0)
