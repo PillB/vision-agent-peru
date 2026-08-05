@@ -118,7 +118,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 The agentic loop completes a full perceive→reason→act cycle in under 2 seconds — roughly 30× faster than manual review of the same camera.
               </h2>
               <p className="mt-4 text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl">
-                Latency budget breakdown: TF.js COCO-SSD inference ≈ 250–500 ms on a mid-tier laptop GPU · rule-engine reasoning &lt; 5 ms · action dispatch (snapshot, email sim, optional LLM judge) ≈ 200–800 ms. The remaining budget is canvas redraw and React state propagation. All numbers measured on the live prototype.
+                Latency budget breakdown: Multi-model inference ≈ 200-800 ms (COCO-SSD base + optional HF models) on a mid-tier laptop GPU · rule-engine reasoning &lt; 5 ms · action dispatch (snapshot, email sim, optional LLM judge) ≈ 200–800 ms. The remaining budget is canvas redraw and React state propagation. All numbers measured on the live prototype.
               </p>
               <p className="mt-4 text-xs text-zinc-400 font-mono">
                 Source: internal measurement on MacBook Pro M2, 2026-07-14. Manual review baseline: industry typical 8–15 min MTTR for unmonitored CCTV.
@@ -214,7 +214,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               title="Analytics / IA layer"
               subtitle="Stages 1–2 · pure perception & statistics"
               items={[
-                'YOLO/COCO-SSD object detection — no decisions, just bounding boxes',
+                'Multi-model ensemble: COCO-SSD + HF models (Fire ViT, CLIP, SegFormer, Pose) — user-selectable per use case',
                 '2-minute sliding-window mean + stddev + z-score',
                 'EMA + online variance (EWMA control chart)',
                 'Deterministic, reproducible, no LLM cost',
@@ -252,7 +252,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               icon={<Eye className="h-6 w-6" />}
               name="Perception"
               tag="In-browser ML"
-              body="TensorFlow.js + COCO-SSD runs the same 90-class object detection model used by production CV systems, but client-side. No GPU server, no frame leaves the browser — addresses both latency and privacy at once."
+              body="Multi-model ensemble runs COCO-SSD (27MB) or YOLOv10n (2.5MB) for person/vehicle detection, plus specialized HF ONNX models (Fire ViT, CLIP zero-shot, SegFormer, Pose) for use-case-specific events. All in-browser, no server. Users choose models from a dropdown with pros/cons."
               metric="~10 fps on M2 laptop"
             />
             <PillarCard
@@ -508,7 +508,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               status="shipped"
               title="Core agentic loop"
               items={[
-                'TF.js COCO-SSD in-browser perception',
+                'Multi-model ensemble (COCO-SSD + HF ONNX) in-browser perception',
                 'Rule engine + LLM-as-judge reasoning',
                 '3-tier escalation with circuit breaker',
                 'Snapshot + auto-generated incident report',
