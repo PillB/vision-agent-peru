@@ -156,6 +156,14 @@ export function AlertsPanel() {
 /** Compact hit card — smaller than the old one to prevent occlusion */
 function CompactHitCard({ hit, onAck }: { hit: AlertHit; onAck: () => void }) {
   const meta = TIER_LABELS[hit.tier] || TIER_LABELS[0]
+  const lifecycleColors: Record<string, string> = {
+    candidate: 'text-amber-600',
+    confirmed: 'text-rose-600',
+    active: 'text-rose-700 font-semibold',
+    recovering: 'text-blue-600',
+    resolved: 'text-zinc-400',
+  }
+  const lifecycleLabel = hit.lifecycle ? hit.lifecycle.toUpperCase() : ''
 
   return (
     <div className={`rounded-md border p-2 ${hit.acknowledged ? 'bg-white/50 border-zinc-200 opacity-60' : 'bg-white/80 border-zinc-300'}`}>
@@ -163,17 +171,24 @@ function CompactHitCard({ hit, onAck }: { hit: AlertHit; onAck: () => void }) {
         <span className="text-[10px] font-mono text-zinc-500">
           {new Date(hit.timestamp).toLocaleTimeString('en-US', { hour12: false })}
         </span>
-        {!hit.acknowledged ? (
-          <button
-            onClick={onAck}
-            className="text-[9px] text-emerald-700 hover:underline flex items-center gap-0.5"
-            title="Acknowledge this alert"
-          >
-            <Check className="h-2.5 w-2.5" /> Ack
-          </button>
-        ) : (
-          <span className="text-[9px] text-zinc-400">✓</span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {lifecycleLabel && (
+            <span className={`text-[8px] font-mono ${lifecycleColors[hit.lifecycle!] || 'text-zinc-500'}`}>
+              {lifecycleLabel}
+            </span>
+          )}
+          {!hit.acknowledged ? (
+            <button
+              onClick={onAck}
+              className="text-[9px] text-emerald-700 hover:underline flex items-center gap-0.5"
+              title="Acknowledge this alert"
+            >
+              <Check className="h-2.5 w-2.5" /> Ack
+            </button>
+          ) : (
+            <span className="text-[9px] text-zinc-400">✓</span>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-2 text-[10px] mb-1">
         <span className="font-mono text-zinc-950 font-semibold">{hit.count}</span>

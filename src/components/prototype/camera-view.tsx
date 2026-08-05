@@ -138,23 +138,47 @@ export function CameraView() {
     if (decision.tier >= 2 && canvas && typeof canvas.toDataURL === 'function') {
       try {
         const snapshotDataUrl = canvas.toDataURL('image/jpeg', 0.7)
-        pushHit({
-          id: `hit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          timestamp: Date.now(),
-          tier: decision.tier,
-          cameraId: activeCamera.id,
-          cameraLabel: activeCamera.label,
-          count: state.stats.count,
-          zScore: state.stats.peakZ,
-          mean: state.stats.mean,
-          stddev: state.stats.stddev,
-          reasoning: decision.reasoning,
-          snapshotDataUrl,
-          acknowledged: false,
-        })
+        const now = Date.now()
+
+        // ─── DUPLICATE SUPPRESSION ───
+        // Don't create a new hit if there's an existing active hit for the
+        // same camera+useCase within the last 10 seconds. This prevents
+        // video loops from generating repeated alerts for the same event.
+        const recentHits = state.hits.filter(h =>
+          h.cameraId === activeCamera.id &&
+          h.useCaseId === useCase.id &&
+          !h.acknowledged &&
+          (h.lifecycle === 'active' || h.lifecycle === 'confirmed') &&
+          (now - h.timestamp) < 10_000
+        )
+
+        if (recentHits.length === 0) {
+          // No recent active hit — create a new one
+          pushHit({
+            id: `hit-${now}-${Math.random().toString(36).slice(2, 8)}`,
+            timestamp: now,
+            tier: decision.tier,
+            cameraId: activeCamera.id,
+            cameraLabel: activeCamera.label,
+            count: state.stats.count,
+            zScore: state.stats.peakZ,
+            mean: state.stats.mean,
+            stddev: state.stats.stddev,
+            reasoning: decision.reasoning,
+            snapshotDataUrl,
+            acknowledged: false,
+            lifecycle: 'confirmed',
+            candidateSince: now,
+            confirmedSince: now,
+            useCaseId: useCase.id,
+          })
+        }
+        // If there IS a recent hit, we just update its timestamp silently
+        // (no new alert created — the existing one stays active)
+
         if (decision.tier === 3) {
           setAgentState({
-            escalationHistory: [...state.escalationHistory, Date.now()],
+            escalationHistory: [...state.escalationHistory, now],
           })
         }
       } catch (err) {

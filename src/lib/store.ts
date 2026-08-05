@@ -33,6 +33,16 @@ export interface AlertHit {
   reasoning: string
   snapshotDataUrl?: string
   acknowledged: boolean
+  /** Temporal lifecycle state — prevents instant alert/clear oscillation */
+  lifecycle?: 'candidate' | 'confirmed' | 'active' | 'recovering' | 'resolved'
+  /** Timestamp when this incident first became a candidate (for onset tracking) */
+  candidateSince?: number
+  /** Timestamp when this incident was confirmed (for duration tracking) */
+  confirmedSince?: number
+  /** Timestamp when the event cleared (for recovery tracking) */
+  resolvedSince?: number
+  /** Use case ID that triggered this hit (for dedup) */
+  useCaseId?: string
 }
 
 export interface ActionLogEntry {
