@@ -26,7 +26,7 @@ import {
 } from '@/lib/pptx-v2-content'
 
 export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-static'
 
 async function getLocale() {
   const store = await cookies()

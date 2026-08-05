@@ -67,7 +67,7 @@ export default async function RootLayout({
           {children}
         </NextIntlClientProvider>
         <Toaster />
-        <SonnerToaster position="bottom-right" richColors closeButton />
+        <SonnerToaster position="top-right" richColors closeButton duration={3000} expand={false} visibleToasts={3} />
       </body>
     </html>
   );

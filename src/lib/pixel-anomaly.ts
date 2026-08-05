@@ -243,3 +243,97 @@ export function getPixelAnomalyType(useCaseId: string): PixelAnomalyType | null 
   }
   return mapping[useCaseId] || null
 }
+
+/**
+ * Compute the ACTUAL bounding box of anomalous pixels in the canvas.
+ * Instead of returning a hard-coded centered rectangle, this function
+ * scans the canvas for pixels matching the anomaly type and returns
+ * the bounding region of those pixels.
+ *
+ * Returns [x, y, width, height] in canvas coordinates.
+ */
+export function computeAnomalyBbox(
+  ctx: CanvasRenderingContext2D,
+  canvasW: number,
+  canvasH: number,
+  type: PixelAnomalyType
+): [number, number, number, number] {
+  // Sample center 80% of the canvas for performance
+  const sampleX = Math.floor(canvasW * 0.1)
+  const sampleY = Math.floor(canvasH * 0.1)
+  const sampleW = Math.floor(canvasW * 0.8)
+  const sampleH = Math.floor(canvasH * 0.8)
+
+  let imageData: ImageData
+  try {
+    imageData = ctx.getImageData(sampleX, sampleY, sampleW, sampleH)
+  } catch {
+    // Canvas tainted — return full canvas with margin
+    return [canvasW * 0.1, canvasH * 0.1, canvasW * 0.8, canvasH * 0.8]
+  }
+
+  const data = imageData.data
+  let minX = sampleW, minY = sampleH, maxX = 0, maxY = 0
+  let foundPixel = false
+
+  // Scan every 4th pixel (skip 3) for performance
+  const step = 4
+  for (let y = 0; y < sampleH; y += step) {
+    for (let x = 0; x < sampleW; x += step) {
+      const idx = (y * sampleW + x) * 4
+      const r = data[idx], g = data[idx + 1], b = data[idx + 2]
+
+      let isAnomalous = false
+      switch (type) {
+        case 'fire':
+          // Fire pixels: hue 0-40° (red-orange), saturation >50%, value >50%
+          isAnomalous = (r > 100 && r > g * 1.5 && r > b * 1.5)
+          break
+        case 'flood':
+          // Flood pixels: blue/dark water
+          isAnomalous = (b > r * 1.3 && b > g * 1.1 && b > 50)
+          break
+        case 'crack':
+          // Crack pixels: dark lines (low intensity)
+          isAnomalous = (r < 60 && g < 60 && b < 60)
+          break
+        case 'landslide':
+        case 'motion':
+        default:
+          // For motion/landslide: detect changed/bright pixels
+          isAnomalous = (r + g + b > 500) // very bright
+          break
+      }
+
+      if (isAnomalous) {
+        foundPixel = true
+        if (x < minX) minX = x
+        if (y < minY) minY = y
+        if (x > maxX) maxX = x
+        if (y > maxY) maxY = y
+      }
+    }
+  }
+
+  if (!foundPixel) {
+    // No anomalous pixels found — return full canvas with margin
+    return [canvasW * 0.1, canvasH * 0.1, canvasW * 0.8, canvasH * 0.8]
+  }
+
+  // Add padding (10% of sample size) and convert back to canvas coordinates
+  const padX = sampleW * 0.05
+  const padY = sampleH * 0.05
+  const bboxX = Math.max(0, sampleX + minX - padX)
+  const bboxY = Math.max(0, sampleY + minY - padY)
+  const bboxW = Math.min(canvasW - bboxX, (maxX - minX) + padX * 2)
+  const bboxH = Math.min(canvasH - bboxY, (maxY - minY) + padY * 2)
+
+  // Ensure minimum size (don't produce tiny boxes)
+  const minSize = Math.min(canvasW, canvasH) * 0.1
+  return [
+    bboxX,
+    bboxY,
+    Math.max(bboxW, minSize),
+    Math.max(bboxH, minSize),
+  ]
+}

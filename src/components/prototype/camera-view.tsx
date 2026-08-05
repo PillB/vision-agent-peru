@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
-import { computePixelAnomaly, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
+import { computePixelAnomaly, computeAnomalyBbox, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
+import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
 
@@ -42,6 +43,7 @@ export function CameraView() {
   const rafRef = useRef<number | null>(null)
   const lastDetectRef = useRef<number>(0)
   const lastFpsTickRef = useRef<{ t: number; n: number }>({ t: Date.now(), n: 0 })
+  const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number } | null>(null)
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
   const identityMgrRef = useRef<GlobalIdentityManager>(new GlobalIdentityManager(0.6, 24))
 
@@ -172,9 +174,14 @@ export function CameraView() {
   }, [activeCameraId, clearSamples])
 
   // ===== Real ML detection loop =====
+  // ARCHITECTURE: COCO-SSD runs in the main loop (fast, ~1-3s per cycle).
+  // HF models run in a SEPARATE background task (slow, 30-60s first load).
+  // This prevents the HF model loading from blocking the FPS counter and
+  // COCO-SSD detection results.
   useEffect(() => {
     if (!isRunning) return
     let cancelled = false
+    let hfInFlight = false // prevent overlapping HF inferences
 
     const loop = async () => {
       if (cancelled) return
@@ -194,68 +201,31 @@ export function CameraView() {
       lastDetectRef.current = now
 
       try {
+        // ─── Step 1: COCO-SSD detection (fast, non-blocking for HF) ───
         const result = await handle.detect()
         if (!result) {
           rafRef.current = requestAnimationFrame(loop)
           return
         }
         const { dets, latency } = result
-        pushDetections(dets)
-        setLatency(latency)
         const ctx = canvas.getContext('2d')
+
         if (ctx) {
-          // ===== MULTI-MODEL ENSEMBLE DETECTION (MoE-style) =====
-          // Every use case runs MULTIPLE models simultaneously:
-          //   1. COCO-SSD (already ran above) — persons, cars, backpacks
-          //   2. Specialized HF models (1-2 per use case) — fire, CLIP zero-shot, etc.
-          //   3. Pixel-anomaly — HSV/frame-diff fallback (always runs as supplementary)
-          //
-          // Detections from ALL models are merged. If ANY model detects the
-          // target event, a synthetic detection is injected. The trace shows
-          // each model's result so the user can see multi-model agreement.
           const useCase = USE_CASES.find((uc) => uc.id === usePrototypeStore.getState().activeUseCaseId)
-          let pixelAnomaly: PixelAnomalyResult | null = null
+          const className = useCase?.specializedClassName || useCase?.id || 'unknown'
+
+          // ─── Step 2: Pixel-anomaly (synchronous, fast) ───
           if (useCase) {
-            let anyHfModelLoaded = false
-            const className = useCase.specializedClassName || useCase.id
-
-            // ─── Run ALL specialized HF models in parallel (ensemble) ───
-            if (hasSpecializedModel(useCase.id)) {
-              const ensembleResults = await runSpecializedDetectionEnsemble(canvas, useCase.id)
-
-              for (const specResult of ensembleResults) {
-                if (specResult.label === 'load_failed') {
-                  pushTrace(`HF Model [${specResult.modelName}]: unavailable — pixel fallback will supplement`)
-                } else if (specResult.label === 'inference_error') {
-                  pushTrace(`HF Model [${specResult.modelName}]: inference error — pixel fallback will supplement`)
-                } else {
-                  anyHfModelLoaded = true
-                  pushTrace(`HF Model [${specResult.modelName}]: ${specResult.details}`)
-                  // Inject synthetic detection if this model detected something
-                  // AND no existing detection has this class (avoid duplicates)
-                  if (specResult.detected && dets.filter(d => d.class === className).length === 0) {
-                    dets.push({
-                      bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
-                      class: className,
-                      score: specResult.confidence,
-                    })
-                  }
-                }
-              }
-            }
-
-            // ─── Pixel-anomaly: ALWAYS runs as supplementary detection ───
-            // (not just as fallback — it provides additional signal for the ensemble)
             const anomalyType = getPixelAnomalyType(useCase.id)
             if (anomalyType) {
-              pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
+              const pixelAnomaly = computePixelAnomaly(ctx, canvas.width, canvas.height, anomalyType)
               pushTrace(`Pixel anomaly [${anomalyType}]: score=${pixelAnomaly.score.toFixed(2)} (${pixelAnomaly.details})`)
-
-              // If pixel anomaly is strong AND no HF model detected, inject
-              // a pixel-based detection (fallback when HF models unavailable)
               if (pixelAnomaly.score > 0.3 && dets.filter(d => d.class === className).length === 0) {
+                // Compute ACTUAL anomalous region bbox instead of hard-coded box.
+                // Sample the canvas for anomalous pixels and find their bounding region.
+                const anomalyBbox = computeAnomalyBbox(ctx, canvas.width, canvas.height, anomalyType)
                 dets.push({
-                  bbox: [canvas.width * 0.2, canvas.height * 0.2, canvas.width * 0.6, canvas.height * 0.6] as [number, number, number, number],
+                  bbox: anomalyBbox,
                   class: className,
                   score: pixelAnomaly.score,
                 })
@@ -263,8 +233,72 @@ export function CameraView() {
             }
           }
 
-          // Now draw boxes (AFTER specialized detection so the HF model
-          // sees the raw image, not boxes/cleared canvas)
+          // ─── Step 3: HF models — FIRE AND FORGET (non-blocking) ───
+          // Run HF model inference in the background. Don't await it — let
+          // COCO-SSD results show immediately. HF results will be injected
+          // into the NEXT cycle's detections via a ref.
+          if (useCase && hasSpecializedModel(useCase.id) && !hfInFlight) {
+            hfInFlight = true
+            // Fire and forget — don't block the loop
+            runSpecializedDetectionEnsemble(canvas, useCase.id)
+              .then(ensembleResults => {
+                if (cancelled) return
+                for (const specResult of ensembleResults) {
+                  if (specResult.label === 'load_failed') {
+                    pushTrace(`HF Model [${specResult.modelName}]: unavailable — pixel fallback active`)
+                  } else if (specResult.label === 'inference_error') {
+                    pushTrace(`HF Model [${specResult.modelName}]: inference error — pixel fallback active`)
+                  } else if (specResult.label === 'timeout') {
+                    pushTrace(`HF Model [${specResult.modelName}]: timed out — pixel fallback active`)
+                  } else {
+                    pushTrace(`HF Model [${specResult.modelName}]: ${specResult.details}`)
+                    // Store the HF detection for injection into the next cycle
+                    if (specResult.detected) {
+                      hfDetectionRef.current = {
+                        class: className,
+                        score: specResult.confidence,
+                        timestamp: Date.now(),
+                      }
+                    }
+                  }
+                }
+              })
+              .catch(err => {
+                console.warn('[HF] ensemble error:', err)
+              })
+              .finally(() => {
+                hfInFlight = false
+              })
+          }
+
+          // ─── Step 4: Inject HF detection from previous cycle (if any) ───
+          // HF models are whole-image classifiers — they classify the entire
+          // frame, not a specific region. Use the full canvas as the bbox
+          // with a small margin so the box is visible at the edges.
+          if (hfDetectionRef.current) {
+            const hfDet = hfDetectionRef.current
+            // Only inject if it's recent (< 10s old) and no existing detection
+            if (Date.now() - hfDet.timestamp < 10_000 && dets.filter(d => d.class === hfDet.class).length === 0) {
+              dets.push({
+                // Use full canvas with 5% margin — represents "entire frame classified"
+                bbox: [
+                  canvas.width * 0.05,
+                  canvas.height * 0.05,
+                  canvas.width * 0.9,
+                  canvas.height * 0.9,
+                ] as [number, number, number, number],
+                class: hfDet.class,
+                score: hfDet.score,
+              })
+            } else if (Date.now() - hfDet.timestamp >= 10_000) {
+              // Expired — clear it
+              hfDetectionRef.current = null
+            }
+          }
+
+          // ─── Step 5: Push detections + draw boxes ───
+          pushDetections(dets)
+          setLatency(latency)
           drawBoxes(ctx, canvas, dets, videoRef.current ?? undefined, imgRef.current ?? undefined)
 
           // ===== TRACKING + IDENTITY MANAGEMENT =====
@@ -304,8 +338,12 @@ export function CameraView() {
 
         const fpsTick = lastFpsTickRef.current
         fpsTick.n += 1
-        if (now - fpsTick.t > 1000) {
-          setFps(Math.round((fpsTick.n * 1000) / (now - fpsTick.t)))
+        // Update FPS every 3 seconds (not 1s) to handle slow WASM inference
+        // where a single COCO-SSD cycle takes 3-5 seconds.
+        if (now - fpsTick.t > 3000) {
+          // Show fractional FPS (e.g., 0.3) when cycles are slow
+          const rawFps = (fpsTick.n * 1000) / (now - fpsTick.t)
+          setFps(rawFps < 1 ? Math.round(rawFps * 10) / 10 : Math.round(rawFps))
           fpsTick.t = now
           fpsTick.n = 0
         }
@@ -472,7 +510,7 @@ export function CameraView() {
         {activeCamera.isStatic ? (
           <img
             ref={imgRef}
-            src={activeCamera.src}
+            src={prefixPath(activeCamera.src)}
             className="absolute inset-0 w-full h-full object-cover"
             crossOrigin="anonymous"
             alt={activeCamera.label}
@@ -480,7 +518,7 @@ export function CameraView() {
         ) : (
           <video
             ref={videoRef}
-            src={activeCamera.src}
+            src={prefixPath(activeCamera.src)}
             className="absolute inset-0 w-full h-full object-cover"
             loop
             muted
@@ -593,10 +631,30 @@ function drawBoxes(
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }
 
-  const persons = dets.filter((d) => d.class === 'person')
-  for (const det of persons) {
+  // Color map for different detection classes
+  const CLASS_COLORS: Record<string, string> = {
+    person: '#10b981',     // emerald
+    car: '#3b82f6',        // blue
+    truck: '#3b82f6',      // blue
+    bus: '#3b82f6',        // blue
+    motorcycle: '#3b82f6', // blue
+    bicycle: '#3b82f6',    // blue
+    backpack: '#f59e0b',   // amber
+    suitcase: '#f59e0b',   // amber
+    handbag: '#f59e0b',    // amber
+    fire: '#ef4444',       // red
+    graffiti: '#a855f7',   // purple
+    flood: '#06b6d4',      // cyan
+    landslide: '#f97316',  // orange
+    crack: '#f97316',      // orange
+    slip_hazard: '#eab308', // yellow
+    abandoned_object: '#f59e0b', // amber
+  }
+
+  // Draw ALL detections (not just persons) with class-appropriate colors
+  for (const det of dets) {
     const [x, y, w, h] = det.bbox
-    const color = '#10b981'
+    const color = CLASS_COLORS[det.class] || '#10b981' // default emerald
     ctx.lineWidth = 2
     ctx.strokeStyle = color
     ctx.strokeRect(x, y, w, h)

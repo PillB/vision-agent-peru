@@ -256,9 +256,16 @@ export async function runSpecializedDetectionEnsemble(
   const configs = MODEL_REGISTRY[useCaseId]
   if (!configs || configs.length === 0) return []
 
-  // Run all models in parallel
+  // Run all models in parallel with a timeout per model (R04 fix).
+  // First load (model download from HuggingFace CDN) can take 60-120s for
+  // large models (CLIP ~153MB, Fire ViT ~50MB). Subsequent inferences are
+  // fast (2-5s). Use a longer timeout if the model isn't cached yet.
   const results = await Promise.allSettled(
-    configs.map(config => runSingleModel(canvas, useCaseId, config))
+    configs.map(config => {
+      const isCached = pipelineCache.has(config.modelId)
+      const timeout = isCached ? 30_000 : 120_000 // 30s for cached, 120s for first download
+      return withTimeout(runSingleModel(canvas, useCaseId, config), timeout, config.modelName)
+    })
   )
 
   // Collect successful results; log failures
@@ -579,4 +586,39 @@ export async function runSpecializedDetection(
   // Return the first non-load-failed detection, or the first overall
   const firstValid = detections.find(d => d.label !== 'load_failed' && d.label !== 'inference_error')
   return firstValid || detections[0]
+}
+
+// ─── Timeout helper (R04: prevent HF model loading from hanging indefinitely) ─
+/**
+ * Wraps a promise with a timeout. If the promise doesn't resolve within
+ * `ms` milliseconds, returns a "timeout" sentinel detection instead of
+ * hanging forever.
+ */
+async function withTimeout(
+  promise: Promise<SpecializedDetection | null>,
+  ms: number,
+  modelName: string
+): Promise<SpecializedDetection | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<SpecializedDetection | null>((resolve) => {
+    timer = setTimeout(() => {
+      console.warn(`[SpecializedModels] ${modelName} timed out after ${ms}ms`)
+      resolve({
+        modelId: '',
+        modelName,
+        useCaseId: '',
+        detected: false,
+        confidence: 0,
+        label: 'timeout',
+        details: `${modelName}: timed out after ${ms}ms`,
+        source: 'dedicated',
+      })
+    }, ms)
+  })
+  try {
+    const result = await Promise.race([promise, timeoutPromise])
+    return result
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
 }

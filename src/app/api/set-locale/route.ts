@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isLocale, type Locale } from '@/i18n/locale'
 
 export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-static'
 
 export async function POST(req: NextRequest) {
   try {

@@ -50,7 +50,7 @@ import { cookies } from 'next/headers'
 import pptxgen from 'pptxgenjs'
 
 export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-static'
 
 // ─── i18n: read locale from cookie, load messages ──────────────────────────
 async function getMessages() {

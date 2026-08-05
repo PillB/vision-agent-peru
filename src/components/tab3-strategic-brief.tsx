@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
+import { prefixPath } from '@/lib/path-utils'
 import {
   ArrowRight,
   Eye,
@@ -54,7 +55,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
     try {
       const endpoint = version === 'v3' ? '/api/export-pptx-v3' : version === 'v2' ? '/api/export-pptx-v2' : '/api/export-pptx'
       const filename = version === 'v3' ? 'vision-agent-bcp-evolution.pptx' : version === 'v2' ? 'vision-agent-infographic.pptx' : 'vision-agent-strategic-brief.pptx'
-      const res = await fetch(endpoint)
+      const res = await fetch(prefixPath(endpoint))
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)

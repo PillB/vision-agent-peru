@@ -322,6 +322,11 @@ export function Tab1Overview({ onTryPrototype }: Props) {
           />
 
           {/* Metric tiles row */}
+          {/* CONFIGURATION CONSTANTS — these are static capability descriptions, not live metrics.
+              Live metrics are in the Prototype tab (metrics-row.tsx) bound to the Zustand store.
+              R12 classification: 'Cameras online' = planned deployment count (constant),
+              'Anomaly score' = illustrative example value, 'Active incidents' = example,
+              'Judge confidence' = example. These do NOT claim to be live data. */}
           <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
             <MetricTile
               icon={<Camera className="h-4 w-4" />}

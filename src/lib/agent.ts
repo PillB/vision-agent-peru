@@ -131,15 +131,17 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
   const trackedDetections = detections.filter((d) => allTrackedClasses.includes(d.class))
   const trackedCount = trackedDetections.length
 
-  // Always log the tick (low-cost telemetry)
+  // Always log the tick (low-cost telemetry) — keep raw debug in reason field
   actions.push({
     name: 'log_tick',
     tier: 0,
-    reason: `useCase=${useCase.id} level=${capabilityLevel} count=${trackedCount} z=${stats.zScore.toFixed(2)} peakZ=${stats.peakZ.toFixed(2)} | EMA=${stats.ema.toFixed(1)} | sustain=${sustainCount}`,
+    reason: `useCase=${useCase.id} level=${capabilityLevel} count=${trackedCount} z=${stats.zScore.toFixed(2)} peakZ=${stats.peakZ.toFixed(2)} | sustain=${sustainCount}`,
     timestamp: now,
   })
 
-  let reasoning = `[${useCase.name}] L${capabilityLevel} | count=${trackedCount} z=${stats.zScore.toFixed(2)} peakZ=${stats.peakZ.toFixed(2)} | sustain=${sustainCount}`
+  // User-friendly reasoning (shown in alerts panel — NO cryptic codes)
+  const levelLabel = capabilityLevel === 'traditional' ? 'Rules' : capabilityLevel === 'mldl' ? 'ML/DL' : capabilityLevel === 'cognitive' ? 'Cognitive' : 'Agentic'
+  let reasoning = `${useCase.nameEn || useCase.name}: ${trackedCount} detection(s), z-score=${stats.zScore.toFixed(2)}, sustained=${sustainCount} cycles`
 
   if (silenced) {
     return {
@@ -254,7 +256,7 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
       reason: ruleReason,
       timestamp: now,
     })
-    reasoning += ` | T1: ${ruleReason}`
+    reasoning += ` — ${ruleReason}`
 
     // Tier 2: snapshot + email + log (allowed at mldl+ and agentic)
     const sustainNeeded = useCase.params.sustainTicks || config.t2Sustain
@@ -275,7 +277,7 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
           },
         })
       }
-      reasoning += ` | T2 snapshot+log${allowAutoAction ? '+email' : ''}`
+      reasoning += `. Alert: snapshot logged${allowAutoAction ? ', email sent' : ''}`
     }
 
     // Tier 3: LLM judge + escalate + report (only at agentic level)
@@ -286,15 +288,15 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
       }
       actions.push({ name: 'escalate', tier: 3, reason: `critical escalation: ${ruleReason}`, timestamp: now })
       actions.push({ name: 'generate_report', tier: 3, reason: `auto-generate ${useCase.indeciReport ? 'INDECI ' : ''}incident report`, timestamp: now })
-      reasoning += ` | T3 escalate${allowLLM && ctx.llmJudgeEnabled ? '+judge' : ''}+report`
+      reasoning += `. Escalated${allowLLM && ctx.llmJudgeEnabled ? ' with LLM judge' : ''}, report generated`
     } else if (breakerTripped && allowEscalation) {
-      reasoning += ` | T3 BLOCKED by circuit breaker (${recentEscalations.length}/${config.maxEscalationsPerHour}/hr)`
+      reasoning += `. Escalation blocked (circuit breaker: ${recentEscalations.length}/${config.maxEscalationsPerHour} per hour)`
     }
 
     // Cognitive level: add LLM description but no autonomous action
     if (capabilityLevel === 'cognitive' && tier >= 1) {
       actions.push({ name: 'llm_judge', tier: 1, reason: `cognitive description of [${useCase.name}]`, timestamp: now })
-      reasoning += ` | cognitive description`
+      reasoning += `. Cognitive analysis active`
     }
   }
 

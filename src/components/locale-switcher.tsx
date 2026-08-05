@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl'
 import { useTransition } from 'react'
 import { Languages } from 'lucide-react'
+import { prefixPath } from '@/lib/path-utils'
 import { Button } from '@/components/ui/button'
 import { localeLabels, type Locale, getOtherLocale } from '@/i18n/locale'
 
@@ -37,7 +38,7 @@ export function LocaleSwitcher() {
   async function onToggle() {
     startTransition(async () => {
       try {
-        const res = await fetch('/api/set-locale', {
+        const res = await fetch(prefixPath('/api/set-locale'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ locale: next }),

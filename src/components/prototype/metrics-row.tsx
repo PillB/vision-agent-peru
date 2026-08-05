@@ -28,7 +28,7 @@ export function MetricsRow() {
     },
     {
       icon: <TrendingUp className="h-3.5 w-3.5" />,
-      label: 'Persons now',
+      label: 'Detections now',
       value: String(personCount),
       sub: `2-min avg: ${mean.toFixed(1)} (σ ${stddev.toFixed(1)})`,
       tone: 'emerald' as const,

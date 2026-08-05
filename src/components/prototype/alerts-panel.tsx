@@ -1,24 +1,66 @@
 'use client'
 
-import { AlertTriangle, Check, Bell, BellOff } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { AlertTriangle, Check, Bell, BellOff, ChevronDown, ChevronRight, X, Trash2 } from 'lucide-react'
 import { usePrototypeStore, type AlertHit } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+
+const TIER_LABELS: Record<number, { label: string; color: string; bg: string; dot: string }> = {
+  3: { label: 'Critical', color: 'text-rose-700', bg: 'bg-rose-50 border-rose-200', dot: 'bg-rose-600' },
+  2: { label: 'Anomaly', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  1: { label: 'Watch', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
+  0: { label: 'Nominal', color: 'text-zinc-600', bg: 'bg-zinc-50 border-zinc-200', dot: 'bg-zinc-400' },
+}
 
 export function AlertsPanel() {
   const hits = usePrototypeStore((s) => s.hits)
   const acknowledgeHit = usePrototypeStore((s) => s.acknowledgeHit)
   const acknowledge = usePrototypeStore((s) => s.acknowledge)
 
+  // Group hits by tier for folding
+  const [expandedTiers, setExpandedTiers] = useState<Set<number>>(new Set([2, 3])) // expand T2+T3 by default
+
+  const grouped = useMemo(() => {
+    const groups: Record<number, AlertHit[]> = { 3: [], 2: [], 1: [], 0: [] }
+    for (const hit of hits) {
+      const tier = hit.tier as number
+      if (!groups[tier]) groups[tier] = []
+      groups[tier].push(hit)
+    }
+    return groups
+  }, [hits])
+
+  const unackCount = hits.filter(h => !h.acknowledged).length
+
+  const toggleTier = (tier: number) => {
+    setExpandedTiers(prev => {
+      const next = new Set(prev)
+      if (next.has(tier)) next.delete(tier)
+      else next.add(tier)
+      return next
+    })
+  }
+
+  const ackAllInTier = (tier: number) => {
+    grouped[tier]?.forEach(h => !h.acknowledged && acknowledgeHit(h.id))
+  }
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4 flex flex-col h-full">
+      {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <h3 className="text-sm font-semibold text-zinc-950">Alerts & incidents</h3>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          {unackCount > 0 && (
+            <Badge className="text-[10px] h-5 px-1.5 bg-amber-500 text-white animate-pulse">
+              {unackCount} new
+            </Badge>
+          )}
           <Badge variant="outline" className="text-xs font-mono">{hits.length}</Badge>
           <Button
             size="sm"
@@ -32,12 +74,12 @@ export function AlertsPanel() {
           </Button>
         </div>
       </div>
+
       {/* ELI5 hint */}
-      <div className="mb-3 rounded-md bg-amber-50 border border-amber-100 px-2.5 py-1.5 text-[10px] text-zinc-600 leading-relaxed">
-        💡 <strong>¿Qué es esto?</strong> Cuando el agente detecta algo inusual (demasiadas personas,
-        intrusión, objeto abandonado), crea una alerta aquí. <strong>Reconocer</strong> = "ya lo vi".
-        <strong>Silenciar</strong> = "no me avises por 5 minutos".
+      <div className="mb-2 rounded-md bg-amber-50 border border-amber-100 px-2.5 py-1 text-[10px] text-zinc-600 leading-relaxed">
+        💡 <strong>¿Qué es esto?</strong> Alertas agrupadas por severidad. Click en una categoría para expandir/contraer.
       </div>
+
       <ScrollArea className="flex-1 max-h-[380px] pr-2">
         {hits.length === 0 ? (
           <div className="text-center py-10 text-xs text-zinc-400">
@@ -47,10 +89,63 @@ export function AlertsPanel() {
             <span className="text-zinc-500">Run the analysis to populate this panel.</span>
           </div>
         ) : (
-          <div className="space-y-2">
-            {hits.map((hit) => (
-              <HitCard key={hit.id} hit={hit} onAck={() => acknowledgeHit(hit.id)} />
-            ))}
+          <div className="space-y-1.5">
+            {/* Render grouped by tier (3 → 2 → 1 → 0) */}
+            {[3, 2, 1, 0].map(tier => {
+              const tierHits = grouped[tier] || []
+              if (tierHits.length === 0) return null
+              const meta = TIER_LABELS[tier] || TIER_LABELS[0]
+              const isExpanded = expandedTiers.has(tier)
+              const tierUnack = tierHits.filter(h => !h.acknowledged).length
+
+              return (
+                <div key={tier} className={`rounded-lg border ${meta.bg} overflow-hidden`}>
+                  {/* Tier header — clickable to fold/unfold */}
+                  <button
+                    onClick={() => toggleTier(tier)}
+                    className="w-full flex items-center justify-between px-3 py-1.5 hover:bg-black/5 transition"
+                  >
+                    <div className="flex items-center gap-2">
+                      {isExpanded
+                        ? <ChevronDown className="h-3 w-3 text-zinc-500" />
+                        : <ChevronRight className="h-3 w-3 text-zinc-500" />
+                      }
+                      <span className={`h-2 w-2 rounded-full ${meta.dot} ${tierUnack > 0 ? 'animate-pulse' : ''}`} />
+                      <span className={`text-xs font-semibold ${meta.color}`}>
+                        Tier {tier} · {meta.label}
+                      </span>
+                      <Badge variant="outline" className="text-[9px] h-4 px-1">
+                        {tierHits.length}
+                      </Badge>
+                      {tierUnack > 0 && (
+                        <span className="text-[9px] text-amber-600 font-medium">
+                          ({tierUnack} unack)
+                        </span>
+                      )}
+                    </div>
+                    {tierUnack > 0 && (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); ackAllInTier(tier) }}
+                        className="text-[9px] text-emerald-700 hover:underline cursor-pointer"
+                      >
+                        Ack all
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Tier body — collapsible */}
+                  {isExpanded && (
+                    <div className="px-2 pb-2 space-y-1.5 max-h-[200px] overflow-y-auto">
+                      {tierHits.map(hit => (
+                        <CompactHitCard key={hit.id} hit={hit} onAck={() => acknowledgeHit(hit.id)} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </ScrollArea>
@@ -58,57 +153,44 @@ export function AlertsPanel() {
   )
 }
 
-function HitCard({ hit, onAck }: { hit: AlertHit; onAck: () => void }) {
-  const tierColor = hit.tier === 3 ? 'bg-rose-600' : hit.tier === 2 ? 'bg-amber-500' : 'bg-emerald-500'
-  const tierBg = hit.tier === 3 ? 'bg-rose-50 border-rose-200' : hit.tier === 2 ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'
+/** Compact hit card — smaller than the old one to prevent occlusion */
+function CompactHitCard({ hit, onAck }: { hit: AlertHit; onAck: () => void }) {
+  const meta = TIER_LABELS[hit.tier] || TIER_LABELS[0]
 
   return (
-    <div className={`rounded-lg border p-3 ${hit.acknowledged ? 'bg-zinc-50 border-zinc-200 opacity-70' : tierBg}`}>
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2">
-          <span className={`h-2 w-2 rounded-full ${tierColor} ${!hit.acknowledged ? 'animate-pulse' : ''}`} />
-          <span className="text-xs font-semibold text-zinc-950">
-            Tier {hit.tier} · {hit.cameraLabel}
-          </span>
-        </div>
+    <div className={`rounded-md border p-2 ${hit.acknowledged ? 'bg-white/50 border-zinc-200 opacity-60' : 'bg-white/80 border-zinc-300'}`}>
+      <div className="flex items-center justify-between gap-1 mb-1">
         <span className="text-[10px] font-mono text-zinc-500">
           {new Date(hit.timestamp).toLocaleTimeString('en-US', { hour12: false })}
         </span>
-      </div>
-      <div className="grid grid-cols-3 gap-2 text-[10px] mb-2">
-        <div>
-          <div className="text-zinc-500 uppercase tracking-wide">Persons</div>
-          <div className="font-mono text-zinc-950 text-sm">{hit.count}</div>
-        </div>
-        <div>
-          <div className="text-zinc-500 uppercase tracking-wide">z-score</div>
-          <div className="font-mono text-zinc-950 text-sm">{hit.zScore.toFixed(2)}</div>
-        </div>
-        <div>
-          <div className="text-zinc-500 uppercase tracking-wide">Avg (2min)</div>
-          <div className="font-mono text-zinc-950 text-sm">{hit.mean.toFixed(1)}</div>
-        </div>
-      </div>
-      <div className="text-[10px] text-zinc-600 mb-2 font-mono leading-snug">{hit.reasoning}</div>
-      {hit.snapshotDataUrl && (
-        <details className="mb-2">
-          <summary className="text-[10px] text-emerald-700 cursor-pointer hover:underline">
-            View snapshot evidence
-          </summary>
-          <img src={hit.snapshotDataUrl} alt="snapshot" className="mt-1 rounded max-h-32 w-full object-cover" />
-        </details>
-      )}
-      <div className="flex items-center justify-between">
-        <span className={`text-[10px] ${hit.acknowledged ? 'text-zinc-500' : 'text-emerald-700 font-medium'}`}>
-          {hit.acknowledged ? '✓ Acknowledged' : 'Unacknowledged'}
-        </span>
-        {!hit.acknowledged && (
-          <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={onAck}>
-            <Check className="h-3 w-3 mr-1" />
-            Acknowledge
-          </Button>
+        {!hit.acknowledged ? (
+          <button
+            onClick={onAck}
+            className="text-[9px] text-emerald-700 hover:underline flex items-center gap-0.5"
+            title="Acknowledge this alert"
+          >
+            <Check className="h-2.5 w-2.5" /> Ack
+          </button>
+        ) : (
+          <span className="text-[9px] text-zinc-400">✓</span>
         )}
       </div>
+      <div className="flex items-center gap-2 text-[10px] mb-1">
+        <span className="font-mono text-zinc-950 font-semibold">{hit.count}</span>
+        <span className="text-zinc-500">dets</span>
+        <span className="text-zinc-300">·</span>
+        <span className="font-mono text-zinc-950">{hit.zScore.toFixed(2)}</span>
+        <span className="text-zinc-500">z</span>
+      </div>
+      <div className="text-[9px] text-zinc-500 leading-tight line-clamp-2">{hit.reasoning}</div>
+      {hit.snapshotDataUrl && (
+        <details className="mt-1">
+          <summary className="text-[9px] text-emerald-700 cursor-pointer hover:underline">
+            Snapshot
+          </summary>
+          <img src={hit.snapshotDataUrl} alt="snapshot" className="mt-1 rounded max-h-20 w-full object-cover" />
+        </details>
+      )}
     </div>
   )
 }
