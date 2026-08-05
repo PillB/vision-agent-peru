@@ -2491,4 +2491,59 @@ describe('Round 1: All use case primaryModel labels are accurate', () => {
 })
 
 
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ROUND 2: MODEL CANDIDATE TOURNAMENT TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Round 2: Model registry has baseline + challenger + recommended', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('src/lib/models/registry.ts'), 'model registry file should exist')
+  
+  // The registry should have at least 3 baseline models
+  const registryCode = fs.readFileSync('src/lib/models/registry.ts', 'utf-8')
+  assert(registryCode.includes('BASELINE'), 'registry should have BASELINE array')
+  assert(registryCode.includes('CHALLENGERS'), 'registry should have CHALLENGERS array')
+  assert(registryCode.includes('RECOMMENDED'), 'registry should have RECOMMENDED map')
+  assert(registryCode.includes('REJECTED'), 'registry should have REJECTED array')
+})
+
+describe('Round 2: YOLOv10n challenger is 10× smaller than COCO-SSD', () => {
+  const fs = require('fs')
+  const registryCode = fs.readFileSync('src/lib/models/registry.ts', 'utf-8')
+  assert(registryCode.includes('yolov10n'), 'registry should include yolov10n challenger')
+  assert(registryCode.includes('2.53'), 'yolov10n size should be 2.53MB')
+  assert(registryCode.includes('27'), 'COCO-SSD size should be 27MB')
+})
+
+describe('Round 2: SegFormer for flood is browser-ready', () => {
+  const fs = require('fs')
+  const registryCode = fs.readFileSync('src/lib/models/registry.ts', 'utf-8')
+  assert(registryCode.includes('segformer-b0-ade'), 'registry should include segformer for flood')
+  assert(registryCode.includes('4.21'), 'segformer size should be 4.21MB')
+})
+
+describe('Round 2: Pose estimation for fall detection', () => {
+  const fs = require('fs')
+  const registryCode = fs.readFileSync('src/lib/models/registry.ts', 'utf-8')
+  assert(registryCode.includes('yolov8n-pose'), 'registry should include pose model for fall detection')
+  assert(registryCode.includes('3.58'), 'pose model size should be 3.58MB')
+})
+
+describe('Round 2: Rejected candidates are documented', () => {
+  const fs = require('fs')
+  const registryCode = fs.readFileSync('src/lib/models/registry.ts', 'utf-8')
+  assert(registryCode.includes('REJECTED'), 'rejected candidates should be documented')
+  assert(registryCode.includes('reason'), 'each rejection should have a reason')
+})
+
+describe('Round 2: Model tournament deliverable exists', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('download/model-candidate-tournament.md'), 'tournament deliverable should exist')
+  const content = fs.readFileSync('download/model-candidate-tournament.md', 'utf-8')
+  assert(content.includes('yolov10n'), 'tournament should mention yolov10n')
+  assert(content.includes('segformer'), 'tournament should mention segformer')
+  assert(content.includes('yolov8n-pose'), 'tournament should mention pose model')
+})
 process.exit(failed > 0 ? 1 : 0)
