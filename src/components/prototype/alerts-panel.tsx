@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { AlertTriangle, Check, Bell, BellOff, ChevronDown, ChevronRight, X, Trash2 } from 'lucide-react'
+import { AlertTriangle, Check, Bell, BellOff, ChevronDown, ChevronRight, X, Trash2, Activity, FileText } from 'lucide-react'
 import { usePrototypeStore, type AlertHit } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,8 +16,23 @@ const TIER_LABELS: Record<number, { label: string; color: string; bg: string; do
 
 export function AlertsPanel() {
   const hits = usePrototypeStore((s) => s.hits)
+  const reports = usePrototypeStore((s) => s.reports)
   const acknowledgeHit = usePrototypeStore((s) => s.acknowledgeHit)
   const acknowledge = usePrototypeStore((s) => s.acknowledge)
+
+  // Compute alert rate (alerts per hour based on first and last hit timestamps)
+  const alertRate = useMemo(() => {
+    if (hits.length < 2) return 0
+    const first = hits[hits.length - 1].timestamp
+    const last = hits[0].timestamp
+    const elapsedHours = (last - first) / 3_600_000
+    return elapsedHours > 0 ? Math.round(hits.length / elapsedHours) : 0
+  }, [hits])
+
+  // Check if a hit has a corresponding report
+  const hasReport = (hit: AlertHit) => {
+    return reports.some(r => r.hitIds?.includes(hit.id))
+  }
 
   // Group hits by tier for folding
   const [expandedTiers, setExpandedTiers] = useState<Set<number>>(new Set([2, 3])) // expand T2+T3 by default
@@ -75,9 +90,17 @@ export function AlertsPanel() {
         </div>
       </div>
 
-      {/* ELI5 hint */}
-      <div className="mb-2 rounded-md bg-amber-50 border border-amber-100 px-2.5 py-1 text-[10px] text-zinc-600 leading-relaxed">
-        💡 <strong>¿Qué es esto?</strong> Alertas agrupadas por severidad. Click en una categoría para expandir/contraer.
+      {/* ELI5 hint + alert rate */}
+      <div className="mb-2 flex items-center justify-between">
+        <div className="rounded-md bg-amber-50 border border-amber-100 px-2.5 py-1 text-[10px] text-zinc-600 leading-relaxed flex-1">
+          💡 <strong>¿Qué es esto?</strong> Alertas agrupadas por severidad. Click para expandir/contraer.
+        </div>
+        {alertRate > 0 && (
+          <div className="ml-2 flex items-center gap-1 text-[10px] text-zinc-500">
+            <Activity className="h-2.5 w-2.5" />
+            <span className="font-mono">{alertRate}/hr</span>
+          </div>
+        )}
       </div>
 
       <ScrollArea className="flex-1 max-h-[380px] pr-2">
@@ -139,7 +162,7 @@ export function AlertsPanel() {
                   {isExpanded && (
                     <div className="px-2 pb-2 space-y-1.5 max-h-[200px] overflow-y-auto">
                       {tierHits.map(hit => (
-                        <CompactHitCard key={hit.id} hit={hit} onAck={() => acknowledgeHit(hit.id)} />
+                        <CompactHitCard key={hit.id} hit={hit} onAck={() => acknowledgeHit(hit.id)} hasReport={hasReport(hit)} />
                       ))}
                     </div>
                   )}
@@ -154,7 +177,7 @@ export function AlertsPanel() {
 }
 
 /** Compact hit card — smaller than the old one to prevent occlusion */
-function CompactHitCard({ hit, onAck }: { hit: AlertHit; onAck: () => void }) {
+function CompactHitCard({ hit, onAck, hasReport }: { hit: AlertHit; onAck: () => void; hasReport: boolean }) {
   const meta = TIER_LABELS[hit.tier] || TIER_LABELS[0]
   const lifecycleColors: Record<string, string> = {
     candidate: 'text-amber-600',
@@ -198,6 +221,13 @@ function CompactHitCard({ hit, onAck }: { hit: AlertHit; onAck: () => void }) {
         <span className="text-zinc-500">z</span>
       </div>
       <div className="text-[9px] text-zinc-500 leading-tight line-clamp-2">{hit.reasoning}</div>
+      {/* Evidence chain: show if report exists for this hit */}
+      {hasReport && (
+        <div className="mt-0.5 flex items-center gap-0.5 text-[8px] text-emerald-600">
+          <FileText className="h-2 w-2" />
+          <span>Report generated</span>
+        </div>
+      )}
       {hit.snapshotDataUrl && (
         <details className="mt-1">
           <summary className="text-[9px] text-emerald-700 cursor-pointer hover:underline">
