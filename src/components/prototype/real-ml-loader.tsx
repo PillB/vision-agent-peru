@@ -66,7 +66,7 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
                 if (process.env.NODE_ENV === 'development') console.log('[RealMlLoader] detect: image not ready', { img: !!img, complete: img?.complete, naturalWidth: img?.naturalWidth })
                 return null
               }
-              const targetW = 480
+              const targetW = 320
               const targetH = Math.round((img.naturalHeight / img.naturalWidth) * targetW)
               if (canvas.width !== targetW || canvas.height !== targetH) {
                 canvas.width = targetW
@@ -125,7 +125,7 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
               return null
             }
 
-            const targetW = 480
+            const targetW = 320
             const targetH = Math.round((video.videoHeight / video.videoWidth) * targetW)
             if (canvas.width !== targetW || canvas.height !== targetH) {
               canvas.width = targetW

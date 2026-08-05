@@ -154,10 +154,10 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               step={1}
               icon={<Eye className="h-5 w-5" />}
               name="Perceive"
-              role="TF.js COCO-SSD"
+              role="Multi-model ensemble"
               layer="Analytics / IA"
               tone="zinc"
-              description="Captures each video frame, runs the 90-class object-detection model in-browser, and emits bounding boxes + confidence scores. Pure perception — no decisions."
+              description="Captures each video frame, runs COCO-SSD or YOLOv10n for person/vehicle detection, plus specialized HF models (Fire ViT, CLIP zero-shot, SegFormer) for use-case-specific events. Multi-model ensemble — pure perception."
               outputs="bbox[], class[], score[]"
               valueTag="Raw detections"
             />

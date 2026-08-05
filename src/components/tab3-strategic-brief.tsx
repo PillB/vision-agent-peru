@@ -557,7 +557,7 @@ function LoopDiagram({ t, annotated }: { t: ReturnType<typeof useTranslations>; 
   const center = size / 2
   const radius = 110
   const annotations = annotated ? [
-    { node: 'Perceive', label: 'TF.js COCO-SSD', detail: '90-class object detection, in-browser, ~1 Hz' },
+    { node: 'Perceive', label: 'Multi-model ensemble', detail: 'COCO-SSD + HF models (Fire ViT, CLIP, SegFormer, Pose) — user-selectable' },
     { node: 'Reason', label: 'Rule engine + LLM-as-judge', detail: 'z-score + sustain counter → tier 0–3 decision' },
     { node: 'Act', label: 'Tool registry', detail: 'log, snapshot, email, escalate, generate report' },
     { node: 'Reflect', label: 'LLM verdict feedback', detail: 'real/false_positive → tunes next-tick sensitivity' },

@@ -206,13 +206,36 @@ export const DEFAULT_MODELS: Record<string, string> = {
 }
 
 /**
- * Get all compatible models for a use case.
+ * Get all compatible models for a use case, SORTED best-to-worst.
+ * Ranking criteria:
+ *   1. Browser-ready models first (ready > pending)
+ *   2. Smaller size = better (faster download + inference)
+ *   3. Faster inference speed = better
+ *   4. Produces bboxes = better (localization > whole-frame)
+ *   5. Better license (Apache > MIT > AGPL > unknown)
  */
 export function getCompatibleModels(useCaseId: string): ModelOption[] {
   const modelIds = USE_CASE_MODELS[useCaseId] || []
-  return modelIds
+  const models = modelIds
     .map(id => ALL_MODELS.find(m => m.id === id))
     .filter((m): m is ModelOption => m !== undefined)
+
+  const speedRank: Record<string, number> = { fast: 0, medium: 1, slow: 2 }
+  const licenseRank: Record<string, number> = { 'apache-2.0': 0, mit: 1, 'agpl-3.0': 2, unknown: 3 }
+
+  return models.sort((a, b) => {
+    // 1. Browser-ready first
+    if (a.browserReady !== b.browserReady) return a.browserReady ? -1 : 1
+    // 2. Smaller size first
+    if (a.sizeMB !== b.sizeMB) return a.sizeMB - b.sizeMB
+    // 3. Faster speed first
+    const speedDiff = (speedRank[a.inferenceSpeed] || 9) - (speedRank[b.inferenceSpeed] || 9)
+    if (speedDiff !== 0) return speedDiff
+    // 4. Produces bboxes first
+    if (a.producesBboxes !== b.producesBboxes) return a.producesBboxes ? -1 : 1
+    // 5. Better license first
+    return (licenseRank[a.license] || 9) - (licenseRank[b.license] || 9)
+  })
 }
 
 /**

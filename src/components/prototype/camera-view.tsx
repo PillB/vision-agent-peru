@@ -221,7 +221,7 @@ export function CameraView() {
 
       const now = Date.now()
       // Throttle to ~0.66 Hz (every 1.5s) to keep CPU/GPU reasonable
-      if (now - lastDetectRef.current < 1500) {
+      if (now - lastDetectRef.current < 800) {
         rafRef.current = requestAnimationFrame(loop)
         return
       }
@@ -394,7 +394,7 @@ export function CameraView() {
         fpsTick.n += 1
         // Update FPS every 3 seconds (not 1s) to handle slow WASM inference
         // where a single COCO-SSD cycle takes 3-5 seconds.
-        if (now - fpsTick.t > 3000) {
+        if (now - fpsTick.t > 2000) {
           // Show fractional FPS (e.g., 0.3) when cycles are slow
           const rawFps = (fpsTick.n * 1000) / (now - fpsTick.t)
           setFps(rawFps < 1 ? Math.round(rawFps * 10) / 10 : Math.round(rawFps))
@@ -500,12 +500,24 @@ export function CameraView() {
             <SelectValue placeholder="Select camera" />
           </SelectTrigger>
           <SelectContent>
-            {CAMERA_SOURCES.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                <span className="font-medium">{c.label}</span>
-                <span className="text-xs text-zinc-500 ml-2">· {c.location}</span>
-              </SelectItem>
-            ))}
+            {/* Filter cameras by active use case — show only relevant feeds */}
+            {(() => {
+              const uc = USE_CASES.find(u => u.id === activeUseCaseId)
+              const relevant = uc
+                ? CAMERA_SOURCES.filter(c => c.useCases?.includes(uc.id))
+                : CAMERA_SOURCES
+              // Always include the current camera even if not in the filtered list
+              const all = relevant.find(c => c.id === activeCameraId)
+                ? relevant
+                : [CAMERA_SOURCES.find(c => c.id === activeCameraId)!, ...relevant]
+              return all.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  <span className="font-medium">{c.label}</span>
+                  <span className="text-xs text-zinc-500 ml-2">· {c.location}</span>
+                  {c.isStatic && <span className="text-[9px] text-blue-600 ml-1">[static]</span>}
+                </SelectItem>
+              ))
+            })()}
           </SelectContent>
         </Select>
 
@@ -556,16 +568,17 @@ export function CameraView() {
           {modelStatus === 'loading' && (
             <span className="flex items-center gap-1.5">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Loading COCO-SSD model...
+              <span>Loading detector model...</span>
             </span>
           )}
           {modelStatus === 'ready' && (
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               <span className="font-mono">
-                {hasSpecializedModel(activeUseCaseId)
-                  ? `${activeUseCase?.primaryModel?.split('(')[0].trim() || 'HF Model'} + COCO-SSD ready`
-                  : 'COCO-SSD ready · WebGL'}
+                {selectedModelIds.length > 0
+                  ? `${selectedModelIds.length} model${selectedModelIds.length > 1 ? 's' : ''} ready`
+                  : 'Detector ready'}
+                {hasSpecializedModel(activeUseCaseId) && ' + HF loading...'}
               </span>
             </span>
           )}
