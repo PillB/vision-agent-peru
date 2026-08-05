@@ -52,6 +52,7 @@ export function CameraView() {
   // Store
   const activeCameraId = usePrototypeStore((s) => s.activeCameraId)
   const activeUseCaseId = usePrototypeStore((s) => s.activeUseCaseId)
+  const selectedModelIds = usePrototypeStore((s) => s.selectedModelIds)
   const modelStatus = usePrototypeStore((s) => s.modelStatus)
   const isRunning = usePrototypeStore((s) => s.isRunning)
   const fps = usePrototypeStore((s) => s.fps)
@@ -456,23 +457,23 @@ export function CameraView() {
           </SelectContent>
         </Select>
 
-        {/* Dynamic multi-model badge — shows the ensemble running for this use case */}
+        {/* Dynamic multi-model badge — shows USER-SELECTED models */}
         <div
           className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5"
           title={(() => {
-            const hfModels = getAllModelNames(activeUseCaseId)
-            const parts = ['COCO-SSD (always)']
-            if (hfModels.length > 0) parts.push(...hfModels)
-            const anomalyType = getPixelAnomalyType(activeUseCaseId)
-            if (anomalyType) parts.push(`Pixel-anomaly (${anomalyType})`)
-            return `Ensemble: ${parts.join(' + ')}`
+            const selected = selectedModelIds.length > 0
+              ? selectedModelIds.join(', ')
+              : (activeUseCase?.primaryModel || 'Default')
+            return `Selected models: ${selected}`
           })()}
         >
           <Cpu className="h-3 w-3 text-emerald-600" />
           <span className="text-xs font-medium text-emerald-700">
-            {activeUseCase?.primaryModel ? activeUseCase.primaryModel.split('(')[0].trim() : 'Real ML'}
+            {selectedModelIds.length > 0
+              ? `${selectedModelIds.length} model${selectedModelIds.length > 1 ? 's' : ''}`
+              : (activeUseCase?.primaryModel?.split('(')[0].trim() || 'Real ML')}
           </span>
-          {/* Show model count badge — e.g., "3 models" for COCO-SSD + HF + pixel */}
+          {/* Show model count badge */}
           <span className="text-[9px] text-amber-600 font-mono ml-0.5" title="Number of models in ensemble">
             ×{1 + (hasSpecializedModel(activeUseCaseId) ? getAllModelNames(activeUseCaseId).length : 0) + (getPixelAnomalyType(activeUseCaseId) ? 1 : 0)}
           </span>

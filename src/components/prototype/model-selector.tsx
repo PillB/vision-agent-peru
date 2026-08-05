@@ -22,6 +22,7 @@ import { usePrototypeStore } from '@/lib/store'
  */
 export function ModelSelector() {
   const activeUseCaseId = usePrototypeStore((s) => s.activeUseCaseId)
+  const setSelectedModelIds = usePrototypeStore((s) => s.setSelectedModelIds)
   const [expanded, setExpanded] = useState(false)
   const [expandedModelId, setExpandedModelId] = useState<string | null>(null)
 
@@ -40,11 +41,13 @@ export function ModelSelector() {
     }
     // Use case changed — compute default
     const defaultModel = getDefaultModel(activeUseCaseId)
-    if (defaultModel) return new Set([defaultModel.id])
-    const compatible = getCompatibleModels(activeUseCaseId)
-    if (compatible.length > 0) return new Set([compatible[0].id])
-    return new Set<string>()
-  }, [activeUseCaseId, selectionState])
+    const newSet = defaultModel
+      ? new Set([defaultModel.id])
+      : new Set(getCompatibleModels(activeUseCaseId).slice(0, 1).map(m => m.id))
+    // Push to store so detection pipeline can read it
+    setSelectedModelIds(Array.from(newSet))
+    return newSet
+  }, [activeUseCaseId, selectionState, setSelectedModelIds])
 
   if (!activeUseCaseId) return null
 
@@ -55,10 +58,12 @@ export function ModelSelector() {
     setSelectionState(prev => {
       const next = new Set(prev.modelIds)
       if (next.has(modelId)) {
-        if (next.size > 1) next.delete(modelId) // Don't allow deselecting the last model
+        if (next.size > 1) next.delete(modelId)
       } else {
         next.add(modelId)
       }
+      // Push to store so detection pipeline can read it
+      setSelectedModelIds(Array.from(next))
       return { useCaseId: activeUseCaseId, modelIds: next }
     })
   }

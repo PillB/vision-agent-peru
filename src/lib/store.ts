@@ -345,6 +345,9 @@ interface PrototypeState {
     dominantColor: [number, number, number]
   }>
 
+  // Model selection (user-chosen models for the active use case)
+  selectedModelIds: string[]
+
   // Actions
   setActiveCamera: (id: string) => void
   setModelStatus: (s: PrototypeState['modelStatus'], err?: string | null) => void
@@ -358,6 +361,7 @@ interface PrototypeState {
   setAnomalyConfig: (c: Partial<AnomalyConfig>) => void
   setAgentConfig: (c: Partial<AgentConfig>) => void
   setLlmJudgeEnabled: (b: boolean) => void
+  setSelectedModelIds: (ids: string[]) => void
   acknowledge: (minutes: number) => void
   pushHit: (hit: AlertHit) => void
   acknowledgeHit: (id: string) => void
@@ -403,6 +407,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   agentReasoning: 'Agent idle.',
   agentCycleCount: 0,
   llmJudgeEnabled: true,
+  selectedModelIds: [],
   acknowledgedUntil: 0,
   escalationHistory: [],
 
@@ -474,6 +479,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   setAgentConfig: (c) => set((state) => ({ agentConfig: { ...state.agentConfig, ...c } })),
 
   setLlmJudgeEnabled: (b) => set({ llmJudgeEnabled: b }),
+  setSelectedModelIds: (ids) => set({ selectedModelIds: ids }),
 
   acknowledge: (minutes) => set({ acknowledgedUntil: Date.now() + minutes * 60_000 }),
 
@@ -540,5 +546,6 @@ if (typeof window !== 'undefined') {
     setCapabilityLevel: (lvl: string) => usePrototypeStore.getState().setCapabilityLevel(lvl as any),
     setRunning: (r: boolean) => usePrototypeStore.getState().setRunning(r),
     setLlmJudgeEnabled: (b: boolean) => usePrototypeStore.getState().setLlmJudgeEnabled(b),
+    setSelectedModelIds: (ids: string[]) => usePrototypeStore.getState().setSelectedModelIds(ids),
   };
 }
