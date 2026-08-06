@@ -1400,3 +1400,69 @@ Stage Summary:
 - Other HF use cases: 3 models (COCO-SSD + CLIP + pixel-anomaly)
 - COCO-SSD-only use cases: 2 models (COCO-SSD + pixel-anomaly where applicable)
 - 1566 adversarial tests all pass
+
+---
+Task ID: solarize-rebuild-phase-1
+Agent: orchestrator
+Task: Fix remaining 8/16 defects + evidence search pipeline + agentic response redesign + formal Playwright Test suite + commit & deploy
+
+Work Log:
+- D2 fix: Added __visionJudgeInFlight single-flight dedup in use-agent-actions.ts.
+  When a judge is already in flight for camera+useCase, subsequent calls are
+  skipped + logged instead of firing parallel requests.
+- D3 fix: /api/judge now accepts snapshotDataUrl (256x144 JPEG canvas crop).
+  Uses multimodal message format (text + image_url) so the VLM can actually
+  SEE the scene. Falls back to text-only when canvas is tainted.
+- D7 fix: agent.ts now filters every action through useCase.actions.
+  If a use case doesn't list 'send_email', the agent WILL NOT dispatch it.
+  Previously the agent hardcoded actions by tier, ignoring useCase.actions.
+- D9 fix: Added adapterImplemented: boolean to ModelOption. Registry
+  honestly marks yolov10n/yolos-tiny/segformer-b0/yolov8n-pose as
+  'adapter pending'. Camera-view filters HF models by adapterImplemented.
+  Model selector UI shows 'Adapter ready' / 'Adapter pending' badges.
+- D10 fix: License ranking now CASE-INSENSITIVE (was 'apache-2.0' but
+  stored as 'Apache-2.0' → rank 9 → never fired). Builtin pixel-anomaly
+  (size=0) treated as Infinity for sort, so it ranks last instead of first.
+- D11 fix: Every HF model now has a pinned revision hash. Reproducible
+  downloads — no silent drift when model authors push new commits.
+- D12 fix: Created src/lib/idb.ts (IndexedDB wrapper with graceful fallback).
+  Created src/lib/evidence.ts (full evidence search pipeline:
+  addEvidence, searchEvidence, findNearMisses, associateByTrack, exportEvidenceJSON).
+- D13 fix: Created formal @playwright/test suite (scripts/playwright/ui.spec.js)
+  with 14 tests using VISIBLE CONTROLS ONLY. No window.__visionStore,
+  no direct Zustand mutation, no raw DOM click dispatch.
+- D14 fix: Moved window.__visionStore from store.ts to src/lib/dev-store-hook.ts.
+  Loaded via dynamic import in page.tsx ONLY when NODE_ENV !== 'production'.
+  Next.js tree-shakes the dynamic import out of production builds.
+
+NEW MODULES:
+- src/lib/idb.ts (IndexedDB wrapper, 5 stores: alerts/reports/actions/evidence/meta)
+- src/lib/evidence.ts (evidence search pipeline)
+- src/lib/agentic-response.ts (9-stage agentic loop: OBSERVE → VALIDATE_EVIDENCE
+  → POLICY → JUDGE → VALIDATE_JUDGE → PROPOSE_ACTION → APPROVAL → EXECUTE → VERIFY_OUTCOME)
+- src/lib/dev-store-hook.ts (dev-only store hook, tree-shaken in production)
+- playwright.config.js + scripts/playwright/ui.spec.js (formal Playwright suite)
+
+TESTS:
+- Adversarial suite: 1751 → 1915 tests, ALL PASS (+164 new tests for
+  D2, D3, D7, D9, D10, D11, D12, D14, agentic-response, evidence)
+- Formal Playwright suite: 14 tests (visible controls only)
+- TypeScript: 0 new errors
+- Lint: clean
+
+DEPLOYMENT:
+- Commit 3a80a9a pushed to main
+- GitHub Actions workflow triggered manually (workflow_dispatch)
+- Build: SUCCESS (3m33s)
+- Live: https://pillb.github.io/vision-agent-peru/ returns 200 OK
+- Verified: window.__visionStore NOT present in production HTML (D14 confirmed)
+- All 16/16 defects now FIXED
+
+Stage Summary:
+- 8 of 16 remaining defects fixed (D2, D3, D7, D9, D10, D11, D12, D13, D14)
+- Evidence search pipeline implemented (IndexedDB + NL search + near-miss
+  detection + candidate association + JSON export)
+- Agentic response redesigned with 9-stage audit trail
+- Formal Playwright Test suite replaces ad-hoc scripts (visible controls only)
+- 1915/1915 adversarial tests pass
+- Deployed to GitHub Pages successfully
