@@ -9,6 +9,8 @@ import { AgentTrace } from './prototype/agent-trace'
 import { ActionsPanel } from './prototype/actions-panel'
 import { ReportsPanel } from './prototype/reports-panel'
 import { EvidencePanel } from './prototype/evidence-panel'
+import { NLSearchPanel } from './prototype/nl-search-panel'
+import { IncidentPanel } from './prototype/incident-panel'
 import { UseCaseSelector } from './prototype/use-case-selector'
 import { IdentityPanel } from './prototype/identity-panel'
 import { usePrototypeStore } from '@/lib/store'
@@ -57,6 +59,12 @@ export function Tab2Prototype() {
           <ActionsPanel />
           <ReportsPanel />
           <EvidencePanel />
+        </div>
+
+        {/* Round 3/4/5 row — NL search + incident state machine */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+          <NLSearchPanel />
+          <IncidentPanel />
         </div>
 
         {/* Help footer */}
