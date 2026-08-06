@@ -2942,6 +2942,382 @@ describe('Phase2: Formal Playwright test suite exists', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
+// ROUND 3: Local semantic evidence search — video indexer + query parser
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Round3: video-indexer module exists with required functions', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('src/lib/video-indexer.ts'),
+    'src/lib/video-indexer.ts must exist (Round 3)')
+  const code = fs.readFileSync('src/lib/video-indexer.ts', 'utf-8')
+  // Required functions per section 12
+  assert(code.includes('calculateVideoHash'), 'must have calculateVideoHash (content hash)')
+  assert(code.includes('extractVideoMetadata'), 'must have extractVideoMetadata')
+  assert(code.includes('estimateProcessingCost'), 'must have estimateProcessingCost')
+  assert(code.includes('sampleVideoFrames'), 'must have sampleVideoFrames (adaptive sampling)')
+  assert(code.includes('saveVideoMetadata'), 'must have saveVideoMetadata (IndexedDB)')
+  assert(code.includes('listIndexedVideos'), 'must have listIndexedVideos')
+  assert(code.includes('deleteVideoAndEvidence'), 'must have deleteVideoAndEvidence')
+  assert(code.includes('validateVideoFile'), 'must have validateVideoFile')
+  // Must support adaptive sampling strategies
+  assert(code.includes("'fixed'") || code.includes('"fixed"'), 'must support fixed sampling')
+  assert(code.includes("'motion-adaptive'") || code.includes('"motion-adaptive"'),
+    'must support motion-adaptive sampling')
+  assert(code.includes("'scene-change'") || code.includes('"scene-change"'),
+    'must support scene-change sampling')
+})
+
+describe('Round3: query-parser module exists with NL parsing', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('src/lib/query-parser.ts'),
+    'src/lib/query-parser.ts must exist (Round 3)')
+  const code = fs.readFileSync('src/lib/query-parser.ts', 'utf-8')
+  assert(code.includes('parseQuery'), 'must have parseQuery function')
+  assert(code.includes('checkSensitiveTerms'), 'must have checkSensitiveTerms (sensitive-term rejection)')
+  // Must parse Spanish + English
+  assert(code.includes("'persona'"), 'must recognize Spanish "persona"')
+  assert(code.includes("'person'"), 'must recognize English "person"')
+  assert(code.includes("'casaca'"), 'must recognize Spanish "casaca" (jacket)')
+  assert(code.includes("'jacket'"), 'must recognize English "jacket"')
+})
+
+describe('Round3: query parser rejects sensitive terms', () => {
+  const { parseQuery, checkSensitiveTerms } = require('../src/lib/query-parser')
+  // Race / ethnicity
+  const raceQuery = parseQuery('persona de raza negra con camisa azul')
+  assert(raceQuery.rejectedTerms.length > 0,
+    'race query must be rejected')
+  assert(raceQuery.rejectedTerms.includes('raza') || raceQuery.rejectedTerms.includes('negra'),
+    `race query should reject "raza"/"negra" — got ${JSON.stringify(raceQuery.rejectedTerms)}`)
+  // Religion
+  const religionQuery = parseQuery('muslim man with backpack')
+  assert(religionQuery.rejectedTerms.includes('muslim'),
+    'religion query must be rejected')
+  // Disability / medical
+  const disabilityQuery = parseQuery('hombre cojo con bastón')
+  assert(disabilityQuery.rejectedTerms.length > 0,
+    'disability query must be rejected')
+  // Subjective criminality
+  const crimeQuery = parseQuery('criminal sospechoso cerca del cajero')
+  assert(crimeQuery.rejectedTerms.includes('criminal') || crimeQuery.rejectedTerms.includes('sospechoso'),
+    'subjective criminality query must be rejected')
+})
+
+describe('Round3: query parser recognizes structured fields', () => {
+  const { parseQuery } = require('../src/lib/query-parser')
+  // Spanish complex query (from system prompt example)
+  const q = parseQuery('persona con casaca azul, mochila roja, caminando hacia la salida después de las 8 pm')
+  assert(q.objectType === 'person', `should detect person — got ${q.objectType}`)
+  assert(q.upperClothing === 'jacket', `should detect jacket — got ${q.upperClothing}`)
+  assert(q.upperColor === 'blue', `should detect blue — got ${q.upperColor}`)
+  assert(q.carriedObject === 'backpack', `should detect backpack — got ${q.carriedObject}`)
+  assert(q.directionTarget === 'exit', `should detect exit — got ${q.directionTarget}`)
+  assert(q.visibleAction === 'walking', `should detect walking — got ${q.visibleAction}`)
+  assert(q.timeStart === '20:00', `should detect 20:00 — got ${q.timeStart}`)
+})
+
+describe('Round3: query parser handles English queries', () => {
+  const { parseQuery } = require('../src/lib/query-parser')
+  const q = parseQuery('man in red jacket with backpack walking towards exit after 8 pm')
+  assert(q.objectType === 'person', `should detect person — got ${q.objectType}`)
+  assert(q.upperClothing === 'jacket', `should detect jacket — got ${q.upperClothing}`)
+  assert(q.upperColor === 'red', `should detect red — got ${q.upperColor}`)
+  assert(q.carriedObject === 'backpack', `should detect backpack — got ${q.carriedObject}`)
+  assert(q.directionTarget === 'exit', `should detect exit — got ${q.directionTarget}`)
+  assert(q.visibleAction === 'walking', `should detect walking — got ${q.visibleAction}`)
+})
+
+describe('Round3: query parser provides transparent explanation', () => {
+  const { parseQuery } = require('../src/lib/query-parser')
+  const q = parseQuery('persona con casaca azul')
+  assert(q.explanation.length > 0, 'must provide non-empty explanation')
+  assert(q.explanation.includes('person'), 'explanation should mention detected person')
+  assert(q.explanation.includes('jacket'), 'explanation should mention detected jacket')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ROUND 4: Candidate association + absence assessment
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Round4: association module exists with required functions', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('src/lib/association.ts'),
+    'src/lib/association.ts must exist (Round 4)')
+  const code = fs.readFileSync('src/lib/association.ts', 'utf-8')
+  assert(code.includes('proposeAssociation'), 'must have proposeAssociation')
+  assert(code.includes('findCrossVideoCandidates'), 'must have findCrossVideoCandidates')
+  assert(code.includes('assessAbsence'), 'must have assessAbsence (absence workflow)')
+  assert(code.includes('CameraTopology'), 'must have CameraTopology interface')
+  assert(code.includes('CandidateAssociation'), 'must have CandidateAssociation interface')
+})
+
+describe('Round4: appearance similarity disclaimer is permanent', () => {
+  const { APPEARANCE_DISCLAIMER } = require('../src/lib/association')
+  assert(typeof APPEARANCE_DISCLAIMER === 'string', 'disclaimer must be a string')
+  assert(APPEARANCE_DISCLAIMER.includes('does not establish identity'),
+    'disclaimer must say "does not establish identity" (section 2)')
+})
+
+describe('Round4: proposeAssociation returns three outcomes', () => {
+  const { proposeAssociation } = require('../src/lib/association')
+  // Create two evidence records with high-similarity embeddings
+  const makeEmb = (vals: number[]) => new Float32Array(vals)
+  const high1: any = {
+    id: 'e1', cameraId: 'camA', timestamp: Date.now() - 60000,
+    embedding: makeEmb([1, 0, 0, 0]),
+    detection: { class: 'person', score: 0.9, bbox: [0, 0, 100, 100] },
+  }
+  const high2: any = {
+    id: 'e2', cameraId: 'camA', timestamp: Date.now(),
+    embedding: makeEmb([1, 0, 0, 0]),
+    detection: { class: 'person', score: 0.9, bbox: [0, 0, 100, 100] },
+  }
+  const low2: any = {
+    id: 'e3', cameraId: 'camB', timestamp: Date.now(),
+    embedding: makeEmb([0, 1, 0, 0]),
+    detection: { class: 'person', score: 0.9, bbox: [0, 0, 100, 100] },
+  }
+  const plausible = proposeAssociation(high1, high2)
+  assert(plausible.decision === 'plausible',
+    `identical embeddings should be plausible — got ${plausible.decision} (score ${plausible.appearanceScore})`)
+  const incompatible = proposeAssociation(high1, low2)
+  assert(incompatible.decision === 'incompatible',
+    `orthogonal embeddings should be incompatible — got ${incompatible.decision} (score ${incompatible.appearanceScore})`)
+  // Three possible outcomes: plausible, insufficient, incompatible
+  assert(['plausible', 'insufficient', 'incompatible'].includes(plausible.decision),
+    'decision must be one of three outcomes')
+})
+
+describe('Round4: open-set rejection prevents forced merge', () => {
+  const { proposeAssociation } = require('../src/lib/association')
+  // Even if topology + temporal scores are high, very low appearance
+  // must NOT be marked as plausible (open-set rejection).
+  const high1: any = {
+    id: 'e1', cameraId: 'camA', timestamp: Date.now() - 60000,
+    embedding: new Float32Array([1, 0, 0, 0]),
+    detection: { class: 'person', score: 0.9, bbox: [0, 0, 100, 100] },
+  }
+  const different: any = {
+    id: 'e2', cameraId: 'camA', timestamp: Date.now(),
+    embedding: new Float32Array([0, 0, 0, 1]),  // orthogonal
+    detection: { class: 'person', score: 0.9, bbox: [0, 0, 100, 100] },
+  }
+  const assoc = proposeAssociation(high1, different)
+  assert(assoc.decision === 'incompatible',
+    `open-set: orthogonal embeddings must be incompatible — got ${assoc.decision}`)
+  assert(!assoc.conflicts.includes('Open-set rejection') || assoc.decision !== 'plausible',
+    'open-set rejection must prevent plausible label')
+})
+
+describe('Round4: absence assessment never says "not in the video"', () => {
+  const { assessAbsence } = require('../src/lib/association')
+  // Insufficient coverage → must be inconclusive
+  const result = assessAbsence(
+    new Float32Array([1, 0, 0, 0]),
+    'man in blue jacket',
+    [],
+    {
+      videosSearched: ['v1'],
+      timeRanges: [{ videoId: 'v1', startSeconds: 0, endSeconds: 60 }],
+      percentSampled: 30,  // low coverage
+      failedIntervals: [],
+      detectorRecallEstimate: 0.5,  // low recall
+    },
+    0.65,
+  )
+  assert(result.result === 'inconclusive',
+    `low coverage must be inconclusive — got ${result.result}`)
+  assert(!result.explanation.toLowerCase().includes('not in the video'),
+    'explanation must NOT say "not in the video" (section 17)')
+  assert(result.explanation.includes('inconclusive') || result.explanation.includes('Inconclusive'),
+    'explanation must include "inconclusive"')
+  assert(result.modelLimitations.length > 0,
+    'must list model limitations')
+})
+
+describe('Round4: absence assessment returns candidate_found for high match', () => {
+  const { assessAbsence } = require('../src/lib/association')
+  const evidence: any[] = [{
+    id: 'e1', cameraId: 'camA', timestamp: Date.now(),
+    embedding: new Float32Array([1, 0, 0, 0]),
+    detection: { class: 'person', score: 0.9, bbox: [0, 0, 100, 100] },
+  }]
+  const result = assessAbsence(
+    new Float32Array([1, 0, 0, 0]),  // identical embedding
+    'man in blue jacket',
+    evidence,
+    {
+      videosSearched: ['v1'],
+      timeRanges: [{ videoId: 'v1', startSeconds: 0, endSeconds: 600 }],
+      percentSampled: 90,  // good coverage
+      failedIntervals: [],
+      detectorRecallEstimate: 0.85,
+    },
+    0.65,
+  )
+  assert(result.result === 'candidate_found',
+    `high match + good coverage should be candidate_found — got ${result.result}`)
+  assert(result.explanation.includes('human review required'),
+    'candidate_found must require human review')
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ROUND 5: Incident state machine + idempotent actions + approval workflow
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Round5: incident-state-machine module exists', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('src/lib/incident-state-machine.ts'),
+    'src/lib/incident-state-machine.ts must exist (Round 5)')
+  const code = fs.readFileSync('src/lib/incident-state-machine.ts', 'utf-8')
+  // Must define all 12 states per section 20
+  const states = ['observed', 'candidate', 'evidence_validated', 'policy_evaluated',
+    'action_proposed', 'pending_approval', 'executing', 'outcome_verification',
+    'succeeded', 'failed', 'compensating', 'closed']
+  for (const s of states) {
+    assert(code.includes(`'${s}'`), `must define state: ${s}`)
+  }
+  assert(code.includes('canTransition'), 'must have canTransition (state machine validation)')
+  assert(code.includes('transitionIncident'), 'must have transitionIncident')
+  assert(code.includes('createIncident'), 'must have createIncident')
+  assert(code.includes('getIdempotencyKey'), 'must have getIdempotencyKey (idempotency)')
+  assert(code.includes('checkIdempotency'), 'must have checkIdempotency')
+  assert(code.includes('recordActionExecution'), 'must have recordActionExecution')
+  assert(code.includes('requiresApproval'), 'must have requiresApproval (approval workflow)')
+  assert(code.includes('orderActionsSequentially'), 'must have orderActionsSequentially (judge gating)')
+  assert(code.includes('computeOutcome'), 'must have computeOutcome (outcome verification)')
+  assert(code.includes('getProfileCapabilities'), 'must have getProfileCapabilities (static profiles)')
+  assert(code.includes('detectProfile'), 'must have detectProfile')
+})
+
+describe('Round5: state machine rejects invalid transitions', () => {
+  const { canTransition, createIncident, transitionIncident } = require('../src/lib/incident-state-machine')
+  // observed → candidate: valid
+  assert(canTransition('observed', 'candidate'), 'observed → candidate should be valid')
+  // observed → executing: INVALID (must go through candidate → evidence_validated → ...)
+  assert(!canTransition('observed', 'executing'), 'observed → executing must be INVALID (skip stages)')
+  // candidate → executing: INVALID
+  assert(!canTransition('candidate', 'executing'), 'candidate → executing must be INVALID')
+  // action_proposed → executing: valid (skipping approval if not required)
+  assert(canTransition('action_proposed', 'executing'), 'action_proposed → executing should be valid')
+  // pending_approval → executing: valid (after approval)
+  assert(canTransition('pending_approval', 'executing'), 'pending_approval → executing should be valid')
+  // closed → anything: INVALID (terminal state)
+  assert(!canTransition('closed', 'observed'), 'closed → observed must be INVALID (terminal)')
+})
+
+describe('Round5: transitionIncident throws on invalid transition', () => {
+  const { createIncident, transitionIncident } = require('../src/lib/incident-state-machine')
+  const incident = createIncident('camA', 'intrusion')
+  let threw = false
+  try {
+    transitionIncident(incident, 'executing', 'invalid skip')
+  } catch (e) {
+    threw = true
+  }
+  assert(threw, 'transitionIncident must throw on invalid transition (observed → executing)')
+})
+
+describe('Round5: idempotency key is deterministic', () => {
+  const { getIdempotencyKey } = require('../src/lib/incident-state-machine')
+  const key1 = getIdempotencyKey('inc-1', 'send_email')
+  const key2 = getIdempotencyKey('inc-1', 'send_email')
+  const key3 = getIdempotencyKey('inc-1', 'escalate')
+  const key4 = getIdempotencyKey('inc-2', 'send_email')
+  assert(key1 === key2, 'same incident + action must produce same key (idempotency)')
+  assert(key1 !== key3, 'different action must produce different key')
+  assert(key1 !== key4, 'different incident must produce different key')
+})
+
+describe('Round5: recordActionExecution is idempotent for succeeded actions', () => {
+  const { createIncident, recordActionExecution, checkIdempotency } = require('../src/lib/incident-state-machine')
+  let incident = createIncident('camA', 'intrusion')
+  // First execution succeeds
+  const r1 = recordActionExecution(incident, 'send_email', 'succeeded', { response: { ok: true } })
+  incident = r1.incident
+  assert(r1.wasNew, 'first execution should be new')
+  // Second execution — should NOT re-execute (idempotent)
+  const r2 = recordActionExecution(incident, 'send_email', 'succeeded')
+  assert(!r2.wasNew, 'second execution should NOT be new (idempotent)')
+  assert(r2.execution.attempts === 1, 'attempts should remain 1 (idempotent)')
+  // Check via checkIdempotency
+  const existing = checkIdempotency(incident, 'send_email')
+  assert(existing !== null, 'checkIdempotency should find existing record')
+  assert(existing?.status === 'succeeded', 'existing record status should be succeeded')
+})
+
+describe('Round5: approval required for external actions', () => {
+  const { requiresApproval, isAutoAllowedOnGhPages } = require('../src/lib/incident-state-machine')
+  // External actions require approval
+  assert(requiresApproval('send_email'), 'send_email must require approval')
+  assert(requiresApproval('escalate'), 'escalate must require approval')
+  // Local actions do NOT require approval
+  assert(!requiresApproval('badge'), 'badge must NOT require approval')
+  assert(!requiresApproval('log_hit'), 'log_hit must NOT require approval')
+  assert(!requiresApproval('snapshot'), 'snapshot must NOT require approval')
+  // GH Pages auto-allowed actions
+  assert(isAutoAllowedOnGhPages('badge'), 'badge must be auto-allowed on GH Pages')
+  assert(isAutoAllowedOnGhPages('log_hit'), 'log_hit must be auto-allowed on GH Pages')
+  assert(isAutoAllowedOnGhPages('snapshot'), 'snapshot must be auto-allowed on GH Pages')
+  assert(!isAutoAllowedOnGhPages('send_email'), 'send_email must NOT be auto-allowed on GH Pages')
+  assert(!isAutoAllowedOnGhPages('escalate'), 'escalate must NOT be auto-allowed on GH Pages')
+})
+
+describe('Round5: orderActionsSequentially puts judge BEFORE escalate', () => {
+  const { orderActionsSequentially } = require('../src/lib/incident-state-machine')
+  // Even if escalate comes first in the input, judge must come first in the output
+  const ordered = orderActionsSequentially(['escalate', 'send_email', 'llm_judge', 'badge'])
+  const judgeIdx = ordered.indexOf('llm_judge')
+  const escalateIdx = ordered.indexOf('escalate')
+  assert(judgeIdx < escalateIdx,
+    `judge must come BEFORE escalate (got judge=${judgeIdx}, escalate=${escalateIdx}) — section 20 forbids parallel`)
+  assert(judgeIdx === 0, `judge must be FIRST (got ${ordered[0]})`)
+})
+
+describe('Round5: getProfileCapabilities distinguishes GH Pages from secure service', () => {
+  const { getProfileCapabilities } = require('../src/lib/incident-state-machine')
+  const gh = getProfileCapabilities('github_pages')
+  const secure = getProfileCapabilities('secure_service')
+  const dev = getProfileCapabilities('development')
+  // GH Pages: no API, no LLM, no real email
+  assert(!gh.apiRoutesAvailable, 'GH Pages must have no API routes')
+  assert(!gh.llmJudgeAvailable, 'GH Pages must have no LLM judge')
+  assert(!gh.realEmailAvailable, 'GH Pages must have no real email')
+  assert(gh.badge.includes('local-only'), 'GH Pages badge must say "local-only"')
+  // Secure service: full capabilities
+  assert(secure.apiRoutesAvailable, 'secure service must have API routes')
+  assert(secure.llmJudgeAvailable, 'secure service must have LLM judge')
+  assert(secure.realEmailAvailable, 'secure service must have real email')
+  assert(secure.badge.includes('authenticated'), 'secure service badge must say "authenticated"')
+  // Development: API + LLM but simulated email
+  assert(dev.apiRoutesAvailable, 'development must have API routes')
+  assert(dev.llmJudgeAvailable, 'development must have LLM judge')
+  assert(!dev.realEmailAvailable, 'development must NOT have real email (simulated)')
+})
+
+describe('Round5: computeOutcome retries on failure', () => {
+  const { createIncident, recordActionExecution, computeOutcome } = require('../src/lib/incident-state-machine')
+  let incident = createIncident('camA', 'intrusion')
+  // First attempt fails
+  const r1 = recordActionExecution(incident, 'send_email', 'failed', { maxAttempts: 3 })
+  incident = r1.incident
+  const outcome1 = computeOutcome(incident, 'send_email', r1.execution)
+  assert(outcome1.shouldRetry, 'first failure should trigger retry')
+  assert(outcome1.nextState === 'executing', 'retry should stay in executing state')
+  // After max attempts, should compensate or fail
+  let exec = r1.execution
+  for (let i = 0; i < 3; i++) {
+    const r = recordActionExecution(incident, 'send_email', 'failed', { maxAttempts: 3 })
+    incident = r.incident
+    exec = r.execution
+  }
+  const finalOutcome = computeOutcome(incident, 'send_email', exec)
+  assert(!finalOutcome.shouldRetry, 'should NOT retry after max attempts')
+  assert(finalOutcome.nextState === 'failed' || finalOutcome.nextState === 'compensating',
+    `should fail or compensate after max attempts — got ${finalOutcome.nextState}`)
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
 // FINAL SUMMARY
 // ═══════════════════════════════════════════════════════════════════════════
 
