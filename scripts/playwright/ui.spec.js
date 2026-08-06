@@ -129,9 +129,9 @@ test('start analysis button changes to pause after click', async ({ page }) => {
   await clickPrototypeTab(page)
   await waitForModelReady(page)
 
-  // Find the start button via testid
+  // Find the start button via testid. Use force + noWaitAfter for stability.
   const startBtn = page.getByTestId('start-pause-button')
-  await startBtn.click()
+  await startBtn.click({ force: true, noWaitAfter: true })
   await page.waitForTimeout(2000)
 
   // After starting, the button text should change to "Pause"
@@ -143,6 +143,7 @@ test('start analysis button changes to pause after click', async ({ page }) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 test('no critical console errors during normal operation', async ({ page }) => {
+  test.setTimeout(120_000)  // 2 min — model load + 8s run + stop
   await ensureServer(page)
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
@@ -159,10 +160,15 @@ test('no critical console errors during normal operation', async ({ page }) => {
   await clickPrototypeTab(page)
   await waitForModelReady(page)
 
-  // Start + wait + stop
-  await page.getByTestId('start-pause-button').click()
+  // Start + wait + stop. Use force:true + noWaitAfter + long timeout on
+  // the clicks because the canvas overlay repaints every 1.5s, which can
+  // make Playwright's actionability check think the button is unstable,
+  // and clicking it triggers a re-render that Playwright may interpret as
+  // a pending navigation.
+  const clickOpts = { force: true, noWaitAfter: true, timeout: 60_000 }
+  await page.getByTestId('start-pause-button').click(clickOpts)
   await page.waitForTimeout(8000)
-  await page.getByTestId('start-pause-button').click()
+  await page.getByTestId('start-pause-button').click(clickOpts)
 
   // Should have no critical errors
   expect(errors).toEqual([])
@@ -173,6 +179,7 @@ test('no critical console errors during normal operation', async ({ page }) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 test('fire use case on fire camera produces detections', async ({ page }) => {
+  test.setTimeout(120_000)  // 2 min — model load + 12s detection
   await ensureServer(page)
   await clickPrototypeTab(page)
   await waitForModelReady(page)
@@ -186,7 +193,7 @@ test('fire use case on fire camera produces detections', async ({ page }) => {
   await page.waitForTimeout(1500)
 
   // Start analysis
-  await page.getByTestId('start-pause-button').click()
+  await page.getByTestId('start-pause-button').click({ force: true, noWaitAfter: true })
   await page.waitForTimeout(12000)
 
   // Should see SOME detection evidence (alert, trace, or detection count)
@@ -195,7 +202,7 @@ test('fire use case on fire camera produces detections', async ({ page }) => {
   expect(hasDetection).toBeTruthy()
 
   // Stop analysis
-  await page.getByTestId('start-pause-button').click()
+  await page.getByTestId('start-pause-button').click({ force: true, noWaitAfter: true })
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
