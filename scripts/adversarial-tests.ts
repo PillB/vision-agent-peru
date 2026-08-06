@@ -14,7 +14,7 @@
 
 import { computeAnomalyStats, DEFAULT_ANOMALY_CONFIG, type AnomalySample, type AnomalyConfig } from '../src/lib/anomaly'
 import { decide, DEFAULT_AGENT_CONFIG, type AgentContext } from '../src/lib/agent'
-import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures, type AppearanceFeatures } from '../src/lib/identity'
+import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures, type AppearanceFeatures } from '../src/lib/identity'
 import { USE_CASES, LEVEL_LABELS, type UseCase, type CapabilityLevel } from '../src/lib/use-cases'
 
 // ─── Test framework (minimal, no deps) ──────────────────────────────────────
@@ -460,8 +460,8 @@ describe('Identity: Tracker filters by class', () => {
   assert(carTracks.length >= 1, 'should track car separately')
 })
 
-describe('Identity: GlobalIdentityManager with empty gallery', () => {
-  const mgr = new GlobalIdentityManager(0.6, 24)
+describe('Identity: AppearanceTracker with empty gallery', () => {
+  const mgr = new AppearanceTracker(0.6, 24)
   const id = mgr.matchOrCreate(1, 'person', makeMockAppearance(), 'cam1', [10, 10, 50, 80], 0.9)
   assert(id.startsWith('id-'), 'should create new identity with id- prefix')
   const identities = mgr.getIdentities()
@@ -469,14 +469,14 @@ describe('Identity: GlobalIdentityManager with empty gallery', () => {
 })
 
 describe('Identity: Same local track maps to same global ID', () => {
-  const mgr = new GlobalIdentityManager(0.6, 24)
+  const mgr = new AppearanceTracker(0.6, 24)
   const id1 = mgr.matchOrCreate(1, 'person', makeMockAppearance(), 'cam1', [10, 10, 50, 80], 0.9)
   const id2 = mgr.matchOrCreate(1, 'person', makeMockAppearance(), 'cam1', [10, 10, 50, 80], 0.9)
   assert(id1 === id2, 'same local track should map to same global ID')
 })
 
 describe('Identity: Different appearances create different IDs', () => {
-  const mgr = new GlobalIdentityManager(0.99, 24) // very high threshold
+  const mgr = new AppearanceTracker(0.99, 24) // very high threshold
   const appearance1: AppearanceFeatures = {
     aspectRatio: 0.5, relativeSize: 0.1,
     dominantColor: [128, 128, 128],
@@ -494,7 +494,7 @@ describe('Identity: Different appearances create different IDs', () => {
 })
 
 describe('Identity: TTL expiry removes old identities', () => {
-  const mgr = new GlobalIdentityManager(0.6, 0.0001) // 0.36 seconds TTL
+  const mgr = new AppearanceTracker(0.6, 0.0001) // 0.36 seconds TTL
   mgr.matchOrCreate(1, 'person', makeMockAppearance(), 'cam1', [10, 10, 50, 80], 0.9)
   // Wait for TTL to expire
   const identitiesBefore = mgr.getIdentities().length
@@ -505,7 +505,7 @@ describe('Identity: TTL expiry removes old identities', () => {
 })
 
 describe('Identity: Cross-camera same appearance matches', () => {
-  const mgr = new GlobalIdentityManager(0.3, 24) // low threshold for matching
+  const mgr = new AppearanceTracker(0.3, 24) // low threshold for matching
   const appearance = makeMockAppearance()
   const id1 = mgr.matchOrCreate(1, 'person', appearance, 'cam1', [10, 10, 50, 80], 0.9)
   const id2 = mgr.matchOrCreate(2, 'person', appearance, 'cam2', [20, 20, 50, 80], 0.9)
@@ -520,7 +520,7 @@ describe('Use Cases: All 15 use cases have required fields', () => {
   USE_CASES.forEach((uc) => {
     assert(uc.id.length > 0, `use case ${uc.id} should have non-empty id`)
     assert(uc.name.length > 0, `use case ${uc.id} should have non-empty name`)
-    assert(uc.detectionClasses.length > 0, `use case ${uc.id} should have detectionClasses`)
+    assert(Array.isArray(uc.detectionClasses), `use case ${uc.id} should have detectionClasses array (may be empty for specialized use cases)`)
     assert(uc.ruleType.length > 0, `use case ${uc.id} should have ruleType`)
     assert(uc.actions.length > 0, `use case ${uc.id} should have actions`)
     assert(uc.level !== undefined, `use case ${uc.id} should have level`)
@@ -585,7 +585,7 @@ describe('Stress: Tracker with 100 detections per frame', () => {
 })
 
 describe('Stress: Identity gallery with 500 identities', () => {
-  const mgr = new GlobalIdentityManager(0.99, 24) // high threshold = no matches = all new
+  const mgr = new AppearanceTracker(0.99, 24) // high threshold = no matches = all new
   const start = performance.now()
   let created = 0
   for (let i = 0; i < 500; i++) {
@@ -646,7 +646,7 @@ describe('Race: Multiple rapid tracker updates', () => {
 })
 
 describe('Race: Identity manager concurrent matchOrCreate calls', () => {
-  const mgr = new GlobalIdentityManager(0.3, 24)
+  const mgr = new AppearanceTracker(0.3, 24)
   const appearance = makeMockAppearance()
   // Simulate concurrent calls with same appearance
   const ids: string[] = []
@@ -1284,7 +1284,7 @@ describe('Regression: Fire use case has specializedClassName "fire"', () => {
   const fireUseCase = USE_CASES.find(uc => uc.id === 'fire_smoke')!
   assert(fireUseCase.specializedClassName === 'fire', `fire_smoke should have specializedClassName='fire', got '${fireUseCase.specializedClassName}'`)
   assert(!fireUseCase.detectionClasses.includes('fire'), 'fire should NOT be in detectionClasses (COCO-SSD cannot detect fire)')
-  assert(fireUseCase.detectionClasses.includes('person'), 'fire_smoke should still track person for context')
+  assert(!fireUseCase.detectionClasses.includes('person'), 'fire_smoke should NOT track person (D5 fix: person should not trigger fire alerts)')
 })
 
 describe('Regression: All HF model use cases have specializedClassName', () => {
@@ -2409,8 +2409,8 @@ describe('Regression R14: drawBoxes renders ALL detection classes (not just pers
   // The new code iterates ALL dets
   assert(!cameraViewCode.includes("dets.filter((d) => d.class === 'person')"), 'drawBoxes should NOT filter to only persons')
   assert(cameraViewCode.includes('CLASS_COLORS'), 'drawBoxes should use CLASS_COLORS map')
-  assert(cameraViewCode.includes("'fire'"), 'CLASS_COLORS should include fire')
-  assert(cameraViewCode.includes("'graffiti'"), 'CLASS_COLORS should include graffiti')
+  assert(cameraViewCode.includes("fire:"), 'CLASS_COLORS should include fire')
+  assert(cameraViewCode.includes("graffiti:"), 'CLASS_COLORS should include graffiti')
 })
 
 describe('Regression R14: Synthetic detections have varying bbox (not all same)', () => {
@@ -2442,7 +2442,7 @@ describe('Round 1: post_quake description does NOT claim YOLOv11', () => {
 describe('Round 1: flood_watch description does NOT claim segmentation', () => {
   const uc = USE_CASES.find(u => u.id === 'flood_watch')!
   assert(!uc.description.includes('Segmentación'), 'flood_watch should NOT claim segmentation')
-  assert(!uc.descriptionEn.includes('segmentation'), 'flood_watch En should NOT claim segmentation')
+  assert(uc.descriptionEn.includes('No level segmentation') || uc.descriptionEn.includes('No segmentation'), 'flood_watch should explicitly state no segmentation')
   assert(uc.descriptionEn.includes('No level segmentation'), 'flood_watch should explicitly state no segmentation')
 })
 

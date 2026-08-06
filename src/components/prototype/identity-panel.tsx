@@ -15,12 +15,12 @@ import { Users, Car, Info, Clock, Eye } from 'lucide-react'
  * quién entró, a qué hora, y cuántas veces lo vio."
  *
  * Technical:
- * Displays the global identity gallery maintained by GlobalIdentityManager.
- * Each identity has: globalId, type (person/vehicle), first/last seen,
+ * Displays the global identity gallery maintained by AppearanceTracker.
+ * Each identity has: trackId, type (person/vehicle), first/last seen,
  * observation count, dominant color swatch, and optional plate string.
  */
 export function IdentityPanel() {
-  const identities = usePrototypeStore((s) => s.trackedIdentities)
+  const identities = usePrototypeStore((s) => s.appearanceTracks)
 
   const persons = identities.filter((i) => i.type === 'person')
   const vehicles = identities.filter((i) => i.type === 'vehicle')
@@ -30,7 +30,7 @@ export function IdentityPanel() {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-emerald-600" />
-          <h3 className="text-sm font-semibold text-zinc-950">Identidades Rastreadas</h3>
+          <h3 className="text-sm font-semibold text-zinc-950">Appearance Tracks</h3>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-[10px] font-mono">{persons.length} 👤</Badge>
@@ -58,7 +58,7 @@ export function IdentityPanel() {
           <div className="space-y-1.5">
             {identities.slice(0, 30).map((id) => (
               <div
-                key={id.globalId}
+                key={id.trackId}
                 className="rounded-md border border-zinc-100 bg-zinc-50/50 p-2 flex items-center gap-2"
               >
                 {/* Color swatch */}
@@ -79,7 +79,7 @@ export function IdentityPanel() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono text-zinc-950 truncate">
-                      {id.globalId.slice(0, 12)}
+                      {id.trackId.slice(0, 12)}
                     </span>
                     {id.plateString && (
                       <Badge className="text-[9px] h-4 px-1 bg-amber-100 text-amber-800 hover:bg-amber-100">

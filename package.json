@@ -10,7 +10,10 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "test": "npx tsx scripts/adversarial-tests.ts",
+    "test:pw": "node scripts/pw-r3r4-validation.js",
+    "test:all": "npm run test && npm run test:pw"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

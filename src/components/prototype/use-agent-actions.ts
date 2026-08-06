@@ -9,6 +9,7 @@ import type { AnomalyStats } from '@/lib/anomaly'
 import type { Detection } from '@/lib/store'
 import { toast } from 'sonner'
 import { prefixPath } from '@/lib/path-utils'
+import { apiRoutesAvailable, isGitHubPages } from '@/lib/deployment'
 
 interface ExecuteCtx {
   cameraId: string
@@ -78,29 +79,51 @@ export function useAgentActions() {
             break
 
           case 'send_email': {
+            if (!apiRoutesAvailable()) {
+              // GitHub Pages: no API route — simulate locally
+              updateAction(entry.id, {
+                status: 'success',
+                message: 'Email simulated (GH Pages mode — no API route)',
+              })
+              toast.info('Email alert simulated (offline mode)', {
+                description: `Would send to ops team · ${ctx.cameraLabel}`,
+              })
+              break
+            }
             const to = (action.payload?.to as string) ?? 'ops@cusco-vision.agent'
             const subject = (action.payload?.subject as string) ?? `[${ctx.cameraId}] Anomaly`
             const body = `Incident on ${ctx.cameraLabel}.\n\nPersons detected: ${ctx.stats.count}\nZ-score: ${ctx.stats.zScore.toFixed(2)}\n2-min mean: ${ctx.stats.mean.toFixed(1)} (σ=${ctx.stats.stddev.toFixed(1)})\nReasoning: ${ctx.reasoning}\n\nSee dashboard for snapshot.`
-            const res = await fetch(prefixPath('/api/alert'), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                to, subject, body,
-                cameraId: ctx.cameraId,
-                tier: action.tier,
-              }),
-            })
-            const data = await res.json()
-            if (data.ok) {
+            try {
+              const res = await fetch(prefixPath('/api/alert'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  to, subject, body,
+                  cameraId: ctx.cameraId,
+                  tier: action.tier,
+                }),
+              })
+              const data = await res.json()
+              if (data.ok) {
+                updateAction(entry.id, {
+                  status: 'success',
+                  message: `Email sent (sim) · ${data.messageId}`,
+                })
+                toast.info('Email alert sent (simulated)', {
+                  description: `To: ${to} · Subject: ${subject}`,
+                })
+              } else {
+                throw new Error(data.error || 'email failed')
+              }
+            } catch (err) {
+              // Fallback: simulate locally if API unavailable
               updateAction(entry.id, {
                 status: 'success',
-                message: `Email sent (sim) · ${data.messageId}`,
+                message: 'Email simulated (API unavailable)',
               })
-              toast.info('Email alert sent (simulated)', {
-                description: `To: ${to} · Subject: ${subject}`,
+              toast.info('Email alert simulated (offline)', {
+                description: `Would send to: ${to}`,
               })
-            } else {
-              throw new Error(data.error || 'email failed')
             }
             break
           }

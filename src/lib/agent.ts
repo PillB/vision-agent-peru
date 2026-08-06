@@ -221,20 +221,18 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
     }
 
     case 'frame_diff': {
-      // Frame-differencing logic — would compare current frame to baseline.
-      // For now, use z-score as a proxy (pixel-change anomaly registers as count anomaly).
-      // Full frame-diff implementation would compare canvas ImageData buffers.
-      // ALSO: if trackedCount > 0 (HF model or COCO-SSD detected something),
-      // trigger — this makes frame_diff use cases (graffiti, flood, landslide,
-      // post_quake, slip_hazard) actually fire when the specialized model
-      // detects the event, even without a z-score anomaly.
+      // Pixel-anomaly detection runs in camera-view.tsx BEFORE the agent.
+      // It injects specialized detections (fire, flood, graffiti, etc.) into
+      // the detection array. The agent sees these as trackedCount > 0.
+      // The z-score check is a SECONDARY trigger for detection-count anomalies
+      // (e.g., sudden crowd increase). The primary trigger is trackedCount.
       const threshold = useCase.params.frameDiffThreshold || 0.15
-      if (stats.peakZ > config.t1Z) {
+      if (trackedCount > 0) {
         ruleTriggered = true
-        ruleReason = `Frame-diff anomaly: peakZ=${stats.peakZ.toFixed(2)} (proxy for pixel change > ${threshold})`
-      } else if (trackedCount > 0) {
+        ruleReason = `Pixel-anomaly or specialized model detected ${trackedCount} object(s)`
+      } else if (stats.peakZ > config.t1Z) {
         ruleTriggered = true
-        ruleReason = `Frame-diff: specialized model detected ${trackedCount} object(s) (count-based trigger)`
+        ruleReason = `Detection-count anomaly: peakZ=${stats.peakZ.toFixed(2)} (z-score proxy)`
       }
       break
     }

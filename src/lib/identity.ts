@@ -42,7 +42,7 @@ export interface AppearanceFeatures {
 /** A persistent identity for a person or vehicle. */
 export interface TrackedIdentity {
   /** Stable unique ID (UUID-like). */
-  globalId: string
+  trackId: string
   /** Type of tracked object. */
   type: 'person' | 'vehicle'
   /** Local track ID within current feed. */
@@ -199,9 +199,9 @@ export class WithinFeedTracker {
  * because these features are weak — the primary value is tracking continuity
  * within a feed, not reliable cross-camera re-ID.
  */
-export class GlobalIdentityManager {
+export class AppearanceTracker {
   private gallery: Map<string, TrackedIdentity> = new Map()
-  private localToGlobal: Map<string, string> = new Map() // "camId:localId" → globalId
+  private localToGlobal: Map<string, string> = new Map() // "camId:localId" → trackId
   private matchThreshold: number
   private ttlHours: number
 
@@ -269,7 +269,7 @@ export class GlobalIdentityManager {
       // Create new identity
       gid = `id-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       const identity: TrackedIdentity = {
-        globalId: gid,
+        trackId: gid,
         type,
         localTrackId,
         appearance,

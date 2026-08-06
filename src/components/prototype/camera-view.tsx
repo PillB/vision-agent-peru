@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { decide } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
-import { WithinFeedTracker, GlobalIdentityManager, extractAppearanceFeatures } from '@/lib/identity'
+import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from '@/lib/identity'
 import { computePixelAnomaly, computeAnomalyBbox, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
 import { prefixPath } from '@/lib/path-utils'
@@ -45,7 +45,7 @@ export function CameraView() {
   const lastFpsTickRef = useRef<{ t: number; n: number }>({ t: Date.now(), n: 0 })
   const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number } | null>(null)
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
-  const identityMgrRef = useRef<GlobalIdentityManager>(new GlobalIdentityManager(0.6, 24))
+  const appearanceTrackerRef = useRef<AppearanceTracker>(new AppearanceTracker(0.6, 24))
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
 
@@ -71,7 +71,7 @@ export function CameraView() {
   const setAgentState = usePrototypeStore((s) => s.setAgentState)
   const pushTrace = usePrototypeStore((s) => s.pushTrace)
   const pushHit = usePrototypeStore((s) => s.pushHit)
-  const setTrackedIdentities = usePrototypeStore((s) => s.setTrackedIdentities)
+  const setAppearanceTracks = usePrototypeStore((s) => s.setAppearanceTracks)
 
   const agentActions = useAgentActions()
 
@@ -358,13 +358,13 @@ export function CameraView() {
           // ===== TRACKING + IDENTITY MANAGEMENT =====
           // Update within-feed tracker with new detections
           const tracked = trackerRef.current.update(dets)
-          const identityMgr = identityMgrRef.current
+          const appearanceTracker = appearanceTrackerRef.current
 
           // Match or create global identities for each tracked object
           for (const track of tracked) {
             const appearance = extractAppearanceFeatures(ctx, track.bbox, canvas.width, canvas.height)
             const type = track.class === 'person' ? 'person' : 'vehicle'
-            const globalId = identityMgr.matchOrCreate(
+            const trackId = appearanceTracker.matchOrCreate(
               track.localTrackId,
               type,
               appearance,
@@ -377,8 +377,8 @@ export function CameraView() {
           // Update store with current identities (throttled — every 5 frames)
           const fpsTick = lastFpsTickRef.current
           if (fpsTick.n % 5 === 0) {
-            const identities = identityMgr.getIdentities().map((id) => ({
-              globalId: id.globalId,
+            const identities = appearanceTracker.getIdentities().map((id) => ({
+              trackId: id.trackId,
               type: id.type,
               firstSeen: id.firstSeen,
               lastSeen: id.lastSeen,
@@ -386,7 +386,7 @@ export function CameraView() {
               plateString: id.plateString,
               dominantColor: id.appearance.dominantColor,
             }))
-            setTrackedIdentities(identities.slice(0, 50))
+            setAppearanceTracks(identities.slice(0, 50))
           }
         }
 

@@ -253,14 +253,14 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               name="Perception"
               tag="In-browser ML"
               body="Multi-model ensemble runs COCO-SSD (27MB) or YOLOv10n (2.5MB) for person/vehicle detection, plus specialized HF ONNX models (Fire ViT, CLIP zero-shot, SegFormer, Pose) for use-case-specific events. All in-browser, no server. Users choose models from a dropdown with pros/cons."
-              metric="~10 fps on M2 laptop"
+              metric="0.3-1 fps (WASM) · 2-5 fps (WebGPU)"
             />
             <PillarCard
               icon={<Brain className="h-6 w-6" />}
               name="Reasoning"
               tag="Rule + LLM judge"
-              body="A deterministic rule engine decides tier 0→3 escalation from z-scores + sustain counters. An optional LLM-as-judge filters false positives at Tier 3, cutting ~60% of spurious escalations without missing real incidents."
-              metric="~60% FP reduction"
+              body="A deterministic rule engine decides tier 0→3 escalation from z-scores + sustain counters. An optional LLM-as-judge filters false positives at Tier 3, filtering Tier 3 escalations when enabled (no measured FP reduction rate available)."
+              metric="Optional LLM judge"
             />
             <PillarCard
               icon={<Zap className="h-6 w-6" />}
@@ -549,7 +549,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 <span className="font-medium text-zinc-950">Model drift.</span> COCO-SSD trained on general images; Peru plaza footage may need fine-tuning for distant/small persons.
               </div>
               <div>
-                <span className="font-medium text-zinc-950">Browser perf.</span> Sustained 10 fps requires WebGPU backend; falls back to WebGL on older devices.
+                <span className="font-medium text-zinc-950">Browser perf.</span> Sustained 1+ fps requires WebGPU backend; WASM fallback runs at 0.3-0.7 fps; falls back to WebGL on older devices.
               </div>
               <div>
                 <span className="font-medium text-zinc-950">Privacy compliance.</span> Snapshots store identifiable images — need retention policy + on-prem option for production.
@@ -578,12 +578,12 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             <PrivacyCard
               icon={<FileText className="h-5 w-5" />}
               title="Snapshot retention"
-              body="Snapshots are stored in browser memory (zustand + IndexedDB) for the duration of the session. A retention policy (configurable, default 24h) auto-purges. Production deployments should add on-prem snapshot storage with role-based access."
+              body="Snapshots are stored in browser memory (Zustand, in-memory only — no IndexedDB persistence) for the duration of the session. Snapshots are cleared on page refresh. No IndexedDB persistence implemented (roadmap). Production deployments should add on-prem snapshot storage with role-based access."
             />
             <PrivacyCard
               icon={<Shield className="h-5 w-5" />}
               title="Audit trail"
-              body="Every agentic action (log_tick, badge, snapshot, send_email, escalate, generate_report) is appended to an immutable action log with timestamp + payload + outcome. Operators can replay any decision after the fact."
+              body="Every agentic action (log_tick, badge, snapshot, send_email, escalate, generate_report) is appended to a session action log (in-memory, cleared on page refresh) with timestamp + payload + outcome. Operators can replay any decision after the fact."
             />
           </div>
         </div>
@@ -876,7 +876,7 @@ const DASHBOARD_SPARK = [
 ]
 
 const VALUE_CHAIN = [
-  { label: 'Raw frames', pct: 100, note: 'Continuous video stream at ~10 fps', tone: 'zinc' },
+  { label: 'Raw frames', pct: 100, note: 'Continuous video stream at native fps (detection at 0.3-1 fps)', tone: 'zinc' },
   { label: 'Anomalies', pct: 12, note: 'z-score > 2 vs 2-min baseline', tone: 'amber' },
   { label: 'Judge-pass', pct: 4, note: 'LLM verdict: real incident', tone: 'emerald' },
   { label: 'Escalated', pct: 1.2, note: 'Tier 3 with full evidence', tone: 'rose' },

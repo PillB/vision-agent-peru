@@ -334,9 +334,9 @@ interface PrototypeState {
   reports: IncidentReport[]
   agentTrace: string[]   // last N reasoning strings
 
-  // Identity tracking
-  trackedIdentities: Array<{
-    globalId: string
+  // Appearance tracking (NOT identity — these are appearance-similarity tracks)
+  appearanceTracks: Array<{
+    trackId: string
     type: 'person' | 'vehicle'
     firstSeen: number
     lastSeen: number
@@ -376,7 +376,7 @@ interface PrototypeState {
     escalationHistory?: number[]
   }) => void
   pushTrace: (line: string) => void
-  setTrackedIdentities: (identities: PrototypeState['trackedIdentities']) => void
+  setAppearanceTracks: (identities: PrototypeState['appearanceTracks']) => void
 }
 
 const MAX_SAMPLES = 600    // 10 min at 1 fps
@@ -415,7 +415,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   actionLog: [],
   reports: [],
   agentTrace: [],
-  trackedIdentities: [],
+  appearanceTracks: [],
 
   setActiveCamera: (id) => set({ activeCameraId: id, samples: [], stats: null, sustainCount: 0, currentTier: 0 }),
   setModelStatus: (s, err = null) => set({ modelStatus: s, modelError: err }),
@@ -510,16 +510,13 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
       return { agentTrace: [`[${ts}] ${line}`, ...state.agentTrace].slice(0, MAX_TRACE) }
     }),
 
-  setTrackedIdentities: (identities) => set({ trackedIdentities: identities }),
+  setAppearanceTracks: (identities) => set({ appearanceTracks: identities }),
 }))
 
 // ─── Dev-only global hook for Playwright tests ───
-// Exposes the store's getState/setState on `window.__visionStore` so automated
-// tests can drive state transitions (use case / camera / capability switches)
-// without going through slow radix-Select UI clicks. In production builds this
-// code still runs but `window` is undefined on the server, so the guard is
-// required.
-if (typeof window !== 'undefined') {
+// ONLY exposed in development (NODE_ENV !== 'production'). In production builds
+// (GitHub Pages), this code is tree-shaken out by the bundler.
+if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
   // @ts-expect-error — augmenting window for dev tooling
   window.__visionStore = {
     getState: usePrototypeStore.getState,
