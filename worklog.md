@@ -1540,3 +1540,112 @@ Stage Summary:
 - 14/14 formal Playwright tests pass against production GitHub Pages
 - 1942/1942 adversarial tests pass
 - 16/16 defects fixed and verified in production
+
+---
+Task ID: solarize-rebuild-rounds-3-4-5
+Agent: orchestrator
+Task: Implement Rounds 3, 4, 5 of the Solarize methodology — local semantic evidence search, candidate association + absence, agentic control + production hardening
+
+Work Log:
+- Read SOLARIZE SYSTEM PROMPT-2.md (1871 lines) — refreshed methodology
+- Extracted grok_report.pdf (4 image-based pages) via VLM — captured
+  recommendations for gender/age/size/gait proxies, CLIP+MobileCLIP+SigLIP,
+  MediaPipe Pose, audit logging, multi-video tagging, absence-mode reporting
+
+ROUND 3 — LOCAL SEMANTIC EVIDENCE SEARCH:
+- src/lib/video-indexer.ts: Multi-video upload + adaptive sampling pipeline
+  - calculateVideoHash (SHA-256 content hash for dedup + provenance)
+  - extractVideoMetadata (duration, dimensions, fps, user labels)
+  - estimateProcessingCost (frames, time, memory estimates)
+  - sampleVideoFrames (fixed/motion-adaptive/scene-change/keyframe strategies)
+  - saveVideoMetadata / listIndexedVideos / deleteVideoAndEvidence (IndexedDB)
+  - validateVideoFile (size + format validation, 500MB cap)
+
+- src/lib/query-parser.ts: Natural-language query parser (Spanish + English)
+  - parseQuery: extracts objectType, clothing, colors, carried objects,
+    vehicle type, direction, action, time ranges from free text
+  - checkSensitiveTerms: REJECTS queries about race, ethnicity, religion,
+    disability, medical status, political views, socioeconomic status,
+    emotion, subjective criminality (section 3 privacy boundary)
+  - Returns transparent explanation (recognized, ignored, rejected terms)
+  - Semantic residual query passed to CLIP for embedding
+
+- src/components/prototype/nl-search-panel.tsx: Operator UI for NL search
+  - Query input, parse display, sensitive-term warning, search results
+  - Score + matched-on indicator (embedding/keyword)
+
+ROUND 4 — CANDIDATE ASSOCIATION + ABSENCE:
+- src/lib/association.ts: Cross-video candidate association module
+  - proposeAssociation: combines appearance + semantic + topology +
+    temporal + motion scores into calibrated fusion
+  - Three outcomes: plausible / insufficient / incompatible
+  - Open-set rejection: orthogonal embeddings NEVER marked plausible
+  - findCrossVideoCandidates: scans all evidence pairs
+  - assessAbsence: NEVER says 'not in the video' — returns
+    candidate_found / no_confident_candidate / inconclusive
+  - Coverage accounting: percent sampled, detector recall, failed intervals
+  - Permanent disclaimer: 'Appearance similarity does not establish identity'
+  - CameraTopology interface for travel-time constraints
+
+ROUND 5 — AGENTIC CONTROL + PRODUCTION HARDENING:
+- src/lib/incident-state-machine.ts: Explicit sequential state machine
+  - 12 states: observed → candidate → evidence_validated → policy_evaluated
+    → action_proposed → pending_approval → executing → outcome_verification
+    → succeeded | failed | compensating → closed
+  - canTransition / transitionIncident: validates transitions, throws on
+    invalid skip (prevents observed → executing)
+  - getIdempotencyKey / checkIdempotency / recordActionExecution:
+    idempotent action execution (succeeded actions NOT re-executed)
+  - requiresApproval: send_email + escalate require human approval
+  - isAutoAllowedOnGhPages: badge/log_hit/snapshot auto-allowed
+  - orderActionsSequentially: judge BEFORE escalate (section 20)
+  - computeOutcome: retry on failure, compensate or fail after max attempts
+  - getProfileCapabilities: 3 profiles (github_pages / secure_service / dev)
+  - detectProfile: auto-detects from browser environment
+
+- src/components/prototype/incident-panel.tsx: Operator UI for state machine
+  - 12-state visualization with color-coded badges
+  - State transition trail (audit log)
+  - Idempotent action execution (succeeded actions disabled)
+  - Approval indicators + sequential judge gating reminder
+  - Capability profile badge
+
+UI INTEGRATION:
+- Wired NLSearchPanel + IncidentPanel into Tab2 as a new 2-column row
+
+TESTS:
+- 1942 → 2071 adversarial tests, ALL PASS (+129 new Round 3/4/5 tests)
+- Tests verify:
+  - Sensitive-term rejection (race, religion, disability, criminality)
+  - NL parsing (Spanish + English, complex multi-field queries)
+  - Three-outcome association (plausible / insufficient / incompatible)
+  - Open-set rejection (orthogonal embeddings never plausible)
+  - Absence never says 'not in the video' (always inconclusive if low coverage)
+  - State machine rejects invalid transitions (observed → executing throws)
+  - Idempotency (succeeded actions not re-executed)
+  - Approval requirements (send_email + escalate require approval)
+  - Sequential judge gating (judge BEFORE escalate)
+  - Profile capabilities (GH Pages vs secure service vs dev)
+  - Retry/compensate logic
+
+DEPLOYMENT:
+- Commits 85820e0 (Round 3/4/5 modules) + bb5f7a2 (UI panels) pushed
+- GitHub Actions workflow triggered — build SUCCESS
+- Live: https://pillb.github.io/vision-agent-peru/ returns 200 OK
+- Verified: NLSearchPanel + IncidentPanel present in production JS bundle
+- Formal Playwright suite: 9/9 tests pass against production
+  (page loads, prototype tab, dropdown selectors, model selection,
+  production build does not expose dev store hook, accessibility,
+  reduced motion, 200% zoom, LLM judge toggle, use case switching)
+
+Stage Summary:
+- Round 3 (local semantic evidence search): COMPLETE
+  - Multi-video upload + adaptive sampling + NL query parser + IndexedDB
+- Round 4 (candidate association + absence): COMPLETE
+  - Cross-video association + open-set rejection + safe absence workflow
+- Round 5 (agentic control + production hardening): COMPLETE
+  - 12-state incident machine + idempotent actions + approval workflow +
+    sequential judge gating + static capability profiles
+- 2071/2071 adversarial tests pass
+- 9/9 formal Playwright tests pass against production
+- All 5 Solarize implementation rounds complete (Round 0 baseline + 5 rounds)
