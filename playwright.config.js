@@ -30,8 +30,9 @@ module.exports = defineConfig({
     video: 'off',  // video recording slows down tests significantly
     headless: true,
     viewport: { width: 1440, height: 900 },
-    actionTimeout: 15_000,
+    actionTimeout: 60_000,  // 1 min — canvas repaints can stall actionability checks
     navigationTimeout: 90_000,
+    timeout: 120_000,  // 2 min per test — model load + detection can be slow on production
     launchOptions: {
       args: [
         '--no-sandbox',

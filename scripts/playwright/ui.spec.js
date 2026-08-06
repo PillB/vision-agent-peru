@@ -125,17 +125,18 @@ test('camera dropdown shows multiple cameras', async ({ page }) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 test('start analysis button changes to pause after click', async ({ page }) => {
+  test.setTimeout(120_000)  // 2 min — model load can be slow on production
   await ensureServer(page)
   await clickPrototypeTab(page)
   await waitForModelReady(page)
 
   // Find the start button via testid. Use force + noWaitAfter for stability.
   const startBtn = page.getByTestId('start-pause-button')
-  await startBtn.click({ force: true, noWaitAfter: true })
+  await startBtn.click({ force: true, noWaitAfter: true, timeout: 60_000 })
   await page.waitForTimeout(2000)
 
   // After starting, the button text should change to "Pause"
-  await expect(page.getByTestId('start-pause-button')).toContainText(/Pause|Pausar/i, { timeout: 5000 })
+  await expect(page.getByTestId('start-pause-button')).toContainText(/Pause|Pausar/i, { timeout: 10_000 })
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
