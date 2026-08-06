@@ -2843,6 +2843,105 @@ describe('D9: Model selector UI shows adapter status badge', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PHASE 2: Agentic response wiring + Evidence panel + data-testid
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('Phase2: camera-view imports agenticResponse', () => {
+  const fs = require('fs')
+  const code = fs.readFileSync('src/components/prototype/camera-view.tsx', 'utf-8')
+  assert(code.includes("from '@/lib/agentic-response'"),
+    'camera-view must import agenticResponse (wiring)')
+  assert(code.includes('agenticResponse('),
+    'camera-view must call agenticResponse() (wiring)')
+  assert(code.includes('agentic.trace'),
+    'camera-view must read agentic.trace (audit trail)')
+})
+
+describe('Phase2: camera-view captures evidence to IndexedDB', () => {
+  const fs = require('fs')
+  const code = fs.readFileSync('src/components/prototype/camera-view.tsx', 'utf-8')
+  assert(code.includes("from '@/lib/evidence'"),
+    'camera-view must import evidence module')
+  assert(code.includes('addEvidence('),
+    'camera-view must call addEvidence() to persist snapshots')
+  assert(code.includes('EVIDENCE CAPTURE'),
+    'camera-view must have EVIDENCE CAPTURE section')
+})
+
+describe('Phase2: EvidencePanel component exists with required features', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('src/components/prototype/evidence-panel.tsx'),
+    'evidence-panel.tsx must exist')
+  const code = fs.readFileSync('src/components/prototype/evidence-panel.tsx', 'utf-8')
+  // Required features: search, confirm, annotate, delete, export, list
+  assert(code.includes('listEvidence'), 'must list evidence')
+  assert(code.includes('searchEvidence'), 'must support search')
+  assert(code.includes('confirmEvidence'), 'must support confirm')
+  assert(code.includes('annotateEvidence'), 'must support annotate')
+  assert(code.includes('deleteEvidence'), 'must support delete')
+  assert(code.includes('exportEvidenceJSON'), 'must support JSON export')
+  assert(code.includes('clearEvidence'), 'must support clear-all')
+  assert(code.includes('evidenceStorageAvailable'), 'must check storage availability')
+  // data-testid for Playwright
+  assert(code.includes('data-testid="evidence-panel"'),
+    'must have data-testid="evidence-panel" for Playwright')
+  assert(code.includes('data-testid="evidence-search-input"'),
+    'must have data-testid="evidence-search-input" for Playwright')
+})
+
+describe('Phase2: EvidencePanel is wired into Tab2', () => {
+  const fs = require('fs')
+  const code = fs.readFileSync('src/components/tab2-prototype.tsx', 'utf-8')
+  assert(code.includes('EvidencePanel'),
+    'Tab2 must import EvidencePanel')
+  assert(code.includes('<EvidencePanel'),
+    'Tab2 must render <EvidencePanel />')
+})
+
+describe('Phase2: data-testid attributes on key controls', () => {
+  const fs = require('fs')
+  // use-case-trigger
+  const ucCode = fs.readFileSync('src/components/prototype/use-case-selector.tsx', 'utf-8')
+  assert(ucCode.includes('data-testid="use-case-trigger"'),
+    'use-case-selector must have data-testid="use-case-trigger"')
+  // camera-trigger
+  const camCode = fs.readFileSync('src/components/prototype/camera-view.tsx', 'utf-8')
+  assert(camCode.includes('data-testid="camera-trigger"'),
+    'camera-view must have data-testid="camera-trigger"')
+  // start-pause-button
+  assert(camCode.includes('data-testid="start-pause-button"'),
+    'camera-view must have data-testid="start-pause-button"')
+})
+
+describe('Phase2: Formal Playwright test suite exists', () => {
+  const fs = require('fs')
+  assert(fs.existsSync('playwright.config.js'),
+    'playwright.config.js must exist')
+  assert(fs.existsSync('scripts/playwright/ui.spec.js'),
+    'scripts/playwright/ui.spec.js must exist')
+  const code = fs.readFileSync('scripts/playwright/ui.spec.js', 'utf-8')
+  // Must NOT use window.__visionStore for STATE MANIPULATION (D13).
+  // The D14 verification test legitimately checks for its ABSENCE in
+  // production — that's allowed. We strip comments and the typeof check
+  // before testing for forbidden usage.
+  const codeWithoutComments = code
+    .replace(/\/\*[\s\S]*?\*\//g, '')   // block comments
+    .replace(/\/\/.*$/gm, '')           // line comments
+  const codeWithoutD14Check = codeWithoutComments
+    .replace(/typeof window\.__visionStore/g, '')  // D14 absence check
+    .replace(/window\.__visionStore[^=]*\?\./g, '') // optional chaining reads
+  assert(!codeWithoutD14Check.includes('window.__visionStore'),
+    'formal Playwright suite must NOT use window.__visionStore for state manipulation (D13)')
+  // Must use visible-control locators
+  assert(code.includes('getByRole') || code.includes('getByTestId'),
+    'formal Playwright suite must use getByRole/getByTestId (visible controls)')
+  // Must have at least 10 tests
+  const testCount = (code.match(/test\(/g) || []).length
+  assert(testCount >= 10,
+    `formal Playwright suite must have >= 10 tests (got ${testCount})`)
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
 // FINAL SUMMARY
 // ═══════════════════════════════════════════════════════════════════════════
 

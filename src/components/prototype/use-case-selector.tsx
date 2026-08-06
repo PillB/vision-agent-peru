@@ -69,7 +69,7 @@ export function UseCaseSelector() {
       <div className="flex flex-wrap items-center gap-2">
       {/* Use case selector */}
       <Select value={activeUseCaseId} onValueChange={(v) => selectUseCase(v)}>
-        <SelectTrigger className="w-[280px] h-9 bg-white">
+        <SelectTrigger className="w-[280px] h-9 bg-white" data-testid="use-case-trigger">
           <SelectValue placeholder="Select use case" />
         </SelectTrigger>
         <SelectContent>

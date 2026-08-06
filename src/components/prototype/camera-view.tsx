@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { decide } from '@/lib/agent'
+import { agenticResponse, type AgenticResponse } from '@/lib/agentic-response'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from '@/lib/identity'
 import { computePixelAnomaly, computeAnomalyBbox, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
+import { addEvidence } from '@/lib/evidence'
 import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
@@ -115,6 +117,39 @@ export function CameraView() {
       },
       state.agentConfig
     )
+
+    // ─── AGENTIC RESPONSE (9-stage loop) ───
+    // Run the new 9-stage agentic response alongside decide() for the audit
+    // trail. The trace is pushed to the agent trace so operators can see
+    // WHY each action was proposed. decide() still drives action dispatch
+    // for backward compatibility — agenticResponse() will replace it fully
+    // once the React layer is migrated to consume its trace + outcome.
+    const agentic = agenticResponse(
+      {
+        cameraId: activeCamera.id,
+        cameraLabel: activeCamera.label,
+        useCase,
+        capabilityLevel: state.capabilityLevel,
+        stats: state.stats,
+        detections: dets,
+        canvasW: canvas?.width ?? 480,
+        canvasH: canvas?.height ?? 270,
+        sustainCount: newSustainCount,
+        escalationHistory: state.escalationHistory,
+        acknowledgedUntil: state.acknowledgedUntil,
+        llmJudgeEnabled: state.llmJudgeEnabled,
+      },
+      state.agentConfig
+    )
+    // Push the agentic trace stages (compact — one line per stage)
+    const agenticTraceLines = agentic.trace
+      .filter(t => t.status === 'fail' || t.status === 'pass' || t.detail.includes('fired'))
+      .slice(0, 3)  // keep trace concise — top 3 stages
+      .map(t => `[${t.stage}] ${t.detail}`)
+    if (agenticTraceLines.length > 0) {
+      pushTrace(agenticTraceLines.join(' | '))
+    }
+
     setAgentState({
       sustainCount: newSustainCount,
       currentTier: decision.tier,
@@ -173,6 +208,30 @@ export function CameraView() {
             confirmedSince: now,
             useCaseId: useCase.id,
           })
+
+          // ─── EVIDENCE CAPTURE ───
+          // Persist the snapshot + detection metadata to IndexedDB so the
+          // Evidence Search tab can search/confirm/export it later.
+          // Embeddings are NOT generated here (expensive) — they're
+          // generated lazily when the user runs a search.
+          const topDetection = dets[0]
+          if (topDetection) {
+            addEvidence({
+              id: `ev-${now}-${Math.random().toString(36).slice(2, 8)}`,
+              createdAt: now,
+              cameraId: activeCamera.id,
+              useCaseId: useCase.id,
+              timestamp: now,
+              snapshotDataUrl,
+              detection: {
+                class: topDetection.class,
+                score: topDetection.score,
+                bbox: topDetection.bbox,
+              },
+              // trackId: trackerRef.current.getLastTrackId?.(),  // not available — future enhancement
+              confirmed: false,
+            }).catch((err) => console.error('[evidence] addEvidence failed:', err))
+          }
         }
         // If there IS a recent hit, we just update its timestamp silently
         // (no new alert created — the existing one stays active)
@@ -504,7 +563,7 @@ export function CameraView() {
       {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-2">
         <Select value={activeCameraId} onValueChange={(v) => { setActiveCamera(v); clearSamples() }}>
-          <SelectTrigger className="w-[260px] h-9 bg-white">
+          <SelectTrigger className="w-[260px] h-9 bg-white" data-testid="camera-trigger">
             <SelectValue placeholder="Select camera" />
           </SelectTrigger>
           <SelectContent>
@@ -556,6 +615,7 @@ export function CameraView() {
           disabled={!canStart}
           className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
           size="sm"
+          data-testid="start-pause-button"
           title={isRunning ? "Pausar el análisis de IA" : "Iniciar detección de personas y vehículos con IA real (COCO-SSD)"}
         >
           {isRunning ? <Pause className="h-4 w-4 mr-1.5" /> : <Play className="h-4 w-4 mr-1.5" />}

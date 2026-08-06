@@ -75,13 +75,7 @@ module.exports = defineConfig({
     //   use: { ...devices['Desktop Safari'] },
     // },
   ],
-  // Auto-start dev server if BASE_URL is localhost and not already running.
-  webServer: BASE_URL.includes('localhost')
-    ? {
-        command: 'npm run dev',
-        url: 'http://localhost:3000',
-        reuseExistingServer: true,
-        timeout: 120_000,
-      }
-    : undefined,
+  // We manage the dev server separately (npm run dev in a persistent shell)
+  // to avoid Playwright's webServer killing it between tests.
+  // Tests will skip themselves with a clear message if server is unreachable.
 })

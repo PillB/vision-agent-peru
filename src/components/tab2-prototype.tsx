@@ -8,6 +8,7 @@ import { AlertsPanel } from './prototype/alerts-panel'
 import { AgentTrace } from './prototype/agent-trace'
 import { ActionsPanel } from './prototype/actions-panel'
 import { ReportsPanel } from './prototype/reports-panel'
+import { EvidencePanel } from './prototype/evidence-panel'
 import { UseCaseSelector } from './prototype/use-case-selector'
 import { IdentityPanel } from './prototype/identity-panel'
 import { usePrototypeStore } from '@/lib/store'
@@ -50,11 +51,12 @@ export function Tab2Prototype() {
           </div>
         </div>
 
-        {/* Bottom row — identities + actions + reports */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+        {/* Bottom row — identities + actions + reports + evidence */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4">
           <IdentityPanel />
           <ActionsPanel />
           <ReportsPanel />
+          <EvidencePanel />
         </div>
 
         {/* Help footer */}
