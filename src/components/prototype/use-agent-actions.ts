@@ -193,33 +193,84 @@ export function useAgentActions() {
             break
 
           case 'llm_judge': {
-            const res = await fetch(prefixPath('/api/judge'), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                cameraId: ctx.cameraId,
-                cameraLabel: ctx.cameraLabel,
-                count: ctx.stats.count,
-                zScore: ctx.stats.peakZ,
-                mean: ctx.stats.mean,
-                stddev: ctx.stats.stddev,
-                detections: ctx.detections.slice(0, 10),
-                reasoning: ctx.reasoning,
-              }),
-            })
-            const data = await res.json()
-            updateAction(entry.id, {
-              status: 'success',
-              message: `Judge: ${data.verdict} (${(data.confidence ?? 0).toFixed(2)}) — ${data.reason ?? ''}`,
-            })
-            if (data.verdict === 'real') {
-              toast.info('LLM judge: REAL incident', {
-                description: `Confidence ${(data.confidence ?? 0).toFixed(2)} · ${data.reason}`,
+            // D2 fix: Single-flight deduplication — if a judge is already in
+            // flight for this camera+useCase, skip and mark as 'skipped'
+            // instead of firing a parallel request. The dedup key is
+            // cameraId + the action's payload useCase (if present).
+            const dedupKey = `judge:${ctx.cameraId}:${action.payload?.useCase ?? 'default'}`
+            if ((window as any).__visionJudgeInFlight?.[dedupKey]) {
+              updateAction(entry.id, {
+                status: 'skipped',
+                message: 'Skipped — judge already in flight for this camera+useCase (D2 single-flight)',
               })
-            } else {
-              toast.success('LLM judge: false positive', {
-                description: `Suppressed escalation · ${data.reason}`,
+              break
+            }
+            ;(window as any).__visionJudgeInFlight = (window as any).__visionJudgeInFlight || {}
+            ;(window as any).__visionJudgeInFlight[dedupKey] = true
+
+            try {
+              // D3 fix: Pass VISUAL EVIDENCE (snapshot crop) to the judge,
+              // not just text. Without the image the LLM can only reason
+              // about metadata (count, z-score) — it cannot actually see
+              // whether the detection is a real fire/flood/intruder.
+              // We downscale the canvas to 256x144 to keep the payload small.
+              const evidenceCanvas = document.createElement('canvas')
+              evidenceCanvas.width = 256
+              evidenceCanvas.height = 144
+              const evCtx = evidenceCanvas.getContext('2d')
+              let snapshotDataUrl: string | undefined
+              if (evCtx && ctx.canvas) {
+                try {
+                  evCtx.drawImage(ctx.canvas, 0, 0, 256, 144)
+                  snapshotDataUrl = evidenceCanvas.toDataURL('image/jpeg', 0.6)
+                } catch {
+                  // Canvas may be tainted (cross-origin) — fall back to text-only.
+                  snapshotDataUrl = undefined
+                }
+              }
+
+              // If API routes are unavailable (GH Pages), skip the network
+              // call and record the simulated verdict. Avoids 404→success.
+              if (isGitHubPages() || !apiRoutesAvailable()) {
+                updateAction(entry.id, {
+                  status: 'success',
+                  message: `Judge: simulated (no API on GH Pages) — verdict=real (conservative)`,
+                })
+                break
+              }
+
+              const res = await fetch(prefixPath('/api/judge'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  cameraId: ctx.cameraId,
+                  cameraLabel: ctx.cameraLabel,
+                  count: ctx.stats.count,
+                  zScore: ctx.stats.peakZ,
+                  mean: ctx.stats.mean,
+                  stddev: ctx.stats.stddev,
+                  detections: ctx.detections.slice(0, 10),
+                  reasoning: ctx.reasoning,
+                  // D3: visual evidence — the actual cropped frame
+                  snapshotDataUrl,
+                }),
               })
+              const data = await res.json()
+              updateAction(entry.id, {
+                status: 'success',
+                message: `Judge: ${data.verdict} (${(data.confidence ?? 0).toFixed(2)}) — ${data.reason ?? ''}`,
+              })
+              if (data.verdict === 'real') {
+                toast.info('LLM judge: REAL incident', {
+                  description: `Confidence ${(data.confidence ?? 0).toFixed(2)} · ${data.reason}`,
+                })
+              } else {
+                toast.success('LLM judge: false positive', {
+                  description: `Suppressed escalation · ${data.reason}`,
+                })
+              }
+            } finally {
+              delete (window as any).__visionJudgeInFlight?.[dedupKey]
             }
             break
           }

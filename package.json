@@ -13,6 +13,7 @@
     "db:reset": "prisma migrate reset",
     "test": "npx tsx scripts/adversarial-tests.ts",
     "test:pw": "node scripts/pw-r3r4-validation.js",
+    "test:formal": "NODE_PATH=/home/z/.npm-global/lib/node_modules npx --prefix /home/z/.npm-global playwright test --config=playwright.config.js",
     "test:all": "npm run test && npm run test:pw"
   },
   "dependencies": {

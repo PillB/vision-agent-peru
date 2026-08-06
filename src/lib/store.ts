@@ -513,36 +513,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   setAppearanceTracks: (identities) => set({ appearanceTracks: identities }),
 }))
 
-// ─── Dev-only global hook for Playwright tests ───
-// ONLY exposed in development (NODE_ENV !== 'production'). In production builds
-// (GitHub Pages), this code is tree-shaken out by the bundler.
-if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
-  // @ts-expect-error — augmenting window for dev tooling
-  window.__visionStore = {
-    getState: usePrototypeStore.getState,
-    setState: usePrototypeStore.setState,
-    subscribe: usePrototypeStore.subscribe,
-    // Convenience helpers — these replicate the React component's logic so
-    // tests get the same side-effects (camera auto-switch, capability level
-    // sync) without going through the UI.
-    setActiveUseCase: (id: string) => {
-      const store = usePrototypeStore.getState()
-      store.setActiveUseCase(id)
-      // Sync capability level to the use case's level
-      // (mirrors UseCaseSelector.tsx behavior)
-      const uc = (window as any).__USE_CASES__?.find((u: any) => u.id === id)
-      if (uc?.level) store.setCapabilityLevel(uc.level)
-      // Auto-switch to the best camera for this use case
-      const cams = (window as any).__CAMERA_SOURCES__ as any[] | undefined
-      if (cams) {
-        const bestCam = cams.find(c => c.useCases?.includes(id))
-        if (bestCam) store.setActiveCamera(bestCam.id)
-      }
-    },
-    setActiveCamera: (id: string) => usePrototypeStore.getState().setActiveCamera(id),
-    setCapabilityLevel: (lvl: string) => usePrototypeStore.getState().setCapabilityLevel(lvl as any),
-    setRunning: (r: boolean) => usePrototypeStore.getState().setRunning(r),
-    setLlmJudgeEnabled: (b: boolean) => usePrototypeStore.getState().setLlmJudgeEnabled(b),
-    setSelectedModelIds: (ids: string[]) => usePrototypeStore.getState().setSelectedModelIds(ids),
-  };
-}
+// NOTE: The dev-only window.__visionStore hook has moved to
+// src/lib/dev-store-hook.ts. It is loaded via dynamic import from
+// src/app/page.tsx ONLY in development, so the hook (and its imports)
+// are tree-shaken out of the production GitHub Pages bundle.

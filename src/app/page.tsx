@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Camera, FileText, Activity, Presentation } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -14,6 +14,21 @@ type TabId = 'overview' | 'prototype' | 'brief'
 export default function Home() {
   const [tab, setTab] = useState<TabId>('overview')
   const t = useTranslations()
+
+  // Dev-only: install window.__visionStore hook for Playwright tests and
+  // interactive debugging. The dynamic import is tree-shaken out of the
+  // production bundle by Next.js's compiler, so the hook never ships to
+  // GitHub Pages (fixes D14 — no test hook in production).
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      // Dynamic import so webpack can tree-shake this in production.
+      import('@/lib/dev-store-hook').then(({ installDevStoreHook }) => {
+        installDevStoreHook()
+      }).catch(() => {
+        // Silently ignore — dev tooling is non-critical.
+      })
+    }
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col bg-white">

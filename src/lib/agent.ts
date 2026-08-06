@@ -245,26 +245,43 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
   const allowEscalation = capabilityLevel === 'agentic'
 
   // ===== TIER ESCALATION =====
-  if (ruleTriggered) {
-    // Tier 1: badge (always allowed)
-    tier = 1
-    actions.push({
-      name: 'badge',
-      tier: 1,
-      reason: ruleReason,
-      timestamp: now,
-    })
-    reasoning += ` — ${ruleReason}`
+  // The actions dispatched are FILTERED by useCase.actions — if a use case
+  // does not list 'send_email', the agent must not send one (D7 fix).
+  // useCase.actions is the source of truth for what this use case is allowed
+  // to do. The capability level still gates autonomous execution.
+  const allowedActions = new Set(useCase.actions)
+  function canDispatch(name: ActionName): boolean {
+    return allowedActions.has(name)
+  }
 
-    // Tier 2: snapshot + email + log (allowed at mldl+ and agentic)
+  if (ruleTriggered) {
+    // Tier 1: badge (always allowed if use case lists it)
+    if (canDispatch('badge')) {
+      tier = 1
+      actions.push({
+        name: 'badge',
+        tier: 1,
+        reason: ruleReason,
+        timestamp: now,
+      })
+      reasoning += ` — ${ruleReason}`
+    } else {
+      // Use case doesn't want a badge — still log the rule trigger in reasoning
+      reasoning += ` — ${ruleReason} (badge suppressed by useCase.actions)`
+    }
+
+    // Tier 2: snapshot + log + email (allowed at mldl+ and agentic)
     const sustainNeeded = useCase.params.sustainTicks || config.t2Sustain
     if (sustainCount >= sustainNeeded && (capabilityLevel === 'mldl' || capabilityLevel === 'cognitive' || capabilityLevel === 'agentic')) {
-      tier = 2
-      actions.push({ name: 'snapshot', tier: 2, reason: ruleReason, timestamp: now })
-      actions.push({ name: 'log_hit', tier: 2, reason: `${ruleReason} | count=${trackedCount} peakZ=${stats.peakZ.toFixed(2)}`, timestamp: now, payload: { count: trackedCount, peakZ: stats.peakZ, useCase: useCase.id } })
-
-      if (allowAutoAction) {
-        actions.push({
+      const tier2Actions: Action[] = []
+      if (canDispatch('snapshot')) {
+        tier2Actions.push({ name: 'snapshot', tier: 2, reason: ruleReason, timestamp: now })
+      }
+      if (canDispatch('log_hit')) {
+        tier2Actions.push({ name: 'log_hit', tier: 2, reason: `${ruleReason} | count=${trackedCount} peakZ=${stats.peakZ.toFixed(2)}`, timestamp: now, payload: { count: trackedCount, peakZ: stats.peakZ, useCase: useCase.id } })
+      }
+      if (canDispatch('send_email') && allowAutoAction) {
+        tier2Actions.push({
           name: 'send_email',
           tier: 2,
           reason: `automated notification for [${useCase.name}]`,
@@ -275,24 +292,36 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
           },
         })
       }
-      reasoning += `. Alert: snapshot logged${allowAutoAction ? ', email sent' : ''}`
+      if (tier2Actions.length > 0) {
+        tier = 2
+        actions.push(...tier2Actions)
+        reasoning += `. Alert: ${tier2Actions.map(a => a.name).join(', ')}`
+      }
     }
 
     // Tier 3: LLM judge + escalate + report (only at agentic level)
     if (allowEscalation && !breakerTripped && sustainCount >= (config.t3Sustain)) {
-      tier = 3
-      if (allowLLM && ctx.llmJudgeEnabled) {
-        actions.push({ name: 'llm_judge', tier: 3, reason: `LLM false-positive filter for [${useCase.name}]`, timestamp: now })
+      const tier3Actions: Action[] = []
+      if (canDispatch('llm_judge') && allowLLM && ctx.llmJudgeEnabled) {
+        tier3Actions.push({ name: 'llm_judge', tier: 3, reason: `LLM false-positive filter for [${useCase.name}]`, timestamp: now })
       }
-      actions.push({ name: 'escalate', tier: 3, reason: `critical escalation: ${ruleReason}`, timestamp: now })
-      actions.push({ name: 'generate_report', tier: 3, reason: `auto-generate ${useCase.indeciReport ? 'INDECI ' : ''}incident report`, timestamp: now })
-      reasoning += `. Escalated${allowLLM && ctx.llmJudgeEnabled ? ' with LLM judge' : ''}, report generated`
+      if (canDispatch('escalate')) {
+        tier3Actions.push({ name: 'escalate', tier: 3, reason: `critical escalation: ${ruleReason}`, timestamp: now })
+      }
+      if (canDispatch('generate_report')) {
+        tier3Actions.push({ name: 'generate_report', tier: 3, reason: `auto-generate ${useCase.indeciReport ? 'INDECI ' : ''}incident report`, timestamp: now })
+      }
+      if (tier3Actions.length > 0) {
+        tier = 3
+        actions.push(...tier3Actions)
+        reasoning += `. Escalated: ${tier3Actions.map(a => a.name).join(', ')}`
+      }
     } else if (breakerTripped && allowEscalation) {
       reasoning += `. Escalation blocked (circuit breaker: ${recentEscalations.length}/${config.maxEscalationsPerHour} per hour)`
     }
 
     // Cognitive level: add LLM description but no autonomous action
-    if (capabilityLevel === 'cognitive' && tier >= 1) {
+    if (capabilityLevel === 'cognitive' && tier >= 1 && canDispatch('llm_judge')) {
       actions.push({ name: 'llm_judge', tier: 1, reason: `cognitive description of [${useCase.name}]`, timestamp: now })
       reasoning += `. Cognitive analysis active`
     }

@@ -238,11 +238,19 @@ export function CameraView() {
         // COCO-SSD always runs as the base detector (it provides the video frame
         // draw + person/car detections that other models build on).
         // Pixel-anomaly always runs as supplementary (it's free — no download).
-        // HF models run only if user selected them.
+        // HF models run only if user selected an ADAPTER-IMPLEMENTED model.
+        // D9 fix: Models with adapterImplemented=false are displayed in the
+        // selector but cannot actually run — filter them out so the user
+        // doesn't see "model selected, nothing happens" behavior.
+        const IMPLEMENTED_HF_MODEL_IDS = [
+          'fire-vit', 'clip-fire', 'clip-zero-shot'
+          // yolov10n, yolos-tiny, segformer-b0, yolov8n-pose are listed in the
+          // registry for transparency but have adapterImplemented=false.
+        ]
         const runCocoSSD = true // always run base detector for frame drawing
         const runPixelAnomaly = true // always run pixel anomaly (free, fast)
         const runHFModels = userModels.length === 0 || userModels.some(id =>
-          ['fire-vit', 'clip-fire', 'clip-zero-shot', 'segformer-b0', 'yolov8n-pose'].includes(id)
+          IMPLEMENTED_HF_MODEL_IDS.includes(id)
         )
 
         // ─── Step 1: COCO-SSD detection (only if user selected a detector) ───

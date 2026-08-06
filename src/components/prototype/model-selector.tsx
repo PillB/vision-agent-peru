@@ -141,7 +141,7 @@ export function ModelSelector() {
                 {/* Expanded detail — pros/cons */}
                 {isExpandedDetail && (
                   <div className="px-3 pb-2 space-y-1">
-                    {/* License + bboxes */}
+                    {/* License + bboxes + adapter status */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="outline" className="text-[8px] h-3.5 px-1">
                         <Shield className="h-2 w-2 mr-0.5" />
@@ -151,6 +151,17 @@ export function ModelSelector() {
                         <Badge className="text-[8px] h-3.5 px-1 bg-emerald-100 text-emerald-800">Bounding boxes</Badge>
                       ) : (
                         <Badge className="text-[8px] h-3.5 px-1 bg-amber-100 text-amber-800">Whole-frame only</Badge>
+                      )}
+                      {/* D9 fix: show adapter implementation status */}
+                      {model.adapterImplemented === false && (
+                        <Badge className="text-[8px] h-3.5 px-1 bg-zinc-200 text-zinc-700">
+                          Adapter pending
+                        </Badge>
+                      )}
+                      {model.adapterImplemented === true && (
+                        <Badge className="text-[8px] h-3.5 px-1 bg-blue-100 text-blue-800">
+                          Adapter ready
+                        </Badge>
                       )}
                     </div>
                     {/* Pros */}

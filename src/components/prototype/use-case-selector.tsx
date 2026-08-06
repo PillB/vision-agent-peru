@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { usePrototypeStore, CAMERA_SOURCES } from '@/lib/store'
 import { USE_CASES, LEVEL_LABELS, type CapabilityLevel } from '@/lib/use-cases'
 import { hasSpecializedModel, getSpecializedModelInfo, getAllModelNames } from '@/lib/specialized-models'
@@ -39,17 +38,8 @@ export function UseCaseSelector() {
 
   const activeUseCase = USE_CASES.find((uc) => uc.id === activeUseCaseId)
 
-  // Expose USE_CASES + CAMERA_SOURCES on window for the dev-only test hook
-  // (see src/lib/store.ts → window.__visionStore.setActiveUseCase).
-  // Runs once on mount; safe to re-run.
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // @ts-expect-error dev tooling
-      window.__USE_CASES__ = USE_CASES
-      // @ts-expect-error dev tooling
-      window.__CAMERA_SOURCES__ = CAMERA_SOURCES
-    }
-  }, [])
+  // NOTE: window.__USE_CASES__ + window.__CAMERA_SOURCES__ are now exposed
+  // by src/lib/dev-store-hook.ts (dev-only, tree-shaken in production).
 
   /** Auto-switch to the best camera for the selected use case. */
   function selectUseCase(useCaseId: string) {
