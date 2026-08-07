@@ -137,7 +137,7 @@ export async function extractVideoMetadata(
     }
     video.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error(`Failed to load video metadata for ${file.name}`))
+      reject(new Error(`Failed decoding metadata for ${file.name}`))
     }
     video.src = url
   })
@@ -200,7 +200,7 @@ export async function sampleVideoFrames(
     // Wait for metadata
     await new Promise<void>((resolve, reject) => {
       video.onloadedmetadata = () => resolve()
-      video.onerror = () => reject(new Error('Failed to load video metadata'))
+      video.onerror = () => reject(new Error('Failed decoding metadata'))
       video.src = url
     })
 
