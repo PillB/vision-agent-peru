@@ -31,7 +31,7 @@ Status reflects evidence available in the repository. “Experimental” is not 
 | 25 | Security report | Complete with open risks | same report, action contracts, risk registry |
 | 26 | Performance report | Complete without unsupported metrics | same report, benchmark JSON |
 | 27 | Benchmark reports | Honest incomplete benchmark | null metrics in benchmark JSON; no fabricated promotion |
-| 28 | Deployment evidence | Pending publish | workflow will retain build, Playwright, and Pages evidence |
-| 29 | Live-site retest | Pending deployed commit | `test:e2e:live` plus route probes |
+| 28 | Deployment evidence | Complete | `deployment_verification.json`, `artifacts/deployment/deployment-evidence.json`, run `31203666357` |
+| 29 | Live-site retest | Complete | successful post-deploy Playwright job in run `31203666357`; independent GET/POST route probes in deployment evidence |
 | 30 | Phase retrospectives | Complete | `phase-retrospectives.md` |
 | 31 | Remaining-risk registry | Complete | `remaining-risk-registry.json` |

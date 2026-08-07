@@ -11,11 +11,16 @@ test('deployed surface exposes no production hook and makes no removed API reque
   await expect(page.getByRole('heading').first()).toBeVisible()
   await page.getByRole('tab', { name: /Evidence Workspace|Espacio de evidencia/i }).click()
   await expect(page.getByText(/local-only|solo local/i).first()).toBeVisible()
+  const deployed = new URL(page.url()).hostname.endsWith('github.io')
+  if (deployed) {
+    await page.screenshot({ path: testInfo.outputPath('deployed-evidence-workspace.png'), fullPage: true })
+  }
 
   await page.getByRole('tab', { name: /Strategic Brief|Resumen estratégico/i }).click()
-  if (new URL(page.url()).hostname.endsWith('github.io')) {
+  if (deployed) {
     await expect(page.getByText(/Unavailable on this static deployment; no request will be sent\./i)).toBeVisible()
     await expect(page.getByRole('button', { name: 'Language switching unavailable on static deployment' })).toBeDisabled()
+    await page.screenshot({ path: testInfo.outputPath('deployed-unavailable-actions.png'), fullPage: true })
   }
 
   const hooks = await page.evaluate(() => ({

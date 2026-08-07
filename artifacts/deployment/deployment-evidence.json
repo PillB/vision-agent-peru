@@ -1,0 +1,16 @@
+{
+  "schemaVersion":"1.0.0",
+  "verifiedAt":"2026-08-07",
+  "liveUrl":"https://pillb.github.io/vision-agent-peru/",
+  "pullRequest":"https://github.com/PillB/vision-agent-peru/pull/1",
+  "releaseCandidate":"dee1ff65e59c1a8a7e89018ee2b19c2199c0c241",
+  "mergeCommit":"d88c53dabee61c847b39a2839dddf8452485295c",
+  "quietRounds":[
+    {"runUrl":"https://github.com/PillB/vision-agent-peru/actions/runs/31202697338","result":"success","newMaterialDefects":0},
+    {"runUrl":"https://github.com/PillB/vision-agent-peru/actions/runs/31203192364","result":"success","newMaterialDefects":0}
+  ],
+  "deployment":{"runUrl":"https://github.com/PillB/vision-agent-peru/actions/runs/31203666357","build":"success","pages":"success","liveSmoke":"success","retainedArtifacts":["verification-evidence-d88c53dabee61c847b39a2839dddf8452485295c","deployment-verification-d88c53dabee61c847b39a2839dddf8452485295c"]},
+  "http":{"home":{"status":200,"sha256":"7ec32edca4c5fa5487ccde69b106b74aa8bda8ea2c41c1dbf6615d5509a3ee88","marker":"Evidence Workspace"},"api":{"alert":[404,405],"report":[404,405],"judge":[404,405],"set-locale":[404,405],"export-pptx":[404,405]}},
+  "browser":{"clientApiRequests":[],"productionHooks":{"visionStore":false,"cocoModel":false,"tf":false,"judge":false},"keyboardSmoke":"pass","unavailableControls":"pass"},
+  "limitations":["GET/POST API status proves route absence, while zero client requests proves the UI does not depend on those routes.","Model quality and performance remain experimental and uncalibrated.","External actions remain unavailable without an approved authenticated service."]
+}
