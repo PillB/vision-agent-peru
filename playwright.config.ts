@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const baseURL = process.env.BASE_URL ?? 'http://127.0.0.1:3000'
+const ciPagesPath = process.env.GITHUB_ACTIONS === 'true' ? '/vision-agent-peru/' : '/'
+const baseURL = process.env.BASE_URL ?? `http://127.0.0.1:3000${ciPagesPath}`
 const local = !process.env.BASE_URL
 
 export default defineConfig({
@@ -35,7 +36,7 @@ export default defineConfig({
   ],
   webServer: local ? {
     command: 'npm run dev',
-    url: 'http://127.0.0.1:3000',
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     stdout: 'pipe',
