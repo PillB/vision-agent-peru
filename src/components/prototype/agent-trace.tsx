@@ -58,7 +58,11 @@ export function AgentTrace() {
           <div className="text-xs font-medium text-zinc-950">LLM-as-judge</div>
           <div className="text-[10px] text-zinc-500">Filter false positives at Tier 3</div>
         </div>
-        <Switch checked={llmJudgeEnabled} onCheckedChange={setLlmJudgeEnabled} />
+        <Switch
+          aria-label="Enable optional LLM judge"
+          checked={llmJudgeEnabled}
+          onCheckedChange={setLlmJudgeEnabled}
+        />
       </div>
 
       {/* Tier 2 threshold slider */}
@@ -68,6 +72,7 @@ export function AgentTrace() {
           <span className="font-mono text-xs text-zinc-950">{agentConfig.t2Z.toFixed(1)}</span>
         </div>
         <Slider
+          aria-label="Tier 2 z-score threshold"
           value={[agentConfig.t2Z]}
           onValueChange={(v) => setAgentConfig({ t2Z: v[0] })}
           min={1.5}
@@ -87,6 +92,7 @@ export function AgentTrace() {
           <span className="font-mono text-xs text-zinc-950">{agentConfig.t3Z.toFixed(1)}</span>
         </div>
         <Slider
+          aria-label="Tier 3 z-score threshold"
           value={[agentConfig.t3Z]}
           onValueChange={(v) => setAgentConfig({ t3Z: v[0] })}
           min={2.5}

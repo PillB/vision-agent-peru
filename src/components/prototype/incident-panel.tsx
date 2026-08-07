@@ -125,16 +125,18 @@ export function IncidentPanel() {
       {/* Create new incident */}
       <div className="flex gap-2 items-end">
         <div className="flex-1">
-          <label className="text-[10px] text-zinc-500">Camera</label>
+          <label htmlFor="incident-camera" className="text-[10px] text-zinc-500">Camera</label>
           <Input
+            id="incident-camera"
             value={newCameraId}
             onChange={(e) => setNewCameraId(e.target.value)}
             className="h-7 text-xs"
           />
         </div>
         <div className="flex-1">
-          <label className="text-[10px] text-zinc-500">Use Case</label>
+          <label htmlFor="incident-use-case" className="text-[10px] text-zinc-500">Use Case</label>
           <Input
+            id="incident-use-case"
             value={newUseCaseId}
             onChange={(e) => setNewUseCaseId(e.target.value)}
             className="h-7 text-xs"

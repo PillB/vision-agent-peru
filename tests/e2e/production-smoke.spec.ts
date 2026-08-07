@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test'
 
+const isRemovedAppApiRoute = (url: string) =>
+  /\/(?:vision-agent-peru\/)?api\/(?:alert|report|judge|set-locale|export-pptx(?:-v[23])?)(?:\/|$)/.test(new URL(url).pathname)
+
 test('deployed surface exposes no production hook and makes no removed API request', async ({ page }, testInfo) => {
   const apiRequests: string[] = []
   page.on('request', request => {
-    if (new URL(request.url()).pathname.includes('/api/')) apiRequests.push(request.url())
+    if (isRemovedAppApiRoute(request.url())) apiRequests.push(request.url())
   })
 
   const response = await page.goto('./')

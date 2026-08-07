@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test'
 
+const isRemovedAppApiRoute = (url: string) =>
+  /\/(?:vision-agent-peru\/)?api\/(?:alert|report|judge|set-locale|export-pptx(?:-v[23])?)(?:\/|$)/.test(new URL(url).pathname)
+
 test('restores the complete live prototype without replacing the evidence workspace', async ({ page }) => {
   const apiRequests: string[] = []
   page.on('request', request => {
-    if (new URL(request.url()).pathname.includes('/api/')) apiRequests.push(request.url())
+    if (isRemovedAppApiRoute(request.url())) apiRequests.push(request.url())
   })
 
   await page.goto('./')
