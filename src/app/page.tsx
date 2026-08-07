@@ -21,7 +21,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-md bg-emerald-600 text-white flex items-center justify-center">
+            <div className="h-7 w-7 rounded-md bg-emerald-700 text-white flex items-center justify-center">
               <Camera className="h-4 w-4" />
             </div>
             <div className="flex items-baseline gap-2">

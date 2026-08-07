@@ -105,7 +105,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               {t('Tab3.slide1.body')}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button onClick={onTryPrototype} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button onClick={onTryPrototype} className="bg-emerald-700 hover:bg-emerald-800 text-white">
                 {t('Tab3.slide1.ctaPrototype')}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -118,11 +118,11 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2 || !serverExportsAvailable} variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
                 {downloadingV2 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Sparkles className="mr-2 h-4 w-4" />{t('Tab3.download.button')} V2</>}
               </Button>
-              <Button onClick={() => handleDownloadPptx('v3')} disabled={downloadingV3 || !serverExportsAvailable} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button onClick={() => handleDownloadPptx('v3')} disabled={downloadingV3 || !serverExportsAvailable} className="bg-emerald-700 hover:bg-emerald-800 text-white">
                 {downloadingV3 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Zap className="mr-2 h-4 w-4" />BCP Z-Flow V3</>}
               </Button>
             </div>
-            <p className="mt-3 text-xs text-zinc-400 flex items-center gap-1.5">
+            <p className="mt-3 text-xs text-zinc-600 flex items-center gap-1.5">
               <FileText className="h-3 w-3" />
               {serverExportsAvailable ? t('Tab3.download.hint') : 'Unavailable on this static deployment; no request will be sent.'}
             </p>
@@ -153,7 +153,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               return (
                 <div key={phase.stage} className="rounded-lg border border-zinc-200 bg-white p-4" style={{ borderTopColor: stage.hex, borderTopWidth: 3 }}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs text-zinc-400">{t('Tab3.slide3.stage')} {phase.stage}</span>
+                    <span className="font-mono text-xs text-zinc-600">{t('Tab3.slide3.stage')} {phase.stage}</span>
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage.hex }} />
                   </div>
                   <div className="text-sm font-semibold text-zinc-950">{t(`Timeline.${phase.keyPrefix}Label`)}</div>
@@ -189,7 +189,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               })
             )}
           </div>
-          <div className="mt-12 flex items-center justify-between text-xs font-mono text-zinc-400">
+          <div className="mt-12 flex items-center justify-between text-xs font-mono text-zinc-600">
             <span>{t('Tab3.slide2.timelineStart')}</span>
             <span>{t('Tab3.slide2.timelineEnd')}</span>
           </div>
@@ -205,12 +205,12 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
           {STAGES.map((stage) => (
             <div key={stage.n} className="rounded-xl border border-zinc-200 bg-white p-5 flex flex-col" style={{ borderTopColor: stage.hex, borderTopWidth: 3 }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs text-zinc-400">{t('Tab3.slide3.stage')} {stage.n}</span>
+                <span className="font-mono text-xs text-zinc-600">{t('Tab3.slide3.stage')} {stage.n}</span>
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: stage.hex }} />
               </div>
               <h3 className="text-base font-semibold text-zinc-950 leading-tight">{t(`Stages.${stage.keyPrefix}Name`)}</h3>
               <div className="text-xs text-zinc-500 font-mono mt-0.5">{t(`Stages.${stage.keyPrefix}Era`)}</div>
-              <div className="text-[10px] text-zinc-400 mt-0.5">{t(`Stages.${stage.keyPrefix}Also`)}</div>
+              <div className="text-[10px] text-zinc-600 mt-0.5">{t(`Stages.${stage.keyPrefix}Also`)}</div>
               <p className="mt-3 text-xs text-zinc-700 leading-relaxed">{t(`Stages.${stage.keyPrefix}Def`)}</p>
               <div className="mt-3">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700 mb-1">{t('Tab3.slide3.canDo')}</div>
@@ -276,7 +276,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
             {CAPABILITY_LEAPS.map((leap) => (
               <div key={leap.index} className="rounded-lg border border-zinc-200 bg-white p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-mono text-xs text-zinc-400">0{leap.index}</span>
+                  <span className="font-mono text-xs text-zinc-600">0{leap.index}</span>
                   <span className="text-xs font-medium text-zinc-500 line-through">{t(`CapabilityLeaps.${leap.keyPrefix}From`)}</span>
                   <ArrowRight className="h-3 w-3 text-emerald-600" />
                   <span className="text-xs font-semibold text-emerald-700">{t(`CapabilityLeaps.${leap.keyPrefix}To`)}</span>
@@ -355,7 +355,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
             </div>
           </div>
           <div className="mt-6 flex items-center gap-2 text-sm">
-            <span className="h-2 w-2 rounded-full bg-emerald-600" />
+            <span className="h-2 w-2 rounded-full bg-emerald-700" />
             <span className="font-semibold text-zinc-950">{t('Tab3.slide6.cuscoPin')}</span>
             <span className="text-zinc-500">{t('Tab3.slide6.cuscoPinBody')}</span>
           </div>
@@ -376,7 +376,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
                 <div className="font-mono text-3xl md:text-4xl font-medium tabular-nums text-emerald-700 flex-shrink-0">{t(`MarketStats.${stat.keyPrefix}Value`)}</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-zinc-700 leading-snug">{t(`MarketStats.${stat.keyPrefix}Caption`)}</div>
-                  <div className="text-[10px] text-zinc-400 mt-1 font-mono">{t(`MarketStats.${stat.keyPrefix}Source`)}</div>
+                  <div className="text-[10px] text-zinc-600 mt-1 font-mono">{t(`MarketStats.${stat.keyPrefix}Source`)}</div>
                 </div>
               </div>
             ))}
@@ -393,7 +393,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
             {MATURITY_LADDER.map((step) => {
               const heightClass = step.step === 1 ? 'h-32' : step.step === 2 ? 'h-40' : step.step === 3 ? 'h-48' : step.step === 4 ? 'h-56' : 'h-64'
-              const tone = step.step <= 2 ? 'bg-zinc-400' : step.step === 3 ? 'bg-amber-500' : step.step === 4 ? 'bg-emerald-500' : 'bg-emerald-600'
+              const tone = step.step <= 2 ? 'bg-zinc-400' : step.step === 3 ? 'bg-amber-500' : step.step === 4 ? 'bg-emerald-500' : 'bg-emerald-700'
               const isYouHere = step.step === 3
               return (
                 <div key={step.step} className="flex flex-col">
@@ -416,7 +416,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               <div key={i} className={`rounded-lg border p-4 ${i === 3 ? 'border-amber-200 bg-amber-50/40' : 'border-zinc-200 bg-white'}`}>
                 <div className={`font-mono text-2xl font-medium tabular-nums ${i === 3 ? 'text-amber-700' : 'text-zinc-950'}`}>{t(`Tab3.slide8.stat${i}Value`)}</div>
                 <div className="text-xs text-zinc-500 mt-1">{t(`Tab3.slide8.stat${i}Label`)}</div>
-                <div className="text-[10px] text-zinc-400 mt-1">Deloitte 2026</div>
+                <div className="text-[10px] text-zinc-600 mt-1">Deloitte 2026</div>
               </div>
             ))}
           </div>
@@ -443,7 +443,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
             <div className="rounded-lg border-l-4 border-emerald-600 bg-emerald-50/40 p-4">
               <p className="text-sm text-zinc-700 leading-relaxed"><span className="font-semibold text-zinc-950">{t('Tab3.slide9.proofTitle')}</span> {t('Tab3.slide9.proofBody')}</p>
             </div>
-            <Button onClick={onTryPrototype} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">{t('Tab3.slide9.ctaPrototype')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+            <Button onClick={onTryPrototype} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white">{t('Tab3.slide9.ctaPrototype')}<ArrowRight className="ml-2 h-4 w-4" /></Button>
           </div>
         </div>
         <SourceLine sources={['Project architecture (worklog 0-b, 0-c)', 'MIT Sloan "Agentic AI, Explained" 2025']} />
@@ -462,7 +462,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
           {[1, 2, 3].map((i) => (
             <div key={i} className="rounded-xl border border-zinc-200 bg-white p-5">
               <div className="flex items-center gap-2 mb-3">
-                <div className="h-7 w-7 rounded-full bg-emerald-600 text-white text-sm font-mono flex items-center justify-center">{i}</div>
+                <div className="h-7 w-7 rounded-full bg-emerald-700 text-white text-sm font-mono flex items-center justify-center">{i}</div>
                 <Target className="h-4 w-4 text-emerald-600" />
               </div>
               <h4 className="text-sm font-semibold text-zinc-950 mb-2 leading-tight">{t(`Tab3.slide10.action${i}Title`)}</h4>
@@ -475,7 +475,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {SOURCES.map((src, i) => (
               <div key={i} className="text-xs text-zinc-600 flex items-start gap-2">
-                <span className="font-mono text-zinc-400 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                <span className="font-mono text-zinc-600 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
                 <span><span className="font-semibold text-zinc-950">{src.tag}</span> — {src.title} ({src.year})</span>
               </div>
             ))}
@@ -513,7 +513,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
 function SlideSection({ slideNumber, kicker, children }: { slideNumber: number; kicker: string; children: React.ReactNode }) {
   return (
     <section className="relative border-b border-zinc-200 min-h-[88vh] flex flex-col justify-center">
-      <div className="absolute top-6 right-6 md:right-12 font-mono text-xs text-zinc-400">{String(slideNumber).padStart(2, '0')} / {TOTAL_SLIDES}</div>
+      <div className="absolute top-6 right-6 md:right-12 font-mono text-xs text-zinc-600">{String(slideNumber).padStart(2, '0')} / {TOTAL_SLIDES}</div>
       <div className="mx-auto max-w-6xl w-full px-6 md:px-12 py-16 md:py-24">
         <div className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-3">{kicker}</div>
         {children}
@@ -531,7 +531,7 @@ function OrientingParagraph({ children }: { children: React.ReactNode }) {
 }
 
 function SourceLine({ sources }: { sources: string[] }) {
-  return <div className="mt-12 pt-4 border-t border-zinc-100 text-xs text-zinc-400 font-mono">Source: {sources.join(' · ')}</div>
+  return <div className="mt-12 pt-4 border-t border-zinc-100 text-xs text-zinc-600 font-mono">Source: {sources.join(' · ')}</div>
 }
 
 function ScrCard({ label, icon, body, tone }: { label: string; icon: React.ReactNode; body: string; tone: 'zinc' | 'amber' | 'emerald' }) {

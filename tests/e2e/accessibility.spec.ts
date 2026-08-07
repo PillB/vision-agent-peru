@@ -14,10 +14,17 @@ for (const destination of [
   })
 }
 
-test('supports reduced motion and 200 percent browser zoom', async ({ page }) => {
+test('supports reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('./')
-  await page.evaluate(() => { document.body.style.zoom = '200%' })
+  await expect(page.getByRole('tab', { name: /Overview|Resumen/i })).toBeVisible()
+  expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBeTruthy()
+})
+
+test('reflows at the 640 CSS-pixel viewport equivalent to 200 percent desktop zoom', async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.endsWith('-desktop'), 'WCAG 200% zoom equivalence is evaluated from a 1280px desktop viewport')
+  await page.setViewportSize({ width: 640, height: 720 })
+  await page.goto('./')
   await expect(page.getByRole('tab', { name: /Overview|Resumen/i })).toBeVisible()
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2)
   expect(overflow).toBeFalsy()

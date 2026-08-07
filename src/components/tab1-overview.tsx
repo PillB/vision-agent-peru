@@ -58,7 +58,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button
               onClick={onTryPrototype}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white"
             >
               {t('hero.ctaPrototype')}
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -118,7 +118,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               <p className="mt-4 text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl">
                 The live baseline measured approximately 0.1 analysis cycles per second with roughly 7.3 seconds inference latency in the tested Chromium environment. Those observations are diagnostic, not a general performance guarantee.
               </p>
-              <p className="mt-4 text-xs text-zinc-400 font-mono">
+              <p className="mt-4 text-xs text-zinc-600 font-mono">
                 Evidence: Round 0 live-site reproduction at commit ea584dc. See the benchmark and deployment ledgers for scope and limitations.
               </p>
             </div>
@@ -301,7 +301,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             ))}
           </div>
 
-          <p className="mt-6 text-xs text-zinc-400 font-mono">
+          <p className="mt-6 text-xs text-zinc-600 font-mono">
             Source: industry typical CCTV operations (Slideworks, AlertOps case studies, 2024) vs internal prototype measurement, 2026-07-14.
           </p>
         </div>
@@ -393,7 +393,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 ].map((h, i) => (
                   <div key={i} className="flex items-center gap-3 text-xs">
                     <span className={`h-2 w-2 rounded-full flex-shrink-0 ${h.tier === 3 ? 'bg-rose-600' : h.tier === 2 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                    <span className="font-mono text-zinc-400 w-20">{h.t}</span>
+                    <span className="font-mono text-zinc-600 w-20">{h.t}</span>
                     <span className="text-zinc-500 w-16">{h.cam}</span>
                     <span className="text-zinc-950 flex-1">{h.msg}</span>
                   </div>
@@ -430,7 +430,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 <div key={stage.label} className="flex flex-col items-center gap-2">
                   <div className="text-xs font-mono text-zinc-500">{stage.pct}%</div>
                   <div
-                    className={`w-full rounded-t-lg ${stage.tone === 'emerald' ? 'bg-emerald-600' : stage.tone === 'amber' ? 'bg-amber-500' : stage.tone === 'rose' ? 'bg-rose-600' : 'bg-zinc-400'}`}
+                    className={`w-full rounded-t-lg ${stage.tone === 'emerald' ? 'bg-emerald-700' : stage.tone === 'amber' ? 'bg-amber-500' : stage.tone === 'rose' ? 'bg-rose-600' : 'bg-zinc-400'}`}
                     style={{ height: `${stage.pct * 2.5}px` }}
                   />
                   <div className="text-center">
@@ -445,7 +445,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             </div>
           </div>
 
-          <p className="mt-8 text-xs text-zinc-400 font-mono">
+          <p className="mt-8 text-xs text-zinc-600 font-mono">
             Source: representative 1-hour simulation run on Cusco plaza footage. Percentages are of raw frame count; absolute numbers depend on scene density.
           </p>
         </div>
@@ -683,7 +683,7 @@ function FlowCard({ step, icon, name, role, layer, description, outputs, valueTa
         <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${toneRing}`}>
           {icon}
         </div>
-        <span className="font-mono text-xs text-zinc-400">0{step}</span>
+        <span className="font-mono text-xs text-zinc-600">0{step}</span>
       </div>
       <div className="text-sm font-semibold text-zinc-950">{name}</div>
       <div className="text-xs text-zinc-500 font-mono">{role}</div>
@@ -692,7 +692,7 @@ function FlowCard({ step, icon, name, role, layer, description, outputs, valueTa
       </span>
       <p className="mt-3 text-xs text-zinc-600 leading-relaxed flex-1">{description}</p>
       <div className="mt-3 pt-3 border-t border-zinc-100">
-        <div className="text-[10px] text-zinc-400 uppercase tracking-wide">Outputs</div>
+        <div className="text-[10px] text-zinc-600 uppercase tracking-wide">Outputs</div>
         <div className="font-mono text-xs text-zinc-700 mt-0.5">{outputs}</div>
       </div>
       <div className="mt-2 text-[10px] text-emerald-700 font-medium">→ {valueTag}</div>
@@ -707,7 +707,7 @@ function LayerCard({ tone, title, subtitle, items }: {
   items: string[]
 }) {
   const ring = tone === 'emerald' ? 'border-emerald-200 bg-emerald-50/40' : 'border-zinc-200 bg-white'
-  const dot = tone === 'emerald' ? 'bg-emerald-600' : 'bg-zinc-400'
+  const dot = tone === 'emerald' ? 'bg-emerald-700' : 'bg-zinc-400'
   return (
     <div className={`rounded-xl border p-6 ${ring}`}>
       <div className="flex items-center justify-between mb-3">

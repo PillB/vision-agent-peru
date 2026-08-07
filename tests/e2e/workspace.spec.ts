@@ -63,7 +63,7 @@ test('corrupted video is rejected through the visible upload control', async ({ 
     mimeType: 'video/mp4',
     buffer: Buffer.from('not a video'),
   })
-  await expect(page.getByRole('alert')).toContainText(/failed decoding metadata/i)
+  await expect(page.getByRole('region', { name: 'Upload and capability check' }).getByRole('alert')).toContainText(/failed decoding metadata/i)
   await expect(page.getByRole('button', { name: 'Approve and analyze locally' })).toBeDisabled()
 })
 
@@ -72,7 +72,7 @@ test('sensitive and research-only traits are rejected through the visible search
   await page.getByRole('button', { name: 'Search Evidence' }).click()
   await page.getByLabel('Describe observable evidence').fill('find a young woman by race and gait')
   await page.getByRole('button', { name: 'Search local evidence' }).click()
-  await expect(page.getByRole('alert')).toContainText(/Query rejected/i)
+  await expect(page.getByRole('region', { name: 'Natural-language and reference search' }).getByRole('alert')).toContainText(/Query rejected/i)
 })
 
 test('false-positive simulation proves no downstream action executes', async ({ page }) => {

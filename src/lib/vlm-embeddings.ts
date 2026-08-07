@@ -40,7 +40,8 @@ export async function loadClipRuntime(preferWebGpu = false): Promise<ClipRuntime
     env.allowLocalModels = false
     env.useBrowserCache = true
 
-    const hasWebGpu = preferWebGpu && typeof navigator !== 'undefined' && 'gpu' in navigator
+    const gpu = typeof navigator === 'undefined' ? undefined : (navigator as Navigator & { gpu?: unknown }).gpu
+    const hasWebGpu = preferWebGpu && Boolean(gpu)
     const backend: 'wasm' | 'webgpu' = hasWebGpu ? 'webgpu' : 'wasm'
     const options = {
       revision: RETRIEVAL_MODEL.revision,
