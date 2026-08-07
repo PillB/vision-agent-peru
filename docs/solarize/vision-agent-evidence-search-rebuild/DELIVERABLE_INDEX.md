@@ -5,7 +5,7 @@ Status reflects evidence available in the repository. “Experimental” is not 
 | # | Required deliverable | Status | Exact evidence |
 |---:|---|---|---|
 | 1 | Forensic audit | Complete | `round-0-forensic-audit.md`, `artifacts/baseline/live-baseline.json` |
-| 2 | Live baseline screenshots and traces | Partial: trace facts preserved; screenshot capture pending hosted artifact | baseline JSON and deployment workflow artifact policy |
+| 2 | Live baseline screenshots and traces | Complete | `artifacts/baseline/live-capture/` manifest, three destination screenshots, trace, video and Playwright result from run `31202076015` |
 | 3 | Capability truth ledger | Complete | `capability_truth_ledger.json` |
 | 4 | Competitor capability matrix | Complete | `competitor-capability-matrix.md`, primary links only |
 | 5 | Current-claim audit | Complete | `claim_registry.json`, corrected `messages/*.json`, `tab1-overview.tsx` |

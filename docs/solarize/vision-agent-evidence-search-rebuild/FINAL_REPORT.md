@@ -58,7 +58,7 @@ The public copy no longer claims 60% false-positive reduction, 10 FPS, fixed sub
 
 ## Verification evidence
 
-- Round 0: `round-0-forensic-audit.md`, `artifacts/baseline/live-baseline.json`.
+- Round 0: `round-0-forensic-audit.md`, `artifacts/baseline/live-baseline.json`, and hashed screenshots/trace/video/results under `artifacts/baseline/live-capture/` from CI run `31202076015`.
 - Unit/contract/model: `tests/unit`, `tests/contracts`, `tests/models` and exact `package.json` scripts.
 - Browser matrix: `playwright.config.ts`, `tests/e2e`; CI run `31201270165` passed 68 cases with two documented standards-based skips and retained reports/traces/screenshots/failure-video policy.
 - CI/deploy: `.github/workflows/deploy.yml`; final run URL, deployed commit, route probes, screenshots, and two quiet-round results must be appended after publication.

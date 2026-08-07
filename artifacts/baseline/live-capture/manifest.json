@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "capturedAt": "2026-08-07T17:25:34.022Z",
+  "liveUrl": "https://pillb.github.io/vision-agent-peru/",
+  "baselineCommit": "ea584dcb043fa1ad95467d8efd8e8f359c321a34",
+  "captureWorkflowRun": 31202076015,
+  "captureMergeSha": "c09dbc4e5998cc19f47d7e1ad5948c277d4bbcde",
+  "playwright": {"project": "chromium-live-baseline", "expected": 1, "unexpected": 0, "durationMs": 12537.283},
+  "files": [
+    {"path":"1-solution-overview.png","sha256":"03dc60ffb1eedc9d99dc142117973e9f22ddb6e3504b471d1b80c319ad69d447","bytes":1158387},
+    {"path":"2-strategic-brief.png","sha256":"efbd708e386286310e36200cbc69f976ccb76fa1e68b38ac8174234f48822887","bytes":1628285},
+    {"path":"3-live-prototype.png","sha256":"9347c4d48ee1b6511baeb6a8eb5463450487b7d94db6e079421b57b94547da72","bytes":386604},
+    {"path":"trace.zip","sha256":"1fa11b94b4ba10b96e18cd0c8700d02db86eff28ef74c72d76f4f9556112987e","bytes":22724069},
+    {"path":"video.webm","sha256":"213da77c87680a5695e453e3231cafc597e8d3b63f7a3cda7efd4c5d13d42c58","bytes":491496},
+    {"path":"results.json","sha256":"63955f2dd930e70ba274d8d216df31d3c09b2b8306670f4a62179c6263a2eb9e","bytes":226967}
+  ]
+}
