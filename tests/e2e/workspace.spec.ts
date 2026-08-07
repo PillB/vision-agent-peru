@@ -96,5 +96,7 @@ test('IndexedDB failure is visible and disables analysis approval', async ({ pag
 test('WebGPU absence reports the expected WASM fallback', async ({ page }) => {
   await page.addInitScript(() => Object.defineProperty(navigator, 'gpu', { value: undefined, configurable: true }))
   await openWorkspace(page)
-  await expect(page.getByText(/absent — WASM fallback required/i)).toBeVisible()
+  const row = page.getByText('WebGPU', { exact: true }).locator('..')
+  await expect(row).toContainText(/absent — WASM fallback required/i)
+  await expect(row).toHaveAttribute('data-status', 'unavailable')
 })

@@ -11,6 +11,9 @@ test('deployed surface exposes no production hook and makes no removed API reque
   await expect(page.getByRole('heading').first()).toBeVisible()
   await page.getByRole('tab', { name: /Evidence Workspace|Espacio de evidencia/i }).click()
   await expect(page.getByText(/local-only|solo local/i).first()).toBeVisible()
+  const webGpuRow = page.getByText('WebGPU', { exact: true }).locator('..')
+  const webGpuText = await webGpuRow.innerText()
+  await expect(webGpuRow).toHaveAttribute('data-status', webGpuText.includes('absent') ? 'unavailable' : 'available')
   const deployed = new URL(page.url()).hostname.endsWith('github.io')
   if (deployed) {
     await page.screenshot({ path: testInfo.outputPath('deployed-evidence-workspace.png'), fullPage: true })
