@@ -1,0 +1,13 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "repository":"https://github.com/PillB/vision-agent-peru",
+  "pullRequest":"https://github.com/PillB/vision-agent-peru/pull/1",
+  "liveUrl":"https://pillb.github.io/vision-agent-peru/",
+  "baseline":{"commit":"ea584dcb043fa1ad95467d8efd8e8f359c321a34","api":{"get":404,"post":405},"observedCyclesPerSecond":0.1,"observedLatencyMs":7301},
+  "releaseCandidate":{"commit":"e39c0e1","status":"evidence-complete pre-freeze verification passed in run 31202076015","localStaticRoutes":["/","/_not-found"],"apiRoutesInStaticArtifact":false},
+  "quietRounds":[],
+  "deployment":null,
+  "liveRetest":null,
+  "gate":"closed until two quiet rounds, merge, deployment and production smoke pass"
+}

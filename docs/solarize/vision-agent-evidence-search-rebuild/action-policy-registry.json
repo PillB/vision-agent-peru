@@ -1,0 +1,18 @@
+{
+  "schemaVersion":"1.0.0",
+  "authority":"src/lib/action-orchestrator.ts",
+  "orderedStages":["observe","validate_evidence","apply_policy","invoke_judge","validate_judge","propose_action","request_approval","execute","verify_outcome","close_or_retry_or_compensate"],
+  "actions":[
+    {"action":"badge","githubPages":"local","approval":false,"verification":"local state recorded"},
+    {"action":"snapshot","githubPages":"local","approval":false,"verification":"evidence record persisted or explicit failure"},
+    {"action":"log_hit","githubPages":"local","approval":false,"verification":"action record persisted or explicit failure"},
+    {"action":"log_tick","githubPages":"local","approval":false,"verification":"telemetry record persisted or explicit failure"},
+    {"action":"generate_report","githubPages":"local deterministic export","approval":false,"verification":"export hash generated; never an API-success simulation"},
+    {"action":"llm_judge","githubPages":"unavailable","approval":false,"requirements":["authenticated judge","visual evidence","valid verdict schema"],"authority":"advisory; cannot add actions or raise severity"},
+    {"action":"send_email","githubPages":"unavailable","approval":true,"requirements":["secure_service profile","configured authenticated service","idempotency key","outcome verification"]},
+    {"action":"escalate","githubPages":"unavailable","approval":true,"requirements":["secure_service profile","configured authenticated service","idempotency key","outcome verification"]}
+  ],
+  "nonImplementedExternalCategories":["tickets","dispatch","access-control changes","emergency messaging","external evidence transmission"],
+  "failurePolicy":"Retry up to configured maximum, verify each result, compensate when supplied, and never label unavailable/failed work successful.",
+  "falsePositiveInvariant":"A valid false_positive judge verdict closes the incident before proposal, approval, execution, or verification."
+}

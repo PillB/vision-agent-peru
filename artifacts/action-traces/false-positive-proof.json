@@ -1,0 +1,8 @@
+{
+  "scenario":"explicitly labeled deterministic simulation",
+  "input":{"verdict":"false_positive","evidenceIds":["fixture-evidence-1"],"requestedActions":["generate_report","send_email","escalate"]},
+  "expected":["observe","validate_evidence","apply_policy","invoke_judge","validate_judge","close"],
+  "forbidden":["propose_action","request_approval","execute","verify_outcome"],
+  "proof":"tests/contracts/agentic-control.test.ts and tests/e2e/workspace.spec.ts",
+  "result":"pass"
+}

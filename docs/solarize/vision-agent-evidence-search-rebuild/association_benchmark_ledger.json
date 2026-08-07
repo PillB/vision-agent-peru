@@ -1,0 +1,11 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "benchmarkId":"cross-video-association-promotion-gate",
+  "dataset":null,
+  "inputs":["appearance embedding","semantic evidence","camera topology","time feasibility","conflict evidence"],
+  "metrics":{"precision":null,"recall":null,"openSetFalseAcceptRate":null,"calibrationError":null},
+  "validatedContracts":["unrelated open-set candidate returns inconclusive","human confirmation is a distinct state","conflicting topology lowers candidate status"],
+  "decision":"Fusion is explicitly uncalibrated and experimental; outputs remain candidates until human review.",
+  "evidence":["src/lib/association.ts","tests/unit/association.test.ts"]
+}

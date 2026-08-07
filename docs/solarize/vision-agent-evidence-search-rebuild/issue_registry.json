@@ -1,182 +1,22 @@
 {
-  "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-08-06T22:30:00Z",
-  "issues": [
-    {
-      "id": "D1",
-      "title": "API routes on GitHub Pages",
-      "severity": "critical",
-      "status": "fixed",
-      "description": "Client code called /api/alert, /api/report, /api/judge on GitHub Pages where API routes are removed during build",
-      "rootCause": "Static export removes API routes, but client code assumed they existed",
-      "fix": "Added deployment.ts with isGitHubPages() + apiRoutesAvailable(); use-agent-actions checks before fetch and simulates when unavailable",
-      "preempt": "Never add client code that calls /api/* without checking apiRoutesAvailable() first",
-      "tests": ["adversarial: D2 API route simulates verdict when API unavailable"]
-    },
-    {
-      "id": "D2",
-      "title": "Concurrent LLM judging race condition",
-      "severity": "high",
-      "status": "fixed",
-      "description": "Multiple judge calls could race each other for the same camera+useCase",
-      "rootCause": "No deduplication of in-flight judge requests",
-      "fix": "Added __visionJudgeInFlight single-flight dedup in use-agent-actions.ts",
-      "preempt": "Use single-flight pattern for any idempotent network call",
-      "tests": ["adversarial: D2 single-flight judge dedup"]
-    },
-    {
-      "id": "D3",
-      "title": "LLM judge had no visual evidence",
-      "severity": "high",
-      "status": "fixed",
-      "description": "Judge received only text metadata (count, z-score) — could not actually see the scene",
-      "rootCause": "Snapshot data URL was not passed to /api/judge",
-      "fix": "Camera-view captures 256x144 JPEG crop; /api/judge uses multimodal message format with image_url",
-      "preempt": "Always pass visual evidence to VLM judges, not just metadata",
-      "tests": ["adversarial: D3 /api/judge accepts snapshotDataUrl"]
-    },
-    {
-      "id": "D4",
-      "title": "Identity overclaims (color histograms as identity)",
-      "severity": "high",
-      "status": "fixed",
-      "description": "UI called color histograms 'identity' and 'Tracked Identities'",
-      "rootCause": "Terminology implied identity when only appearance features were used",
-      "fix": "Renamed GlobalIdentityManager→AppearanceTracker, globalId→trackId, 'Identidades Rastreadas'→'Appearance Tracks'",
-      "preempt": "Never call appearance features 'identity' — use 'track', 'candidate', 'association'",
-      "tests": ["adversarial: identity terminology tests"]
-    },
-    {
-      "id": "D5",
-      "title": "Person detections triggered unrelated alerts (fire, flood, graffiti)",
-      "severity": "critical",
-      "status": "fixed",
-      "description": "'person' was in detectionClasses for fire_smoke, graffiti, slip_hazard, etc.",
-      "rootCause": "Use cases listed 'person' as a detection class for hazard detection",
-      "fix": "Removed 'person' from detectionClasses for hazard use cases; added specializedClassName",
-      "preempt": "A generic person detection must not be positive evidence for an unrelated hazard",
-      "tests": ["adversarial: hazard classes not contaminated by person"]
-    },
-    {
-      "id": "D6",
-      "title": "frame_diff was z-score proxy, not actual frame differencing",
-      "severity": "high",
-      "status": "fixed",
-      "description": "frame_diff rule type used detection-count z-score, not pixel comparison",
-      "rootCause": "No actual temporal pixel comparison was implemented",
-      "fix": "Pixel-anomaly detection now runs BEFORE agent and injects specialized detections",
-      "preempt": "A count z-score must not be described as frame differencing",
-      "tests": ["adversarial: frame_diff uses trackedCount"]
-    },
-    {
-      "id": "D7",
-      "title": "UseCase.actions not controlling execution",
-      "severity": "critical",
-      "status": "fixed",
-      "description": "Agent hardcoded actions by tier, ignoring useCase.actions",
-      "rootCause": "decide() didn't filter actions through useCase.actions",
-      "fix": "Agent now filters every action through allowedActions.has(name)",
-      "preempt": "The declared policy must be authoritative, not documentation-only",
-      "tests": ["adversarial: D7 respects useCase.actions (4 tests)"]
-    },
-    {
-      "id": "D8",
-      "title": "Parking threshold zero always-true",
-      "severity": "medium",
-      "status": "fixed",
-      "description": "Parking threshold was 0, so any frame triggered an alert",
-      "rootCause": "Threshold misconfiguration",
-      "fix": "Changed threshold 0→1; parking now requires at least 1 vehicle",
-      "preempt": "Test every threshold — a passive telemetry use case must not generate alerts merely because its condition is always true",
-      "tests": ["adversarial: parking threshold tests"]
-    },
-    {
-      "id": "D9",
-      "title": "Non-functioning model adapters",
-      "severity": "high",
-      "status": "fixed",
-      "description": "YOLOv10n, YOLOS-tiny, SegFormer, YOLOv8n-pose were selectable but had no adapters",
-      "rootCause": "Registry listed models without adapters",
-      "fix": "Added adapterImplemented: boolean; camera-view filters by this flag; UI shows badges",
-      "preempt": "Never claim a model works without an adapter — mark it 'pending'",
-      "tests": ["adversarial: D9 adapter honesty (4 tests)"]
-    },
-    {
-      "id": "D10",
-      "title": "Model ranking zero-value handling",
-      "severity": "medium",
-      "status": "fixed",
-      "description": "License ranking was case-sensitive ('apache-2.0' vs 'Apache-2.0'); builtin pixel-anomaly (size=0) ranked first",
-      "rootCause": "Used rank[value] || fallback which treated 0 as falsy; case mismatch in license lookup",
-      "fix": "Case-insensitive license matching; builtin treated as Infinity for sort",
-      "preempt": "Don't use rank[value] || fallback when zero is a valid rank",
-      "tests": ["adversarial: D10 ranking (2 tests)"]
-    },
-    {
-      "id": "D11",
-      "title": "Mutable unpinned model revisions",
-      "severity": "high",
-      "status": "fixed",
-      "description": "Models loaded mutable Hub revisions — no reproducibility",
-      "rootCause": "No revision pinning in model registry",
-      "fix": "Every HF model now has a pinned revision hash",
-      "preempt": "No production model may load an unpinned revision",
-      "tests": ["adversarial: D11 pinned revisions"]
-    },
-    {
-      "id": "D12",
-      "title": "IndexedDB vs in-memory store mismatch",
-      "severity": "high",
-      "status": "fixed",
-      "description": "db.ts used Prisma (server-only) — didn't work on GitHub Pages",
-      "rootCause": "Wrong persistence layer for static export",
-      "fix": "Created src/lib/idb.ts (IndexedDB wrapper) + src/lib/evidence.ts",
-      "preempt": "If the system is in-memory only, say so — don't claim IndexedDB persistence without implementing it",
-      "tests": ["adversarial: D12 IndexedDB layer (2 tests)"]
-    },
-    {
-      "id": "D13",
-      "title": "Playwright tests bypassed UI",
-      "severity": "high",
-      "status": "fixed",
-      "description": "Tests used window.__visionStore, direct Zustand mutation, raw DOM click dispatch",
-      "rootCause": "Ad-hoc scripts prioritized speed over user-level testing",
-      "fix": "Created formal @playwright/test suite using getByRole/getByTestId only",
-      "preempt": "Tests must use the visible UI — never mutate internal state directly",
-      "tests": ["adversarial: D13 formal Playwright suite rules"]
-    },
-    {
-      "id": "D14",
-      "title": "Test hook in production",
-      "severity": "critical",
-      "status": "fixed",
-      "description": "window.__visionStore was exposed in production builds",
-      "rootCause": "Inline hook in store.ts was not tree-shaken",
-      "fix": "Moved to dev-store-hook.ts; loaded via dynamic import only when NODE_ENV !== 'production'",
-      "preempt": "Testing hooks must be compile-time disabled in production",
-      "tests": ["adversarial: D14 store.ts does NOT contain hook", "playwright: production build does not expose dev store hook"]
-    },
-    {
-      "id": "D15",
-      "title": "Unreproducible test counts",
-      "severity": "medium",
-      "status": "fixed",
-      "description": "No checked-in test commands — pass counts in commit messages were not evidence",
-      "rootCause": "package.json scripts incomplete",
-      "fix": "Added test, test:pw, test:formal, test:all scripts",
-      "preempt": "Pass counts in commit messages are not evidence — expose checked-in commands",
-      "tests": ["adversarial: formal Playwright suite exists"]
-    },
-    {
-      "id": "D16",
-      "title": "Marketing-claim drift",
-      "severity": "medium",
-      "status": "fixed",
-      "description": "Claims like '~10 fps', '~60% FP reduction', 'immutable action log' were unsupported",
-      "rootCause": "Marketing language drifted from actual behavior",
-      "fix": "Replaced with honest claims: '0.3-1 fps (WASM)', 'Optional LLM judge', 'session action log (in-memory)'",
-      "preempt": "Every quantitative or operational claim requires reproducible evidence or must be removed",
-      "tests": ["adversarial: claim-to-code truth audit"]
-    }
+  "schemaVersion":"2.0.0",
+  "updated":"2026-08-07",
+  "issues":[
+    {"id":"D1","status":"fixed","evidence":["src/lib/action-orchestrator.ts","src/components/tab3-strategic-brief.tsx","tests/e2e/production-smoke.spec.ts"]},
+    {"id":"D2","status":"fixed","evidence":["src/lib/action-orchestrator.ts","tests/contracts/agentic-control.test.ts"]},
+    {"id":"D3","status":"fixed","evidence":["src/lib/action-orchestrator.ts:EvidenceEnvelope requires evidence IDs and optional visual reference"]},
+    {"id":"D4","status":"fixed in active product; deprecated module removed from bundle","evidence":["src/lib/association.ts","src/components/tab2-prototype.tsx"]},
+    {"id":"D5","status":"fixed","evidence":["src/lib/agent.ts","tests/contracts/agent-use-case-safety.test.ts"]},
+    {"id":"D6","status":"fixed","evidence":["src/lib/pixel-anomaly.ts","tests/contracts/agent-use-case-safety.test.ts"]},
+    {"id":"D7","status":"fixed","evidence":["src/lib/action-orchestrator.ts:revalidateAction","tests/contracts/agentic-control.test.ts"]},
+    {"id":"D8","status":"fixed","evidence":["src/lib/agent.ts:threshold zero telemetry-only","tests/contracts/agent-use-case-safety.test.ts"]},
+    {"id":"D9","status":"fixed","evidence":["src/lib/models/runtime-plan.ts","tests/models/runtime-selection.test.ts"]},
+    {"id":"D10","status":"fixed","evidence":["src/lib/models/registry.ts:getCompatibleModels","tests/models/runtime-selection.test.ts"]},
+    {"id":"D11","status":"fixed for active adapters; disabled candidates remain unverified","evidence":["src/lib/yolos-detector.ts","src/lib/vlm-embeddings.ts","src/lib/models/registry.ts"]},
+    {"id":"D12","status":"fixed as best-effort browser retention","evidence":["src/lib/idb.ts","tests/unit/idb-retention.test.ts"]},
+    {"id":"D13","status":"fixed in canonical suite","evidence":["tests/e2e","playwright.config.ts"]},
+    {"id":"D14","status":"fixed","evidence":["src/app/page.tsx","tests/e2e/production-smoke.spec.ts"]},
+    {"id":"D15","status":"fixed","evidence":["package.json","playwright.config.ts"]},
+    {"id":"D16","status":"fixed by removal or qualification","evidence":["claim_registry.json","messages/en.json","messages/es-PE.json"]}
   ]
 }

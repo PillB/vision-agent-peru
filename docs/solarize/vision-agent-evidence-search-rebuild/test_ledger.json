@@ -1,0 +1,24 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "canonicalScripts":[
+    {"script":"npm run lint","purpose":"ESLint source and test analysis"},
+    {"script":"npm run typecheck","purpose":"TypeScript without emit"},
+    {"script":"npm run test:unit","purpose":"privacy, retention, association and absence contracts"},
+    {"script":"npm run test:contracts","purpose":"action and use-case safety contracts"},
+    {"script":"npm run test:models","purpose":"tracker, adapter selection, rank-zero and revision contracts"},
+    {"script":"npm run test:e2e","purpose":"five-project visible-UI Playwright matrix"},
+    {"script":"npm run test:e2e:live","purpose":"production smoke against BASE_URL"},
+    {"script":"npm run test:all","purpose":"complete local gate where browser binaries exist"}
+  ],
+  "localResults":{"typecheck":"pass","unit":{"passed":6,"failed":0},"contracts":{"passed":14,"failed":0},"models":{"passed":6,"failed":0},"playwrightEnumerated":70},
+  "ciHistory":[
+    {"runId":31198216747,"commit":"3bc69d57f953be4831bacf27387d81996d854308","result":"failure","finding":"Pages base path was not used by the CI web server."},
+    {"runId":31198675904,"commit":"60b761c9e41d6b81c581e668a4336e291e3913a4","result":"failure","finding":"24 browser failures exposed contrast, synthetic zoom, locator scope and WebGPU-probe defects."},
+    {"runId":31199947145,"commit":"31fbc44b7db1e31e06fa353782aaeb8894c314cb","result":"failure","browser":{"passed":63,"failed":5,"skipped":2},"finding":"All failures were corrupted-video error wording mismatch."},
+    {"runId":31200597071,"commit":"a3a946170169a028df8943c5612175a94f681c6f","result":"failure","browser":{"passed":68,"failed":0,"skipped":2},"finding":"Browser matrix passed; static export found stale Next development validator state."},
+    {"runId":31201270165,"commit":"fc6450d","result":"success","browser":{"passed":68,"failed":0,"skipped":2},"finding":"Complete pre-freeze deterministic, browser and API-free static-export gate passed."},
+    {"runId":31202076015,"commit":"e39c0e1","result":"success","browser":{"passed":68,"failed":0,"skipped":2},"baselineCapture":{"passed":1,"failed":0},"finding":"Evidence-complete pre-freeze run and live baseline capture passed."}
+  ],
+  "evidence":"GitHub Actions retained verification-evidence artifacts for every run."
+}

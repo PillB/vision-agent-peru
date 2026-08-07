@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "failures":[
+    {"id":"F-ROUND0-TEST","stage":"baseline","symptom":"npm run test could not resolve undeclared tsx; direct execution passed 2070/2071.","material":true,"resolution":"Pinned tsx and replaced ad hoc harnesses with canonical scripts.","evidence":"round-0-forensic-audit.md"},
+    {"id":"F-CI-BASEPATH","stage":"CI Red","symptom":"Playwright web server health check targeted root while GitHub Actions configuration used the Pages base path.","material":true,"resolution":"Playwright base URL includes /vision-agent-peru/ in Actions.","runId":31198216747},
+    {"id":"F-CI-A11Y","stage":"CI Red","symptom":"Axe found serious contrast violations; zoom oracle and shared alert locators were incorrect; WebGPU absence used property membership.","material":true,"resolution":"Contrast tokens corrected, zoom modelled as CSS viewport equivalence, alerts scoped, GPU value checked.","runId":31198675904},
+    {"id":"F-CI-CORRUPT","stage":"CI Red","symptom":"Corrupted video was safely rejected but wording differed from the evidence contract in all five projects.","material":false,"resolution":"Standardized user-visible decode failure wording without weakening the assertion.","runId":31199947145},
+    {"id":"F-CI-STATIC-CACHE","stage":"CI Red","symptom":"Static export inherited Next dev validator imports after API source removal.","material":true,"resolution":"Clear .next before creating the API-free static export.","runId":31200597071},
+    {"id":"F-LOCAL-SYMLINK","stage":"local verification harness","symptom":"Turbopack rejected a dependency symlink outside a temporary project root.","material":false,"resolution":"Reproduced with an in-filesystem project layout; clean static export passed.","evidence":"local command output; no product change"}
+  ]
+}

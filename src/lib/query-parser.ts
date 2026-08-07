@@ -62,7 +62,7 @@ export interface ParsedQuery {
 // political views, socioeconomic status, emotion, subjective criminality.
 const SENSITIVE_TERMS = [
   // Race / ethnicity
-  'raza', 'race', 'etnia', 'ethnicity', 'negro', 'black', 'blanco', 'white',
+  'raza', 'race', 'etnia', 'ethnicity',
   'asiatico', 'asian', 'indigena', 'indigenous', 'mestizo', 'caucasian',
   'caucasico', 'hispanic', 'latino',
   // Religion
@@ -86,7 +86,30 @@ const SENSITIVE_TERMS = [
   'killer', 'murderer', 'terrorist', 'terrorista', 'narcotraficante',
   'drug dealer', 'sicario', 'hitman', 'sospechoso', 'suspicious',
   'peligroso', 'dangerous',
+  // Disabled research-only traits: age, perceived gender, gait, body shape
+  'hombre', 'man', 'mujer', 'woman', 'masculino', 'male', 'femenino', 'female',
+  'joven', 'young', 'anciano', 'elderly', 'viejo', 'old', 'edad', 'age',
+  'gait', 'marcha', 'cojera', 'body shape', 'body proportion', 'forma corporal',
 ]
+
+const SENSITIVE_CONTEXT_PATTERNS = [
+  /\b(?:person|persona|man|hombre|woman|mujer)\s+(?:black|white|negro|blanco)\b/i,
+  /\b(?:black|white|negro|blanco)\s+(?:person|persona|man|hombre|woman|mujer)\b/i,
+  /\b(?:clase social|social class|partido politico|political party)\b/i,
+]
+
+function findSensitiveTerms(text: string): string[] {
+  const normalized = text.toLowerCase()
+  const tokenSet = new Set(normalized.split(/[^\p{L}\p{N}-]+/u).filter(Boolean))
+  const found = SENSITIVE_TERMS.filter(term => term.includes(' ')
+    ? normalized.includes(term)
+    : tokenSet.has(term))
+  for (const pattern of SENSITIVE_CONTEXT_PATTERNS) {
+    const match = normalized.match(pattern)?.[0]
+    if (match) found.push(match)
+  }
+  return [...new Set(found)]
+}
 
 // ─── Object type detection ───
 const OBJECT_TYPES: Record<string, ParsedQuery['objectType']> = {
@@ -199,11 +222,7 @@ export function parseQuery(rawQuery: string): ParsedQuery {
   const recognizedTerms: string[] = []
 
   // ─── 1. Check for sensitive terms (REJECT, don't transform) ───
-  for (const term of SENSITIVE_TERMS) {
-    if (lower.includes(term)) {
-      result.rejectedTerms.push(term)
-    }
-  }
+  result.rejectedTerms.push(...findSensitiveTerms(lower))
 
   if (result.rejectedTerms.length > 0) {
     result.explanation = `Query rejected: contains sensitive term(s): ${result.rejectedTerms.join(', ')}. ` +
@@ -243,32 +262,32 @@ export function parseQuery(rawQuery: string): ParsedQuery {
     }
   }
 
-  // ─── 5. Detect colors (assign to nearest clothing/object/vehicle) ───
-  for (const [keyword, value] of Object.entries(COLORS)) {
-    if (lower.includes(keyword)) {
-      if (!result.upperColor && (result.upperClothing || lower.includes('casaca') || lower.includes('jacket'))) {
-        result.upperColor = value
-      } else if (!result.lowerColor && (result.lowerClothing || lower.includes('pantalon') || lower.includes('pants'))) {
-        result.lowerColor = value
-      } else if (!result.vehicleColor && result.objectType === 'vehicle') {
-        result.vehicleColor = value
-      } else if (!result.objectColor && result.carriedObject) {
-        result.objectColor = value
-      } else if (!result.upperColor) {
-        result.upperColor = value
-      }
-      recognizedTerms.push(keyword)
-      break
-    }
-  }
-
-  // ─── 6. Detect carried objects ───
+  // ─── 5. Detect carried objects ───
   for (const [keyword, value] of Object.entries(CARRIED_OBJECTS)) {
     if (lower.includes(keyword)) {
       result.carriedObject = value
       recognizedTerms.push(keyword)
       break
     }
+  }
+
+  // ─── 6. Detect colors and bind each to the nearest described item ───
+  const colorMatches = Object.entries(COLORS)
+    .map(([keyword, value]) => ({ keyword, value, position: lower.indexOf(keyword) }))
+    .filter(match => match.position >= 0)
+    .sort((left, right) => left.position - right.position)
+  for (const match of colorMatches) {
+    const nearby = lower.slice(Math.max(0, match.position - 18), match.position + match.keyword.length + 18)
+    const nearUpper = Object.keys(UPPER_CLOTHING).some(keyword => nearby.includes(keyword))
+    const nearLower = Object.keys(LOWER_CLOTHING).some(keyword => nearby.includes(keyword))
+    const nearCarried = Object.keys(CARRIED_OBJECTS).some(keyword => nearby.includes(keyword))
+    const nearVehicle = Object.keys(VEHICLE_TYPES).some(keyword => nearby.includes(keyword))
+    if (nearUpper && !result.upperColor) result.upperColor = match.value
+    else if (nearLower && !result.lowerColor) result.lowerColor = match.value
+    else if (nearCarried && !result.objectColor) result.objectColor = match.value
+    else if ((nearVehicle || result.objectType === 'vehicle') && !result.vehicleColor) result.vehicleColor = match.value
+    else if (!result.upperColor) result.upperColor = match.value
+    recognizedTerms.push(match.keyword)
   }
 
   // ─── 7. Detect vehicle type ───
@@ -372,13 +391,7 @@ export function parseQuery(rawQuery: string): ParsedQuery {
  * Returns the rejection reason, or null if the query is acceptable.
  */
 export function checkSensitiveTerms(query: string): string | null {
-  const lower = query.toLowerCase()
-  const found: string[] = []
-  for (const term of SENSITIVE_TERMS) {
-    if (lower.includes(term)) {
-      found.push(term)
-    }
-  }
+  const found = findSensitiveTerms(query)
   if (found.length === 0) return null
   return `Query contains sensitive term(s): ${found.join(', ')}. ` +
     `These attributes are excluded from operational ranking per the privacy ` +

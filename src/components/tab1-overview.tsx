@@ -58,7 +58,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button
               onClick={onTryPrototype}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white"
             >
               {t('hero.ctaPrototype')}
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -97,39 +97,37 @@ export function Tab1Overview({ onTryPrototype }: Props) {
       </section>
 
       {/* ============================================================
-          SECTION 2 — THE BIG NUMBER
-          "The agentic loop completes a full perceive→reason→act cycle
-          in under 2 seconds, 30× faster than manual review."
+          SECTION 2 — MEASURED STATUS
       ============================================================ */}
       <section className="border-b border-zinc-200">
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-16 md:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7">
               <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-3">
-                The Big Number
+                Measured status
               </p>
               <div className="flex items-baseline gap-3">
                 <span className="font-serif text-7xl md:text-8xl lg:text-9xl text-emerald-700 leading-none tabular-nums">
-                  &lt;2s
+                  Local
                 </span>
                 <span className="font-mono text-sm text-zinc-500">perceive → reason → act</span>
               </div>
               <h2 className="mt-6 font-serif text-2xl md:text-3xl text-zinc-950 leading-tight max-w-2xl">
-                The agentic loop completes a full perceive→reason→act cycle in under 2 seconds — roughly 30× faster than manual review of the same camera.
+                This is an experimental, local-first browser prototype. Performance and detection quality vary by device, backend, source video, and model.
               </h2>
               <p className="mt-4 text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl">
-                Latency budget breakdown: Multi-model inference ≈ 200-800 ms (COCO-SSD base + optional HF models) on a mid-tier laptop GPU · rule-engine reasoning &lt; 5 ms · action dispatch (snapshot, email sim, optional LLM judge) ≈ 200–800 ms. The remaining budget is canvas redraw and React state propagation. All numbers measured on the live prototype.
+                The live baseline measured approximately 0.1 analysis cycles per second with roughly 7.3 seconds inference latency in the tested Chromium environment. Those observations are diagnostic, not a general performance guarantee.
               </p>
-              <p className="mt-4 text-xs text-zinc-400 font-mono">
-                Source: internal measurement on MacBook Pro M2, 2026-07-14. Manual review baseline: industry typical 8–15 min MTTR for unmonitored CCTV.
+              <p className="mt-4 text-xs text-zinc-600 font-mono">
+                Evidence: Round 0 live-site reproduction at commit ea584dc. See the benchmark and deployment ledgers for scope and limitations.
               </p>
             </div>
             <div className="lg:col-span-5">
               <div className="grid grid-cols-2 gap-3">
-                <BigStat value="30×" label="Faster than manual" tone="emerald" />
-                <BigStat value="90" label="Object classes detected" tone="zinc" />
+                <BigStat value="0.1" label="Observed cycles/s in baseline" tone="zinc" />
+                <BigStat value="80" label="COCO label vocabulary" tone="zinc" />
                 <BigStat value="3" label="Escalation tiers" tone="zinc" />
-                <BigStat value="0" label="Backend servers required" tone="emerald" />
+                <BigStat value="0" label="External actions on static site" tone="emerald" />
               </div>
             </div>
           </div>
@@ -252,22 +250,22 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               icon={<Eye className="h-6 w-6" />}
               name="Perception"
               tag="In-browser ML"
-              body="Multi-model ensemble runs COCO-SSD (27MB) or YOLOv10n (2.5MB) for person/vehicle detection, plus specialized HF ONNX models (Fire ViT, CLIP zero-shot, SegFormer, Pose) for use-case-specific events. All in-browser, no server. Users choose models from a dropdown with pros/cons."
-              metric="0.3-1 fps (WASM) · 2-5 fps (WebGPU)"
+              body="The experimental COCO-SSD adapter can detect its COCO classes in-browser. Candidate adapters remain disabled until their revisions, licenses, output contracts, and browser benchmarks are verified."
+              metric="Experimental · device-dependent"
             />
             <PillarCard
               icon={<Brain className="h-6 w-6" />}
               name="Reasoning"
               tag="Rule + LLM judge"
-              body="A deterministic rule engine decides tier 0→3 escalation from z-scores + sustain counters. An optional LLM-as-judge filters false positives at Tier 3, filtering Tier 3 escalations when enabled (no measured FP reduction rate available)."
-              metric="Optional LLM judge"
+              body="A deterministic policy evaluates evidence first. An optional authenticated judge is advisory and must finish before any consequential action can be proposed. No false-positive reduction rate has been validated."
+              metric="Sequential policy gate"
             />
             <PillarCard
               icon={<Zap className="h-6 w-6" />}
               name="Action"
               tag="3-tier escalation"
-              body="A tool registry executes auditable actions: badge → snapshot+email → escalate+report. A human-acknowledge gate and a max-5/hour circuit breaker prevent alert fatigue and runaway automation."
-              metric="<2s decision-to-action"
+              body="The static site can create local badges, logs, snapshots, and deterministic draft reports. Email, dispatch, escalation, access control, messaging, and evidence transmission are unavailable without approval and an authenticated service."
+              metric="Local actions only"
             />
           </div>
         </div>
@@ -282,7 +280,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-16 md:py-24">
           <SectionHeader
             kicker="Traditional vs Agentic"
-            title="Agentic systems cut mean-time-to-respond from ~15 minutes to under 30 seconds while adding a full evidence trail."
+            title="The prototype demonstrates a reviewable control flow; response-time improvement has not been validated."
           />
 
           <div className="mt-12 overflow-hidden rounded-xl border border-zinc-200">
@@ -303,7 +301,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             ))}
           </div>
 
-          <p className="mt-6 text-xs text-zinc-400 font-mono">
+          <p className="mt-6 text-xs text-zinc-600 font-mono">
             Source: industry typical CCTV operations (Slideworks, AlertOps case studies, 2024) vs internal prototype measurement, 2026-07-14.
           </p>
         </div>
@@ -395,7 +393,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 ].map((h, i) => (
                   <div key={i} className="flex items-center gap-3 text-xs">
                     <span className={`h-2 w-2 rounded-full flex-shrink-0 ${h.tier === 3 ? 'bg-rose-600' : h.tier === 2 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                    <span className="font-mono text-zinc-400 w-20">{h.t}</span>
+                    <span className="font-mono text-zinc-600 w-20">{h.t}</span>
                     <span className="text-zinc-500 w-16">{h.cam}</span>
                     <span className="text-zinc-950 flex-1">{h.msg}</span>
                   </div>
@@ -432,7 +430,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 <div key={stage.label} className="flex flex-col items-center gap-2">
                   <div className="text-xs font-mono text-zinc-500">{stage.pct}%</div>
                   <div
-                    className={`w-full rounded-t-lg ${stage.tone === 'emerald' ? 'bg-emerald-600' : stage.tone === 'amber' ? 'bg-amber-500' : stage.tone === 'rose' ? 'bg-rose-600' : 'bg-zinc-400'}`}
+                    className={`w-full rounded-t-lg ${stage.tone === 'emerald' ? 'bg-emerald-700' : stage.tone === 'amber' ? 'bg-amber-500' : stage.tone === 'rose' ? 'bg-rose-600' : 'bg-zinc-400'}`}
                     style={{ height: `${stage.pct * 2.5}px` }}
                   />
                   <div className="text-center">
@@ -447,7 +445,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             </div>
           </div>
 
-          <p className="mt-8 text-xs text-zinc-400 font-mono">
+          <p className="mt-8 text-xs text-zinc-600 font-mono">
             Source: representative 1-hour simulation run on Cusco plaza footage. Percentages are of raw frame count; absolute numbers depend on scene density.
           </p>
         </div>
@@ -455,14 +453,14 @@ export function Tab1Overview({ onTryPrototype }: Props) {
 
       {/* ============================================================
           SECTION 8 — USE CASES (4-COL)
-          "Four high-value use cases are production-ready in v1:
-          crowd surge, loitering, abandoned object, restricted-zone breach."
+          "Use cases are demonstrations or experiments until validated against
+          representative authorized footage and documented negative controls."
       ============================================================ */}
       <section className="border-b border-zinc-200">
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-16 md:py-24">
           <SectionHeader
             kicker="Use Cases"
-            title="Four high-value use cases are production-ready in v1: crowd surge, sustained-density escalation, loitering, and restricted-zone breach."
+            title="Use-case demonstrations with explicit evidence contracts and limitations"
           />
 
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -530,7 +528,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               status="research"
               title="Multi-camera mesh"
               items={[
-                'Cross-camera tracking (person re-ID)',
+                'Human-reviewed appearance candidate association',
                 'City-wide heatmap of incidents',
                 'Federated learning across cameras',
                 'Integration with city ops dashboard',
@@ -549,7 +547,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 <span className="font-medium text-zinc-950">Model drift.</span> COCO-SSD trained on general images; Peru plaza footage may need fine-tuning for distant/small persons.
               </div>
               <div>
-                <span className="font-medium text-zinc-950">Browser perf.</span> Sustained 1+ fps requires WebGPU backend; WASM fallback runs at 0.3-0.7 fps; falls back to WebGL on older devices.
+                <span className="font-medium text-zinc-950">Browser perf.</span> Throughput is unvalidated and varies by device, decoder, sampling strategy, backend, source, and model. WASM is the supported fallback when WebGPU is absent.
               </div>
               <div>
                 <span className="font-medium text-zinc-950">Privacy compliance.</span> Snapshots store identifiable images — need retention policy + on-prem option for production.
@@ -573,7 +571,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             <PrivacyCard
               icon={<Cpu className="h-5 w-5" />}
               title="Local-first inference"
-              body="TensorFlow.js runs entirely client-side. The video element, the canvas pixel buffer, and the detection tensors never touch a server. The only network calls are the optional LLM-judge and email endpoints, which receive only telemetry JSON — not raw frames."
+              body="Uploaded-video analysis and the evidence index are local-first. If a future authenticated judge or transmission service is configured, imagery may leave the device only after an explicit disclosure and required approval. GitHub Pages makes no server-action call."
             />
             <PrivacyCard
               icon={<FileText className="h-5 w-5" />}
@@ -685,7 +683,7 @@ function FlowCard({ step, icon, name, role, layer, description, outputs, valueTa
         <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${toneRing}`}>
           {icon}
         </div>
-        <span className="font-mono text-xs text-zinc-400">0{step}</span>
+        <span className="font-mono text-xs text-zinc-600">0{step}</span>
       </div>
       <div className="text-sm font-semibold text-zinc-950">{name}</div>
       <div className="text-xs text-zinc-500 font-mono">{role}</div>
@@ -694,7 +692,7 @@ function FlowCard({ step, icon, name, role, layer, description, outputs, valueTa
       </span>
       <p className="mt-3 text-xs text-zinc-600 leading-relaxed flex-1">{description}</p>
       <div className="mt-3 pt-3 border-t border-zinc-100">
-        <div className="text-[10px] text-zinc-400 uppercase tracking-wide">Outputs</div>
+        <div className="text-[10px] text-zinc-600 uppercase tracking-wide">Outputs</div>
         <div className="font-mono text-xs text-zinc-700 mt-0.5">{outputs}</div>
       </div>
       <div className="mt-2 text-[10px] text-emerald-700 font-medium">→ {valueTag}</div>
@@ -709,7 +707,7 @@ function LayerCard({ tone, title, subtitle, items }: {
   items: string[]
 }) {
   const ring = tone === 'emerald' ? 'border-emerald-200 bg-emerald-50/40' : 'border-zinc-200 bg-white'
-  const dot = tone === 'emerald' ? 'bg-emerald-600' : 'bg-zinc-400'
+  const dot = tone === 'emerald' ? 'bg-emerald-700' : 'bg-zinc-400'
   return (
     <div className={`rounded-xl border p-6 ${ring}`}>
       <div className="flex items-center justify-between mb-3">
@@ -836,17 +834,17 @@ const COMPARISON_ROWS = [
   {
     dim: 'Mean time to respond',
     traditional: '8–15 min — operator must notice, verify, decide, act',
-    agentic: '<30 s — agent detects, reasons, escalates in one cycle',
+    agentic: 'Unvalidated — depends on device, model, review, and configured service',
   },
   {
     dim: 'False-positive rate',
     traditional: 'High — every motion triggers review; operator fatigue compounds',
-    agentic: '~60% lower — LLM-as-judge filters texture/lighting artifacts at Tier 3',
+    agentic: 'Unvalidated — false-positive reduction requires a held-out benchmark',
   },
   {
     dim: 'Audit trail',
     traditional: 'None — incidents vanish when the operator looks away',
-    agentic: 'Every action logged with timestamp, payload, outcome — replayable',
+    agentic: 'Session audit plus IndexedDB evidence; browser storage is deletable and not immutable',
   },
   {
     dim: 'Evidence at incident',
@@ -856,7 +854,7 @@ const COMPARISON_ROWS = [
   {
     dim: 'Cost to scale',
     traditional: 'Linear with operators — every camera needs eyes',
-    agentic: 'Marginal — one browser tab per camera cluster',
+    agentic: 'Unvalidated — browser memory, decoding, and model load limit scale',
   },
 ]
 

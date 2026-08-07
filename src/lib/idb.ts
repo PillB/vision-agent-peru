@@ -17,9 +17,19 @@
  */
 
 const DB_NAME = 'vision-agent-peru'
-const DB_VERSION = 1
-const STORES = ['alerts', 'reports', 'actions', 'evidence', 'meta'] as const
-type StoreName = (typeof STORES)[number]
+const DB_VERSION = 2
+const STORES = [
+  'alerts', 'reports', 'actions', 'evidence', 'meta', 'sessions', 'videos',
+  'tracks', 'searches', 'associations', 'incidents', 'settings',
+] as const
+export type StoreName = (typeof STORES)[number]
+
+export class IndexedDBUnavailableError extends Error {
+  constructor(message = 'IndexedDB is unavailable') {
+    super(message)
+    this.name = 'IndexedDBUnavailableError'
+  }
+}
 
 let dbPromise: Promise<IDBDatabase | null> | null = null
 
@@ -37,22 +47,25 @@ function openDB(): Promise<IDBDatabase | null> {
       }
     }
     req.onsuccess = () => resolve(req.result)
+    req.onblocked = () => resolve(null)
     req.onerror = () => resolve(null)
   })
   return dbPromise
 }
 
 /**
- * Put a record into a store. No-op if IndexedDB unavailable.
+ * Put a record into a store. Fail explicitly if persistence is unavailable;
+ * callers must surface a nonpersistent state rather than claiming storage.
  */
 export async function idbPut<T extends { id: string }>(store: StoreName, value: T): Promise<void> {
   const db = await openDB()
-  if (!db) return
-  return new Promise((resolve) => {
+  if (!db) throw new IndexedDBUnavailableError()
+  return new Promise((resolve, reject) => {
     const tx = db.transaction(store, 'readwrite')
     tx.objectStore(store).put(value)
     tx.oncomplete = () => resolve()
-    tx.onerror = () => resolve()
+    tx.onabort = () => reject(tx.error ?? new Error(`IndexedDB transaction aborted: ${store}`))
+    tx.onerror = () => reject(tx.error ?? new Error(`IndexedDB write failed: ${store}`))
   })
 }
 
@@ -61,13 +74,14 @@ export async function idbPut<T extends { id: string }>(store: StoreName, value: 
  */
 export async function idbPutMany<T extends { id: string }>(store: StoreName, values: T[]): Promise<void> {
   const db = await openDB()
-  if (!db) return
-  return new Promise((resolve) => {
+  if (!db) throw new IndexedDBUnavailableError()
+  return new Promise((resolve, reject) => {
     const tx = db.transaction(store, 'readwrite')
     const os = tx.objectStore(store)
     for (const v of values) os.put(v)
     tx.oncomplete = () => resolve()
-    tx.onerror = () => resolve()
+    tx.onabort = () => reject(tx.error ?? new Error(`IndexedDB transaction aborted: ${store}`))
+    tx.onerror = () => reject(tx.error ?? new Error(`IndexedDB write failed: ${store}`))
   })
 }
 
@@ -76,7 +90,7 @@ export async function idbPutMany<T extends { id: string }>(store: StoreName, val
  */
 export async function idbGetAll<T>(store: StoreName): Promise<T[]> {
   const db = await openDB()
-  if (!db) return []
+  if (!db) throw new IndexedDBUnavailableError()
   return new Promise((resolve) => {
     const tx = db.transaction(store, 'readonly')
     const req = tx.objectStore(store).getAll()
@@ -90,7 +104,7 @@ export async function idbGetAll<T>(store: StoreName): Promise<T[]> {
  */
 export async function idbGet<T>(store: StoreName, id: string): Promise<T | null> {
   const db = await openDB()
-  if (!db) return null
+  if (!db) throw new IndexedDBUnavailableError()
   return new Promise((resolve) => {
     const tx = db.transaction(store, 'readonly')
     const req = tx.objectStore(store).get(id)
@@ -104,12 +118,12 @@ export async function idbGet<T>(store: StoreName, id: string): Promise<T | null>
  */
 export async function idbDelete(store: StoreName, id: string): Promise<void> {
   const db = await openDB()
-  if (!db) return
-  return new Promise((resolve) => {
+  if (!db) throw new IndexedDBUnavailableError()
+  return new Promise((resolve, reject) => {
     const tx = db.transaction(store, 'readwrite')
     tx.objectStore(store).delete(id)
     tx.oncomplete = () => resolve()
-    tx.onerror = () => resolve()
+    tx.onerror = () => reject(tx.error ?? new Error(`IndexedDB delete failed: ${store}`))
   })
 }
 
@@ -118,12 +132,12 @@ export async function idbDelete(store: StoreName, id: string): Promise<void> {
  */
 export async function idbClear(store: StoreName): Promise<void> {
   const db = await openDB()
-  if (!db) return
-  return new Promise((resolve) => {
+  if (!db) throw new IndexedDBUnavailableError()
+  return new Promise((resolve, reject) => {
     const tx = db.transaction(store, 'readwrite')
     tx.objectStore(store).clear()
     tx.oncomplete = () => resolve()
-    tx.onerror = () => resolve()
+    tx.onerror = () => reject(tx.error ?? new Error(`IndexedDB clear failed: ${store}`))
   })
 }
 
@@ -132,4 +146,42 @@ export async function idbClear(store: StoreName): Promise<void> {
  */
 export function idbAvailable(): boolean {
   return typeof indexedDB !== 'undefined'
+}
+
+export interface PersistenceStatus {
+  available: boolean
+  persistent: boolean
+  quota?: number
+  usage?: number
+  reason?: string
+}
+
+/** Perform an actual open/write/delete probe and report storage persistence. */
+export async function probeIndexedDB(): Promise<PersistenceStatus> {
+  try {
+    const probe = { id: `probe-${Date.now()}`, createdAt: Date.now() }
+    await idbPut('settings', probe)
+    await idbDelete('settings', probe.id)
+    const estimate = await navigator.storage?.estimate?.()
+    const persistent = await navigator.storage?.persisted?.() ?? false
+    return { available: true, persistent, quota: estimate?.quota, usage: estimate?.usage }
+  } catch (error) {
+    return {
+      available: false,
+      persistent: false,
+      reason: error instanceof Error ? error.message : 'IndexedDB probe failed',
+    }
+  }
+}
+
+/** Purge records with a numeric createdAt older than the configured TTL. */
+export async function purgeExpired(store: StoreName, ttlMs: number, now = Date.now()): Promise<number> {
+  const records = await idbGetAll<{ id: string; createdAt?: number }>(store)
+  const expired = records.filter(record => typeof record.createdAt === 'number' && now - record.createdAt > ttlMs)
+  for (const record of expired) await idbDelete(store, record.id)
+  return expired.length
+}
+
+export function resetIdbConnectionForTests(): void {
+  dbPromise = null
 }

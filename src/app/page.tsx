@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Camera, FileText, Activity, Presentation } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -15,28 +15,13 @@ export default function Home() {
   const [tab, setTab] = useState<TabId>('overview')
   const t = useTranslations()
 
-  // Dev-only: install window.__visionStore hook for Playwright tests and
-  // interactive debugging. The dynamic import is tree-shaken out of the
-  // production bundle by Next.js's compiler, so the hook never ships to
-  // GitHub Pages (fixes D14 — no test hook in production).
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      // Dynamic import so webpack can tree-shake this in production.
-      import('@/lib/dev-store-hook').then(({ installDevStoreHook }) => {
-        installDevStoreHook()
-      }).catch(() => {
-        // Silently ignore — dev tooling is non-critical.
-      })
-    }
-  }, [])
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Top App Bar */}
       <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-md bg-emerald-600 text-white flex items-center justify-center">
+            <div className="h-7 w-7 rounded-md bg-emerald-700 text-white flex items-center justify-center">
               <Camera className="h-4 w-4" />
             </div>
             <div className="flex items-baseline gap-2">

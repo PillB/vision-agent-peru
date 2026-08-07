@@ -1,0 +1,14 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "hypotheses":[
+    {"id":"H1","hypothesis":"The live Pages API routes function.","result":"rejected","evidence":"GET returned 404 and POST returned 405 for alert, report and judge."},
+    {"id":"H2","hypothesis":"Judge verdict gates escalation in the baseline.","result":"rejected","evidence":"Baseline judge result was advisory while actions executed concurrently."},
+    {"id":"H3","hypothesis":"Color histogram and bounding-box geometry can establish identity.","result":"rejected","evidence":"No valid identity basis; replaced with uncertain candidate association."},
+    {"id":"H4","hypothesis":"Detection-count change is frame differencing.","result":"rejected","evidence":"Actual pixel temporal difference is now separately computed and contract-tested."},
+    {"id":"H5","hypothesis":"Threshold zero is a meaningful alert gate.","result":"rejected","evidence":"Parking zero is telemetry-only."},
+    {"id":"H6","hypothesis":"Every selectable model has a functioning runtime adapter.","result":"rejected","evidence":"Runtime plan excludes unimplemented candidates."},
+    {"id":"H7","hypothesis":"The 60 percent, 10 FPS, sub-two-second and production-readiness claims are reproducible.","result":"rejected","evidence":"Live baseline was approximately 0.1 cycles/s and 7.3 seconds latency; no held-out benchmark."},
+    {"id":"H8","hypothesis":"A workflow fixture proves model quality.","result":"rejected","evidence":"Fixture is labelled simulation and quality metrics remain null."}
+  ]
+}

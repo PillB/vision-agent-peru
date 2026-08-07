@@ -1,0 +1,14 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "authority":"src/lib/action-orchestrator.ts",
+  "sequence":["observe","validate_evidence","apply_policy","invoke_judge","validate_judge","propose_action","request_approval","execute","verify_outcome","close_or_retry_or_compensate"],
+  "invariants":[
+    {"id":"false_positive_suppression","rule":"A valid false_positive verdict closes before proposal or execution.","evidence":"tests/contracts/agentic-control.test.ts"},
+    {"id":"judge_non_authority","rule":"Judge output cannot add actions, waive evidence, raise severity or replace approval.","evidence":"src/lib/action-orchestrator.ts"},
+    {"id":"action_allowlist","rule":"Every action is revalidated against UseCase.actions immediately before execution.","evidence":"tests/contracts/agentic-control.test.ts"},
+    {"id":"approval","rule":"Consequential external actions require explicit approval and configured authenticated service.","evidence":"tests/contracts/agentic-control.test.ts"},
+    {"id":"verification","rule":"An action is successful only after outcome verification; failures retry within bounds and may compensate.","evidence":"tests/contracts/agentic-control.test.ts"},
+    {"id":"pages_deny","rule":"GitHub Pages performs no removed API call and exposes external actions as unavailable.","evidence":"tests/e2e/production-smoke.spec.ts"}
+  ]
+}

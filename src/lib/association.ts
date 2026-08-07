@@ -57,7 +57,7 @@ export interface CandidateAssociation {
   topologyScore: number         // 0..1, 1 if cameras are adjacent or same
   temporalScore: number         // 0..1, 1 if travel time is plausible
   motionScore: number           // 0..1, direction consistency (future)
-  calibratedScore: number       // weighted fusion of above
+  fusionScore: number           // uncalibrated weighted fusion of above
   conflicts: string[]           // reasons this might NOT be a match
   evidenceQuality: 'high' | 'medium' | 'low'
   decision: 'plausible' | 'insufficient' | 'incompatible' | 'pending'
@@ -70,7 +70,7 @@ export interface CandidateAssociation {
 export const APPEARANCE_DISCLAIMER =
   'Appearance similarity does not establish identity. This is a candidate association requiring human review.'
 
-// ─── Scoring weights (calibrated fusion) ───
+// ─── Experimental scoring weights (not benchmark-calibrated) ───
 const WEIGHTS = {
   appearance: 0.45,
   semantic: 0.20,
@@ -214,7 +214,7 @@ export function proposeAssociation(
   )
   const motionScore = 0  // future: direction consistency
 
-  const calibratedScore =
+  const fusionScore =
     WEIGHTS.appearance * appearanceScore +
     WEIGHTS.semantic * semanticScore +
     WEIGHTS.topology * topologyScore +
@@ -228,15 +228,15 @@ export function proposeAssociation(
   if (appearanceScore < THRESHOLDS.incompatible) {
     decision = 'incompatible'
     conflicts.push(`Appearance score ${appearanceScore.toFixed(2)} below incompatible threshold`)
-  } else if (calibratedScore >= THRESHOLDS.plausible
+  } else if (fusionScore >= THRESHOLDS.plausible
     && appearanceScore >= THRESHOLDS.minAppearanceForPlausible) {
     decision = 'plausible'
-  } else if (calibratedScore < THRESHOLDS.incompatible) {
+  } else if (fusionScore < THRESHOLDS.incompatible) {
     decision = 'incompatible'
-    conflicts.push(`Calibrated score ${calibratedScore.toFixed(2)} below incompatible threshold`)
+    conflicts.push(`Experimental fusion score ${fusionScore.toFixed(2)} below incompatible threshold`)
   } else {
     decision = 'insufficient'
-    conflicts.push(`Calibrated score ${calibratedScore.toFixed(2)} in insufficient range`)
+    conflicts.push(`Experimental fusion score ${fusionScore.toFixed(2)} in insufficient range`)
   }
 
   // Open-set rejection: if appearance is very low, never mark as plausible
@@ -261,7 +261,7 @@ export function proposeAssociation(
     topologyScore,
     temporalScore: temporal.score,
     motionScore,
-    calibratedScore,
+    fusionScore,
     conflicts,
     evidenceQuality: assessQuality(left) === 'high' && assessQuality(right) === 'high'
       ? 'high'
@@ -291,13 +291,13 @@ export function findCrossVideoCandidates(
   for (let i = 0; i < withEmbeddings.length; i++) {
     for (let j = i + 1; j < withEmbeddings.length; j++) {
       const assoc = proposeAssociation(withEmbeddings[i], withEmbeddings[j], topology)
-      if (assoc.decision !== 'incompatible' && assoc.calibratedScore >= minScore) {
+      if (assoc.decision !== 'incompatible' && assoc.fusionScore >= minScore) {
         candidates.push(assoc)
       }
     }
   }
-  // Sort by calibrated score descending
-  candidates.sort((a, b) => b.calibratedScore - a.calibratedScore)
+  // Sort by experimental fusion score descending.
+  candidates.sort((a, b) => b.fusionScore - a.fusionScore)
   return candidates
 }
 
@@ -311,6 +311,8 @@ export interface AbsenceResult {
   percentSampled: number
   detectorRecallEstimate: number
   failedIntervals: Array<{ videoId: string; startSeconds: number; reason: string }>
+  skippedIntervals: Array<{ videoId: string; startSeconds: number; endSeconds: number; reason: string }>
+  analyzedDurationSeconds: number
   occlusion: 'low' | 'medium' | 'high' | 'unknown'
   cropQuality: 'low' | 'medium' | 'high' | 'unknown'
   threshold: number
@@ -340,6 +342,7 @@ export function assessAbsence(
     timeRanges: Array<{ videoId: string; startSeconds: number; endSeconds: number }>
     percentSampled: number
     failedIntervals: Array<{ videoId: string; startSeconds: number; reason: string }>
+    skippedIntervals?: Array<{ videoId: string; startSeconds: number; endSeconds: number; reason: string }>
     detectorRecallEstimate: number
   },
   threshold: number = 0.65,
@@ -376,13 +379,14 @@ export function assessAbsence(
     explanation = `Candidate found: top match score ${topMatch!.score.toFixed(2)} >= threshold ${threshold}. ` +
       `Appearance similarity does not establish identity — human review required.`
   } else if (result === 'no_confident_candidate') {
-    explanation = `No candidate exceeded the validated threshold (${threshold}) within the analyzed coverage. ` +
-      `Coverage: ${coverage.percentSampled.toFixed(0)}% sampled. ` +
+    explanation = `No candidate exceeded the validated threshold within the analyzed coverage. ` +
+      `Threshold: ${threshold}. Coverage: ${coverage.percentSampled.toFixed(0)}% sampled. ` +
       `Detector recall estimate: ${coverage.detectorRecallEstimate.toFixed(2)}. ` +
       `Strongest near miss: ${topMatch ? topMatch.score.toFixed(2) : 'none'}. ` +
       `This does not prove absence — only that no confident candidate was found in the analyzed coverage.`
   } else {
-    explanation = `Inconclusive: coverage (${coverage.percentSampled.toFixed(0)}%) or detector reliability ` +
+    explanation = `No candidate exceeded the validated threshold within the analyzed coverage. ` +
+      `Inconclusive: coverage (${coverage.percentSampled.toFixed(0)}%) or detector reliability ` +
       `(${coverage.detectorRecallEstimate.toFixed(2)}) is insufficient to make a confident assessment. ` +
       `The only valid result is: inconclusive. ` +
       `Do not interpret this as confirmation of absence.`
@@ -396,6 +400,8 @@ export function assessAbsence(
     percentSampled: coverage.percentSampled,
     detectorRecallEstimate: coverage.detectorRecallEstimate,
     failedIntervals: coverage.failedIntervals,
+    skippedIntervals: coverage.skippedIntervals ?? [],
+    analyzedDurationSeconds: coverage.timeRanges.reduce((sum, range) => sum + Math.max(0, range.endSeconds - range.startSeconds), 0),
     occlusion: 'unknown',  // future: compute from detection quality
     cropQuality: 'unknown',
     threshold,

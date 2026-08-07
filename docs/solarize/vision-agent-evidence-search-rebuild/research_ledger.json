@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "updated": "2026-08-07",
+  "scopeRule": "Public workflow patterns only; no proprietary implementation inference or parity claim.",
+  "sources": [
+    {"subject":"Flock FreeForm","url":"https://www.flocksafety.com/products/flock-freeform","accessed":"2026-08-07","finding":"Public natural-language search workflow; adopted only the query-to-review pattern."},
+    {"subject":"Genetec Investigation","url":"https://techdocs.genetec.com/r/en-US/Security-Center-SaaS-User-Guide/Finding-a-person-of-interest-from-the-Investigation-task-in-Security-Center-SaaS","accessed":"2026-08-07","finding":"Time/camera constrained investigation and result review."},
+    {"subject":"Axis Scene Metadata","url":"https://www.axis.com/products/axis-scene-metadata","accessed":"2026-08-07","finding":"Structured metadata supports filterable forensic workflows."},
+    {"subject":"BriefCam","url":"https://www.briefcam.com/","accessed":"2026-08-07","finding":"Search/review/export workflow patterns; no internal algorithm inferred."},
+    {"subject":"Avigilon Appearance Search","url":"https://docs.avigilon.com/bundle/unity-video-investigators-8-5/page/using/appearance-search.htm","accessed":"2026-08-07","finding":"Candidate review across recorded video; this build uses uncertainty-first candidate language."},
+    {"subject":"Verkada History Search","url":"https://help.verkada.com/verkada-cameras/analytics/people-and-vehicle-history-search","accessed":"2026-08-07","finding":"People/vehicle history and temporal review patterns."},
+    {"subject":"Milestone evidence workflow","url":"https://www.milestonesys.com/articles/finding-video-evidence-in-XProtect/","accessed":"2026-08-07","finding":"Search, bookmark and evidence export patterns."},
+    {"subject":"March Networks Command Client","url":"https://www.marchnetworks.com/products/enterprise-video-management/command-client/","accessed":"2026-08-07","finding":"Timeline investigation and case sharing patterns."},
+    {"subject":"Bosch VCA","url":"https://cdn.commerce.boschsecurity.com/public/documents/VCA_8.10_Operation_Manual_enUS_88154623371.pdf","accessed":"2026-08-07","finding":"Rule-specific object, spatial and temporal evidence contracts."},
+    {"subject":"Spot AI Cases","url":"https://www.spot.ai/blog/how-to-resolve-incidents-faster-with-cases","accessed":"2026-08-07","finding":"Case-based evidence organization and sharing workflow."},
+    {"subject":"NVIDIA VSS","url":"https://docs.nvidia.com/vss/latest/","accessed":"2026-08-07","finding":"Video search/summarization reference architecture; not copied as browser internals."},
+    {"subject":"OpenVINO MobileCLIP search","url":"https://docs.openvino.ai/2024/notebooks/mobileclip-video-search-with-output.html","accessed":"2026-08-07","finding":"Open reference workflow for video sampling and text-image retrieval."},
+    {"subject":"IndexedDB","url":"https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API","accessed":"2026-08-07","finding":"Browser database basis and transactional limitations."},
+    {"subject":"ONNX Runtime WebGPU","url":"https://onnxruntime.ai/docs/tutorials/web/ep-webgpu.html","accessed":"2026-08-07","finding":"WebGPU acceleration is capability-dependent; WASM fallback remains required."}
+  ]
+}

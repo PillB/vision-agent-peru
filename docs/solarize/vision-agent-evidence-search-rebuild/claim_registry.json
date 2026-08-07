@@ -1,108 +1,14 @@
 {
-  "schemaVersion": "1.0.0",
-  "lastUpdated": "2026-08-06T22:30:00Z",
-  "claims": [
-    {
-      "claim": "Real ML person detection (COCO-SSD)",
-      "status": "validated",
-      "evidence": "TF.js COCO-SSD loads and runs in browser; verified by Playwright fire detection test",
-      "remediation": null
-    },
-    {
-      "claim": "Multi-model ensemble (MoE)",
-      "status": "validated",
-      "evidence": "Fire use case runs 4 models simultaneously: COCO-SSD + Fire ViT + CLIP + pixel-anomaly",
-      "remediation": null
-    },
-    {
-      "claim": "0.3-1 fps (WASM) · 2-5 fps (WebGPU)",
-      "status": "honest",
-      "evidence": "Replaced previous '~10 fps' claim with measured range",
-      "remediation": null
-    },
-    {
-      "claim": "Optional LLM judge",
-      "status": "honest",
-      "evidence": "Replaced previous '~60% FP reduction' claim — no measured rate",
-      "remediation": null
-    },
-    {
-      "claim": "Session action log (in-memory)",
-      "status": "honest",
-      "evidence": "Replaced previous 'immutable action log' claim — actions are in-memory only",
-      "remediation": null
-    },
-    {
-      "claim": "IndexedDB persistence for evidence",
-      "status": "validated",
-      "evidence": "src/lib/idb.ts implements IndexedDB wrapper; evidence.ts persists records",
-      "remediation": null
-    },
-    {
-      "claim": "Appearance similarity does not establish identity",
-      "status": "validated",
-      "evidence": "Permanent disclaimer in association.ts; all UI shows candidate terminology",
-      "remediation": null
-    },
-    {
-      "claim": "Local-only (GitHub Pages)",
-      "status": "validated",
-      "evidence": "No API calls in production; deployment.ts detects GH Pages; actions simulated",
-      "remediation": null
-    },
-    {
-      "claim": "Sensitive-term rejection in NL search",
-      "status": "validated",
-      "evidence": "query-parser.ts rejects race/religion/disability/criminality queries",
-      "remediation": null
-    },
-    {
-      "claim": "Sequential judge gating (judge BEFORE escalate)",
-      "status": "validated",
-      "evidence": "orderActionsSequentially() in incident-state-machine.ts enforces order",
-      "remediation": null
-    },
-    {
-      "claim": "Production-ready",
-      "status": "rejected",
-      "evidence": "Research prototype only — not a production VMS",
-      "remediation": "All UI says 'prototype' or 'research'"
-    },
-    {
-      "claim": "Real automated email",
-      "status": "rejected",
-      "evidence": "Email is simulated on GH Pages (no SMTP configured)",
-      "remediation": "UI shows 'simulated' label when isGitHubPages() is true"
-    },
-    {
-      "claim": "Real report generation",
-      "status": "partial",
-      "evidence": "Reports are generated locally (deterministic draft), not via authenticated service",
-      "remediation": "UI labels reports as 'local deterministic draft' on GH Pages"
-    },
-    {
-      "claim": "Public Peru camera feeds",
-      "status": "rejected",
-      "evidence": "All public Peru feeds are CORS/X-Frame-Options blocked",
-      "remediation": "Uses stock videos in public/sim/ — labeled as 'demonstration assets'"
-    },
-    {
-      "claim": "Complete evidence chain",
-      "status": "partial",
-      "evidence": "Evidence is captured and persisted, but embeddings are not yet generated per-tick",
-      "remediation": "Evidence panel shows 'keyword search' badge; embedding search is roadmap"
-    },
-    {
-      "claim": "30× faster",
-      "status": "rejected",
-      "evidence": "No benchmark supports this claim",
-      "remediation": "Removed from all UI"
-    },
-    {
-      "claim": "Less than two seconds",
-      "status": "rejected",
-      "evidence": "No benchmark supports this claim",
-      "remediation": "Replaced with measured '0.3-1 fps (WASM) · 2-5 fps (WebGPU)'"
-    }
+  "schemaVersion":"2.0.0",
+  "updated":"2026-08-07",
+  "claims":[
+    {"claim":"60% false-positive reduction","status":"corrected overclaim","replacement":"No reduction rate has been validated.","evidence":"messages/en.json:Tab1.workflow.pillar2Body; tests/contracts/agentic-control.test.ts proves suppression behavior, not a percentage"},
+    {"claim":"10 FPS or fixed browser throughput","status":"corrected overclaim","replacement":"Throughput is unvalidated and device/model/source dependent.","evidence":"src/components/tab1-overview.tsx browser performance disclosure"},
+    {"claim":"under two seconds / 30x faster","status":"corrected overclaim","replacement":"No comparative speed claim.","evidence":"Round 0 live baseline measured 7301 ms and about 0.1 cycles/s; artifacts/baseline/live-baseline.json"},
+    {"claim":"zero backend","status":"corrected overclaim","replacement":"Evidence analysis is local-first; external actions and server-generated presentations are unavailable on GitHub Pages.","evidence":"src/lib/deployment.ts; src/components/tab3-strategic-brief.tsx"},
+    {"claim":"immutable logs","status":"corrected overclaim","replacement":"Browser records are user-deletable and not tamper-proof.","evidence":"src/components/evidence-workspace.tsx; src/lib/evidence.ts"},
+    {"claim":"production ready","status":"corrected overclaim","replacement":"Validated prototype with experimental model functions and unavailable external actions.","evidence":"messages/en.json; capability_truth_ledger.json"},
+    {"claim":"24-hour retention","status":"bounded validated prototype","replacement":"Startup purge is enforced for selected IndexedDB stores; eviction and a closed tab can alter timing.","evidence":"src/components/evidence-workspace.tsx; tests/unit/idb-retention.test.ts"},
+    {"claim":"person identity or re-identification","status":"corrected overclaim","replacement":"Local track, appearance-similar candidate, plausible association, human-confirmed association, or inconclusive only.","evidence":"src/lib/association.ts; src/components/evidence-workspace.tsx"}
   ]
 }

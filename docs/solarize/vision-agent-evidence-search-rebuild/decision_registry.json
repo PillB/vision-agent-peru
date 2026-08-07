@@ -1,0 +1,13 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "decisions":[
+    {"id":"DEC-01","decision":"Repair truthfulness and action safety before adding search capability.","reason":"Round 0 reproduced unavailable API success, concurrency and policy bypass.","evidence":"round-0-forensic-audit.md"},
+    {"id":"DEC-02","decision":"Deploy YOLOS-tiny and CLIP only as experimental immutable-revision adapters.","reason":"They are browser-feasible in architecture, but no held-out benchmark supports quality or FPS claims.","evidence":"model_registry.json"},
+    {"id":"DEC-03","decision":"Do not select COCO-SSD, YOLOv10n, MobileCLIP or SigLIP for the active plan.","reason":"Artifact pinning, license, adapter, footprint or benchmark gates are unmet.","evidence":"model-and-adapter-inventory.md"},
+    {"id":"DEC-04","decision":"Use candidate association vocabulary and separate human confirmation.","reason":"Appearance similarity and geometry do not establish identity.","evidence":"src/lib/association.ts"},
+    {"id":"DEC-05","decision":"Keep GitHub Pages local-only and disable external/server controls.","reason":"Static hosting has no authenticated server action service.","evidence":"src/lib/deployment.ts"},
+    {"id":"DEC-06","decision":"Use best-effort IndexedDB retention wording.","reason":"Startup purge cannot guarantee wall-clock deletion or exported-copy recall.","evidence":"src/lib/idb.ts"},
+    {"id":"DEC-07","decision":"Treat missing benchmark metrics as null, not estimates.","reason":"No consented held-out dataset exists.","evidence":"artifacts/benchmarks/browser-model-benchmark.json"}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "risks":[
+    {"id":"P1","data":"user video, crops and embeddings","severity":"high","status":"open","control":"local-first processing, explicit authorization, 24-hour startup purge, reset/export controls","residual":"browser storage can be copied or evicted; exports escape retention"},
+    {"id":"P2","data":"cross-video association","severity":"high","status":"open","control":"candidate-only language, open-set rejection, conflict evidence, human review","residual":"appearance/background bias and linkage risk remain"},
+    {"id":"P3","data":"sensitive inferred traits","severity":"critical","status":"closed by prohibition","control":"age, perceived gender, body proportion, gait, face recognition and watchlists excluded from operational query/index/action paths","residual":"future research would need independent governance"},
+    {"id":"P4","data":"evidence export","severity":"high","status":"open","control":"local explicit download with limitations and hash","residual":"cannot recall copies or provide legal chain of custody"},
+    {"id":"P5","data":"external transmission","severity":"high","status":"closed on Pages","control":"unavailable without approval and authenticated service","residual":"future integrations require access control, logging and incident response"}
+  ],
+  "evidence":["src/lib/query-parser.ts","src/lib/idb.ts","src/lib/evidence.ts","tests/unit/query-privacy.test.ts"]
+}

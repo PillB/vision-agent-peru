@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "entries":[
+    {"modelId":"yolos-tiny","license":"Apache-2.0","source":"https://huggingface.co/hustvl/yolos-tiny","operationalDecision":"experimental use permitted; attribution and model card retained"},
+    {"modelId":"clip-vit-base-patch32","license":"Apache-2.0 browser port; upstream CLIP terms require downstream review","source":"https://huggingface.co/Xenova/clip-vit-base-patch32","operationalDecision":"experimental local retrieval only"},
+    {"modelId":"coco-ssd","license":"Apache-2.0","source":"https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd","operationalDecision":"disabled because artifact integrity gate fails"},
+    {"modelId":"yolov10n-onnx","license":"AGPL-3.0 upstream","source":"https://github.com/THU-MIG/yolov10","operationalDecision":"not deployed"},
+    {"modelId":"mobileclip-s0","license":"research-only released weights","source":"https://github.com/apple/ml-mobileclip","operationalDecision":"research-only and excluded from normal index"},
+    {"modelId":"siglip-base-patch16-224","license":"Apache-2.0","source":"https://huggingface.co/google/siglip-base-patch16-224","operationalDecision":"not selected"}
+  ]
+}

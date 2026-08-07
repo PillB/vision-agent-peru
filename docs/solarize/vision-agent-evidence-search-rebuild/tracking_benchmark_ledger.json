@@ -1,0 +1,10 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "benchmarkId":"within-video-tracking-promotion-gate",
+  "dataset":null,
+  "candidates":["ByteTrack-compatible local matcher","BoT-SORT-style appearance-assisted tracking"],
+  "metrics":{"mota":null,"idf1":null,"hota":null,"idSwitches":null,"latencyMs":null},
+  "validatedContracts":["low-confidence recovery cannot create a new track","track IDs reset between video sources"],
+  "decision":"Local matcher remains experimental; BoT-SORT-style path remains research-only."
+}

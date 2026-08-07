@@ -1,0 +1,15 @@
+{
+  "schemaVersion":"1.0.0",
+  "date":"2026-08-07",
+  "rule":"No model is promoted from candidate or experimental without a reproducible held-out browser benchmark.",
+  "results":[
+    {"model":"COCO-SSD lite_mobilenet_v2","revision":"npm package pinned; remote graph unverified","status":"disabled","reason":"mutable/unverified graph and no held-out benchmark"},
+    {"model":"YOLOv10n ONNX","revision":"unverified-candidate","status":"unavailable","reason":"adapter and license review pending"},
+    {"model":"YOLOS-tiny","revision":"1a00cc14a139ff40bac9aa00c745915cb7b5b751","status":"experimental","backend":"WASM","accuracy":null,"fps":null,"reason":"immutable browser adapter implemented; benchmark not yet reproducible in this environment"},
+    {"model":"CLIP ViT-B/32","revision":"91f7a4bfa256ca85b019500008a355e2da0fe641","status":"experimental","accuracy":null,"latencyMs":null,"reason":"adapter implemented; domain retrieval/open-set threshold not validated"},
+    {"model":"MobileCLIP-S0","status":"research-only","reason":"released weights are research-only"},
+    {"model":"SigLIP base patch16-224","revision":"cc3289c7ee0594a9e640dbf5580511cdcca21837","status":"not selected","reason":"browser footprint is about 813 MB before cache/runtime overhead"},
+    {"model":"ByteTrack-compatible local tracker","status":"experimental","reason":"two-stage recovery contract passes; no MOT benchmark and no claim of full ByteTrack parity"},
+    {"model":"BoT-SORT-style tracking","status":"research-only","reason":"not implemented; appearance tracking benchmark and privacy review required"}
+  ]
+}

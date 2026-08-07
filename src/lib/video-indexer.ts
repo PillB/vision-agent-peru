@@ -26,6 +26,8 @@
  */
 
 import { addEvidence, type EvidenceRecord } from './evidence'
+import { idbPut } from './idb'
+import { ByteTrackCompatibleTracker, type TrackDetection } from './byte-track'
 
 export interface VideoMetadata {
   videoId: string
@@ -73,6 +75,18 @@ export interface IndexingProgress {
 
 export type ProgressCallback = (progress: IndexingProgress) => void
 
+export interface SkippedInterval {
+  startSeconds: number
+  endSeconds: number
+  reason: 'adaptive-low-motion' | 'sampling-gap'
+}
+
+export interface FailedInterval {
+  startSeconds: number
+  endSeconds: number
+  reason: string
+}
+
 /**
  * Calculate SHA-256 content hash of a video file.
  * Used for deduplication (don't re-index the same file) and provenance.
@@ -93,6 +107,7 @@ export async function extractVideoMetadata(
   location?: string,
   recordedAt?: number,
   timezone?: string,
+  calculateHashNow = true,
 ): Promise<VideoMetadata> {
   const url = URL.createObjectURL(file)
   const video = document.createElement('video')
@@ -101,7 +116,7 @@ export async function extractVideoMetadata(
 
   return new Promise((resolve, reject) => {
     video.onloadedmetadata = async () => {
-      const contentHash = await calculateVideoHash(file)
+      const contentHash = calculateHashNow ? await calculateVideoHash(file) : 'pending-user-approval'
       const meta: VideoMetadata = {
         videoId: `vid-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         fileName: file.name,
@@ -122,7 +137,7 @@ export async function extractVideoMetadata(
     }
     video.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error(`Failed to load video metadata for ${file.name}`))
+      reject(new Error(`Failed decoding metadata for ${file.name}`))
     }
     video.src = url
   })
@@ -162,7 +177,12 @@ export async function sampleVideoFrames(
   onFrame: (frame: ImageBitmap, timestampSeconds: number) => Promise<void>,
   onProgress: ProgressCallback,
   signal?: AbortSignal,
-): Promise<{ framesProcessed: number; cancelled: boolean }> {
+): Promise<{
+  framesProcessed: number
+  cancelled: boolean
+  skippedIntervals: SkippedInterval[]
+  failedIntervals: FailedInterval[]
+}> {
   const url = URL.createObjectURL(file)
   const video = document.createElement('video')
   video.preload = 'auto'
@@ -172,16 +192,15 @@ export async function sampleVideoFrames(
   const videoId = `sample-${Date.now()}`
   const startedAt = Date.now()
   let framesProcessed = 0
-  const totalFrames = Math.min(
-    config.maxFrames,
-    Math.floor(video.duration || 0 / config.targetFrameInterval),
-  )
+  const skippedIntervals: SkippedInterval[] = []
+  const failedIntervals: FailedInterval[] = []
+  let previousThumbnail: Uint8ClampedArray | null = null
 
   try {
     // Wait for metadata
     await new Promise<void>((resolve, reject) => {
       video.onloadedmetadata = () => resolve()
-      video.onerror = () => reject(new Error('Failed to load video metadata'))
+      video.onerror = () => reject(new Error('Failed decoding metadata'))
       video.src = url
     })
 
@@ -200,17 +219,26 @@ export async function sampleVideoFrames(
 
     for (const t of samplePoints) {
       if (signal?.aborted) {
-        return { framesProcessed, cancelled: true }
+        return { framesProcessed, cancelled: true, skippedIntervals, failedIntervals }
       }
 
       // Seek to timestamp
-      await new Promise<void>((resolve, reject) => {
-        const onSeeked = () => { video.removeEventListener('seeked', onSeeked); resolve() }
-        const onError = () => { video.removeEventListener('error', onError); reject(new Error(`Seek failed at ${t}s`)) }
-        video.addEventListener('seeked', onSeeked)
-        video.addEventListener('error', onError)
-        video.currentTime = t
-      })
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const onSeeked = () => { video.removeEventListener('seeked', onSeeked); resolve() }
+          const onError = () => { video.removeEventListener('error', onError); reject(new Error(`Seek failed at ${t}s`)) }
+          video.addEventListener('seeked', onSeeked)
+          video.addEventListener('error', onError)
+          video.currentTime = t
+        })
+      } catch (error) {
+        failedIntervals.push({
+          startSeconds: t,
+          endSeconds: Math.min(duration, t + config.targetFrameInterval),
+          reason: error instanceof Error ? error.message : 'Decode seek failed',
+        })
+        continue
+      }
 
       // Capture frame as ImageBitmap (more efficient than canvas for large videos)
       let bitmap: ImageBitmap
@@ -227,7 +255,42 @@ export async function sampleVideoFrames(
         bitmap = await createImageBitmap(canvas)
       }
 
+      if (config.strategy === 'motion-adaptive' || config.strategy === 'scene-change') {
+        const thumbnailCanvas = document.createElement('canvas')
+        thumbnailCanvas.width = 32
+        thumbnailCanvas.height = 18
+        const thumbnailContext = thumbnailCanvas.getContext('2d', { willReadFrequently: true })
+        if (thumbnailContext) {
+          thumbnailContext.drawImage(bitmap, 0, 0, 32, 18)
+          const current = thumbnailContext.getImageData(0, 0, 32, 18).data
+          if (previousThumbnail) {
+            let difference = 0
+            for (let index = 0; index < current.length; index += 4) {
+              difference += (
+                Math.abs(current[index] - previousThumbnail[index])
+                + Math.abs(current[index + 1] - previousThumbnail[index + 1])
+                + Math.abs(current[index + 2] - previousThumbnail[index + 2])
+              ) / (3 * 255)
+            }
+            const score = difference / (current.length / 4)
+            const threshold = config.strategy === 'scene-change' ? 0.12 : 0.025
+            if (score < threshold) {
+              skippedIntervals.push({
+                startSeconds: t,
+                endSeconds: Math.min(duration, t + config.targetFrameInterval),
+                reason: 'adaptive-low-motion',
+              })
+              previousThumbnail = new Uint8ClampedArray(current)
+              bitmap.close()
+              continue
+            }
+          }
+          previousThumbnail = new Uint8ClampedArray(current)
+        }
+      }
+
       await onFrame(bitmap, t)
+      bitmap.close()
       framesProcessed++
 
       const elapsedMs = Date.now() - startedAt
@@ -247,9 +310,132 @@ export async function sampleVideoFrames(
       startedAt, elapsedMs: Date.now() - startedAt, estimatedRemainingMs: 0,
     })
 
-    return { framesProcessed, cancelled: false }
+    return { framesProcessed, cancelled: false, skippedIntervals, failedIntervals }
   } finally {
     URL.revokeObjectURL(url)
+  }
+}
+
+export interface DetectionAdapter {
+  id: string
+  revision: string
+  detect: (canvas: HTMLCanvasElement) => Promise<TrackDetection[]>
+}
+
+export interface EmbeddingAdapter {
+  id: string
+  revision: string
+  embed: (crop: HTMLCanvasElement) => Promise<Float32Array>
+}
+
+export interface VideoIndexSummary {
+  metadata: VideoMetadata
+  framesProcessed: number
+  detectionsFound: number
+  evidenceStored: number
+  skippedIntervals: SkippedInterval[]
+  failedIntervals: FailedInterval[]
+  cancelled: boolean
+  analyzedDurationSeconds: number
+}
+
+/** Execute the real local indexing path with injected, testable adapters. */
+export async function indexVideoWithAdapters(
+  file: File,
+  metadata: VideoMetadata,
+  config: SamplingConfig,
+  detector: DetectionAdapter,
+  embedder: EmbeddingAdapter | undefined,
+  onProgress: ProgressCallback,
+  signal?: AbortSignal,
+): Promise<VideoIndexSummary> {
+  const tracker = new ByteTrackCompatibleTracker()
+  const cropsPerTrack = new Map<string, number>()
+  const lastCropByTrack = new Map<string, EvidenceRecord>()
+  let detectionsFound = 0
+  let evidenceStored = 0
+  let frameNumber = 0
+
+  await idbPut('videos', { id: metadata.videoId, createdAt: metadata.uploadedAt, ...metadata })
+  const sampled = await sampleVideoFrames(file, config, async (frame, timestampSeconds) => {
+    if (signal?.aborted) return
+    frameNumber++
+    const canvas = document.createElement('canvas')
+    canvas.width = frame.width
+    canvas.height = frame.height
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Canvas 2D context unavailable')
+    context.drawImage(frame, 0, 0)
+    const detections = (await detector.detect(canvas)).filter(item => item.score >= config.minScore)
+    detectionsFound += detections.length
+    const tracks = tracker.update(detections, frameNumber)
+
+    for (const track of tracks) {
+      const existingCrops = cropsPerTrack.get(track.localTrackId) ?? 0
+      if (existingCrops >= 3) continue
+      const [x, y, width, height] = track.bbox
+      if (width <= 1 || height <= 1) continue
+      const crop = document.createElement('canvas')
+      crop.width = Math.max(1, Math.round(width))
+      crop.height = Math.max(1, Math.round(height))
+      crop.getContext('2d')?.drawImage(canvas, x, y, width, height, 0, 0, crop.width, crop.height)
+      const embedding = embedder ? await embedder.embed(crop) : undefined
+      const now = Date.now()
+      const record: EvidenceRecord = {
+        id: `ev-${metadata.videoId}-${frameNumber}-${track.localTrackId}`,
+        createdAt: now,
+        videoId: metadata.videoId,
+        cameraId: metadata.cameraName ?? metadata.videoId,
+        useCaseId: 'uploaded-video-evidence',
+        timestamp: (metadata.recordedAt ?? metadata.uploadedAt) + timestampSeconds * 1000,
+        sourceTimestampSeconds: timestampSeconds,
+        snapshotDataUrl: crop.toDataURL('image/jpeg', 0.82),
+        detection: { class: track.class, score: track.score, bbox: track.bbox },
+        embedding,
+        trackId: `${metadata.videoId}:${track.localTrackId}`,
+        confirmed: false,
+        contextPosition: existingCrops === 0 ? 'entry' : 'middle',
+        trajectoryPoint: { x: x + width / 2, y: y + height / 2 },
+        modelId: detector.id,
+        modelRevision: detector.revision,
+        quality: track.score >= 0.7 ? 'high' : track.score >= 0.5 ? 'medium' : 'low',
+      }
+      await addEvidence(record)
+      lastCropByTrack.set(track.localTrackId, record)
+      cropsPerTrack.set(track.localTrackId, existingCrops + 1)
+      evidenceStored++
+    }
+  }, onProgress, signal)
+
+  for (const track of tracker.getAllTracks()) {
+    const exitCrop = lastCropByTrack.get(track.localTrackId)
+    if (exitCrop && exitCrop.contextPosition !== 'entry') {
+      await addEvidence({ ...exitCrop, contextPosition: 'exit' })
+    }
+    await idbPut('tracks', {
+      id: `${metadata.videoId}:${track.localTrackId}`,
+      createdAt: metadata.uploadedAt,
+      videoId: metadata.videoId,
+      cameraId: metadata.cameraName ?? metadata.videoId,
+      class: track.class,
+      firstFrame: track.firstFrame,
+      lastFrame: track.lastFrame,
+      observations: track.observations,
+      entryBbox: track.entryBbox,
+      exitBbox: track.exitBbox,
+    })
+  }
+
+  const coveredSeconds = sampled.framesProcessed * config.targetFrameInterval
+  return {
+    metadata,
+    framesProcessed: sampled.framesProcessed,
+    detectionsFound,
+    evidenceStored,
+    skippedIntervals: sampled.skippedIntervals,
+    failedIntervals: sampled.failedIntervals,
+    cancelled: sampled.cancelled,
+    analyzedDurationSeconds: Math.min(metadata.durationSeconds, coveredSeconds),
   }
 }
 

@@ -1,0 +1,11 @@
+{
+  "schema":"vision-agent-evidence-export/v1",
+  "classification":"deterministic sample only — not an immutable chain of custody",
+  "query":"person with blue jacket and red backpack",
+  "threshold":0.65,
+  "coverage":{"analyzedDurationSeconds":22,"skippedIntervals":[],"failedIntervals":[]},
+  "modelLimitations":["Similarity scores are not probabilities","Candidate association never establishes identity"],
+  "associationDecisions":[{"outcome":"human-confirmed association","reviewer":"fixture operator","simulation":true}],
+  "actionTrace":[],
+  "records":[{"id":"simulation-track-a-entry","source":"explicit-labeled-simulation","contextPosition":"entry"}]
+}

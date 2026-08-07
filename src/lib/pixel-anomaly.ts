@@ -28,6 +28,40 @@ export interface PixelAnomalyResult {
 let previousFrameData: Uint8ClampedArray | null = null
 let previousFrameWidth = 0
 let previousFrameHeight = 0
+const frameDifferenceBuffers = new Map<string, Uint8ClampedArray>()
+
+/** Measure temporal pixel change independently from object detections and
+ * color/edge heuristics. Buffers are isolated by source + use case. */
+export function computeFrameDifferenceScore(
+  ctx: CanvasRenderingContext2D,
+  canvasW: number,
+  canvasH: number,
+  bufferKey: string,
+): number {
+  let imageData: ImageData
+  try {
+    imageData = ctx.getImageData(0, 0, canvasW, canvasH)
+  } catch {
+    return 0
+  }
+  const current = imageData.data
+  const previous = frameDifferenceBuffers.get(bufferKey)
+  frameDifferenceBuffers.set(bufferKey, new Uint8ClampedArray(current))
+  if (!previous || previous.length !== current.length) return 0
+
+  let changed = 0
+  let sampled = 0
+  for (let index = 0; index < current.length; index += 16) {
+    const delta = (
+      Math.abs(current[index] - previous[index])
+      + Math.abs(current[index + 1] - previous[index + 1])
+      + Math.abs(current[index + 2] - previous[index + 2])
+    ) / 3
+    if (delta > 30) changed++
+    sampled++
+  }
+  return sampled === 0 ? 0 : changed / sampled
+}
 
 /**
  * Compute pixel-based anomaly score from canvas ImageData.
@@ -227,6 +261,7 @@ function detectEdgeDensity(
  */
 export function resetPixelAnomalyBuffer() {
   previousFrameData = null
+  frameDifferenceBuffers.clear()
 }
 
 /**

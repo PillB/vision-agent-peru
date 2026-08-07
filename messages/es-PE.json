@@ -8,7 +8,7 @@
   "Nav": {
     "overview": "Resumen de la solución",
     "brief": "Resumen estratégico",
-    "prototype": "Prototipo en vivo"
+    "prototype": "Espacio de evidencia"
   },
   "Footer": {
     "source": "Fuente: TF.js COCO-SSD (Google); Z-AI Web Dev SDK; simulación interna con videos de Pexels/Pixabay de plazas del Perú.",
@@ -35,12 +35,12 @@
     },
     "bigNumber": {
       "kicker": "El número clave",
-      "value": "<2s",
+      "value": "Local",
       "unit": "percibir → razonar → actuar",
-      "title": "El ciclo autónomo completa un recorrido completo de percibir→razonar→actuar en menos de 2 segundos — aproximadamente 30× más rápido que la revisión manual de la misma cámara.",
+      "title": "Flujo experimental local en el navegador; el rendimiento varía según dispositivo, backend, fuente y modelo.",
       "body": "Desglose de latencia: inferencia TF.js COCO-SSD ≈ 250–500 ms en GPU de laptop de gama media · razonamiento del motor de reglas < 5 ms · dispatch de acciones (captura, email simulado, juez LLM opcional) ≈ 200–800 ms. El presupuesto restante es redibujado de canvas y propagación de estado de React. Todos los números medidos en el prototipo en vivo.",
       "source": "Fuente: medición interna en MacBook Pro M2, 14/07/2026. Línea base de revisión manual: MTTR típico de la industria de 8 a 15 min para CCTV no monitoreado.",
-      "stat1Value": "30×",
+      "stat1Value": "No validado",
       "stat1Label": "Más rápido que el manual",
       "stat2Value": "90",
       "stat2Label": "Clases de objetos detectadas",
@@ -101,15 +101,15 @@
       "pillar1Name": "Percepción",
       "pillar1Tag": "ML en navegador",
       "pillar1Body": "TensorFlow.js + COCO-SSD ejecuta el mismo modelo de detección de objetos de 90 clases que usan los sistemas de visión por computadora de producción, pero del lado del cliente. Sin servidor GPU, ningún fotograma sale del navegador — aborda latencia y privacidad al mismo tiempo.",
-      "pillar1Metric": "~10 fps en laptop M2",
+      "pillar1Metric": "Ejecución experimental dependiente del dispositivo",
       "pillar2Name": "Razonamiento",
       "pillar2Tag": "Reglas + juez LLM",
-      "pillar2Body": "Un motor de reglas determinista decide la escalada de nivel 0→3 a partir de z-scores + contadores de sostenimiento. Un LLM como juez opcional filtra falsos positivos en nivel 3, reduciendo ~60% de escaladas espurias sin perder incidentes reales.",
-      "pillar2Metric": "~60% reducción de falsos positivos",
+      "pillar2Body": "Una política determinista de evidencia conserva la autoridad. Un juez autenticado opcional es consultivo y se ejecuta antes de proponer acciones; no se ha validado una reducción de falsos positivos.",
+      "pillar2Metric": "Compuerta secuencial del juez",
       "pillar3Name": "Acción",
       "pillar3Tag": "Escalada de 3 niveles",
       "pillar3Body": "Un registro de herramientas ejecuta acciones auditables: insignia → captura+email → escalar+reporte. Una compuerta de reconocimiento humano y un disyuntor de máx 5/hora previenen la fatiga de alertas y la automatización descontrolada.",
-      "pillar3Metric": "<2s de decisión a acción"
+      "pillar3Metric": "Solo acciones locales en GitHub Pages"
     },
     "comparison": {
       "kicker": "Tradicional vs Autónomo",
@@ -122,7 +122,7 @@
       "row1Agentic": "<30 s — el agente detecta, razona y escala en un ciclo",
       "row2Dim": "Tasa de falsos positivos",
       "row2Traditional": "Alta — cada movimiento activa revisión; la fatiga del operador se acumula",
-      "row2Agentic": "~60% menor — el LLM como juez filtra artefactos de textura/iluminación en nivel 3",
+      "row2Agentic": "No validado — requiere un benchmark reservado de falsos positivos",
       "row3Dim": "Trazabilidad de auditoría",
       "row3Traditional": "Ninguna — los incidentes desaparecen cuando el operador mira a otro lado",
       "row3Agentic": "Cada acción registrada con marca de tiempo, payload, resultado — reproducible",
@@ -159,7 +159,7 @@
       "kicker": "Cadena de valor",
       "title": "Cada etapa del pipeline compone valor: los fotogramas sin procesar se convierten en detecciones, las detecciones en anomalías, las anomalías en incidentes juzgados, los incidentes en casos resueltos con evidencia.",
       "stage1Label": "Fotogramas sin procesar",
-      "stage1Note": "Transmisión de video continua a ~10 fps",
+      "stage1Note": "Muestreo adaptativo dependiente del dispositivo",
       "stage2Label": "Anomalías",
       "stage2Note": "z-score > 2 vs línea base de 2 min",
       "stage3Label": "Pasa el juez",
@@ -195,28 +195,28 @@
       "v3Phase": "v3 — Dos trimestres después",
       "v3Status": "investigación",
       "v3Title": "Malla multicámara",
-      "v3Item1": "Seguimiento entre cámaras (re-ID de personas)",
+      "v3Item1": "Asociación de candidatos de apariencia con revisión humana",
       "v3Item2": "Mapa de calor de incidentes a nivel ciudad",
       "v3Item3": "Aprendizaje federado entre cámaras",
       "v3Item4": "Integración con el tablero de operaciones de la ciudad",
       "risksTitle": "Riesgos y dependencias",
       "risk1": "Deriva del modelo. COCO-SSD entrenado con imágenes generales; la filmación de plazas del Perú puede necesitar ajuste fino para personas distantes/pequeñas.",
-      "risk2": "Rendimiento del navegador. 10 fps sostenidos requiere backend WebGPU; recurre a WebGL en dispositivos más antiguos.",
+      "risk2": "El rendimiento varía; se deben medir ausencia de WebGPU, fallback WASM, memoria y decodificación por dispositivo.",
       "risk3": "Cumplimiento de privacidad. Las capturas almacenan imágenes identificables — necesita política de retención + opción on-premise para producción."
     },
     "privacy": {
       "kicker": "Seguridad y privacidad",
-      "title": "Todo el procesamiento se ejecuta en el navegador del operador — ningún fotograma de cámara sale del dispositivo y las capturas permanecen locales hasta que se escalan explícitamente.",
+      "title": "El análisis de videos subidos y el índice son locales; cualquier transmisión externa futura requerirá divulgación y aprobación explícitas.",
       "card1Title": "Inferencia local primero",
-      "card1Body": "TensorFlow.js se ejecuta completamente del lado del cliente. El elemento de video, el búfer de píxeles del canvas y los tensores de detección nunca tocan un servidor. Las únicas llamadas de red son los endpoints opcionales del juez LLM y email, que reciben solo JSON de telemetría — no fotogramas sin procesar.",
+      "card1Body": "El análisis y el índice funcionan localmente. GitHub Pages no llama acciones de servidor. Un futuro juez autenticado puede recibir imágenes solo después de informar al usuario y obtener la aprobación requerida.",
       "card2Title": "Retención de capturas",
-      "card2Body": "Las capturas se almacenan en la memoria del navegador (zustand + IndexedDB) durante la sesión. Una política de retención (configurable, 24 h por defecto) purga automáticamente. Los despliegues de producción deberían añadir almacenamiento de capturas on-premise con acceso basado en roles.",
+      "card2Body": "La evidencia puede guardarse en IndexedDB cuando está disponible. El almacenamiento del navegador es de mejor esfuerzo, puede ser eliminado por el usuario y está sujeto a expulsión.",
       "card3Title": "Trazabilidad de auditoría",
-      "card3Body": "Cada acción autónoma (registrar_ciclo, insignia, captura, enviar_email, escalar, generar_reporte) se añade a un registro de auditoría inmutable con marca de tiempo + payload + resultado. Los operadores pueden reproducir cualquier decisión después."
+      "card3Body": "Las acciones registran marca de tiempo y resultado para revisión. Los registros del navegador no son inmutables ni una cadena de custodia a prueba de manipulación."
     },
     "cta": {
       "title": "Vea el ciclo autónomo ejecutarse en vivo con filmación real de las plazas del Perú.",
-      "body": "Cambie a la pestaña Prototipo en vivo. El modelo se carga en su navegador, las detecciones fluyen en menos de 5 segundos y puede activar cada acción que el agente puede.",
+      "body": "Cambie a la pestaña Prototipo. El modelo experimental se carga en el navegador y muestra el rendimiento real del dispositivo; las acciones externas permanecen deshabilitadas.",
       "button": "Abrir prototipo en vivo"
     }
   },
@@ -333,7 +333,7 @@
       "complicationBody": "Gartner: los agentes de IA son la tecnología que avanza más rápido en el ciclo de hype de 2025. El 60% de las organizaciones esperan desplegar en 2 años.",
       "resolution": "Resolución",
       "resolutionBody": "Vision Agent está construido nativamente sobre el patrón autónomo: percibir → razonar → actuar → reflexionar, de extremo a extremo.",
-      "stat1Value": "<2s",
+      "stat1Value": "No validado",
       "stat1Label": "Ciclo percibir → razonar → actuar",
       "stat2Value": "4",
       "stat2Label": "Eras de capacidad de IA, 70 años"
@@ -440,7 +440,7 @@
     },
     "cta": {
       "title": "Vea el ciclo autónomo ejecutándose en vivo en las plazas del Perú.",
-      "body": "El prototipo ejecuta el ciclo completo percibir-razonar-actuar-reflexionar. Cambie a la pestaña Prototipo en vivo para activar una escalada real.",
+      "body": "El espacio demuestra el ciclo revisable. La escalada externa no está disponible sin aprobación y un servicio autenticado.",
       "buttonPrototype": "Prototipo en vivo",
       "buttonArchitecture": "Arquitectura"
     }

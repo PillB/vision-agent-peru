@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "models":[
+    {"id":"yolos-tiny","task":"object detection","revision":"1a00cc14a139ff40bac9aa00c745915cb7b5b751","license":"Apache-2.0","runtime":"Transformers.js WASM","status":"experimental","selected":true,"metrics":{"precision":null,"recall":null,"fps":null}},
+    {"id":"clip-vit-base-patch32","task":"text/image retrieval","revision":"91f7a4bfa256ca85b019500008a355e2da0fe641","license":"Apache-2.0 browser port; upstream model terms reviewed separately","runtime":"Transformers.js WASM/WebGPU","status":"experimental","selected":true,"metrics":{"recallAtK":null,"latencyMs":null}},
+    {"id":"coco-ssd","task":"object detection","revision":"npm@2.2.3; remote graph unpinned","license":"Apache-2.0","runtime":"TensorFlow.js","status":"deprecated","selected":false,"reason":"Remote graph artifact lacks immutable content pin."},
+    {"id":"yolov10n-onnx","task":"object detection","revision":null,"license":"AGPL-3.0 upstream","runtime":null,"status":"roadmap","selected":false,"reason":"No accepted immutable browser artifact, adapter or benchmark."},
+    {"id":"mobileclip-s0","task":"retrieval","revision":null,"license":"research-only released weights","runtime":null,"status":"research-only","selected":false},
+    {"id":"siglip-base-patch16-224","task":"retrieval","revision":"cc3289c7ee0594a9e640dbf5580511cdcca21837","license":"Apache-2.0","runtime":null,"status":"roadmap","selected":false,"reason":"Approximately 813 MB and no evidence supporting default browser deployment."}
+  ]
+}

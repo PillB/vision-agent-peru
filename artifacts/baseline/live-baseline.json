@@ -1,0 +1,13 @@
+{
+  "capturedAt":"2026-08-07T00:00:00-05:00",
+  "url":"https://pillb.github.io/vision-agent-peru/",
+  "sourceCommit":"ea584dcb043fa1ad95467d8efd8e8f359c321a34",
+  "visibleClaims":["Production Ready","<2s Response Time","30× Faster Than Manual","~60% False-Positive Reduction","Zero Backend","immutable evidence"],
+  "observedRun":{"cycleRate":"~0.1 cycles/s","reportedLatencyMs":7301,"detections":6},
+  "routeProbes":[
+    {"path":"/api/alert","GET":404,"POST":405},
+    {"path":"/api/report","GET":404,"POST":405},
+    {"path":"/api/judge","GET":404,"POST":405}
+  ],
+  "localBaseline":{"npmTest":"not reproducible: tsx undeclared","directAdversarial":"2070/2071; after-hours time gate failed","lint":"159 errors, 3 warnings","typecheck":"6 errors","formalPlaywright":"hard-coded /home/z path; 14 Chromium-only tests"}
+}
