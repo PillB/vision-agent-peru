@@ -8,6 +8,7 @@ The rebuilt product is a local-first, review-oriented evidence prototype. It no 
 
 ### Validated functionality
 
+- Independent Overview, Strategic Brief, Live Prototype, and Evidence Workspace destinations; the restored prototype retains its camera/use-case/model controls, metrics, trace, alerts, local tracks, actions, reports, evidence, natural-language search, and incident-state panels.
 - Static capability detection, no production test hook, selected runtime adapters only, zero-valued rank preservation.
 - Deterministic action allowlists, sequential judge gate, malformed/inconclusive handling, approval rejection, idempotency, circuit breaker, bounded retry/compensation, and outcome verification.
 - False-positive verdict suppression: the executor is never called after the verdict; proven in contract and visible-control tests.
@@ -19,6 +20,7 @@ The rebuilt product is a local-first, review-oriented evidence prototype. It no 
 ### Experimental functionality
 
 - Immutable-revision YOLOS-tiny browser detection.
+- Restored live-camera prototype execution using the same pinned YOLOS-tiny adapter; its device/domain performance remains experimental.
 - ByteTrack-compatible two-stage within-video tracking.
 - CLIP natural-language/reference retrieval.
 - Cross-video appearance/topology/time candidate fusion.

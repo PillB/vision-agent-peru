@@ -58,9 +58,5 @@ server.log
 /playwright-report/
 /artifacts/runtime/
 
-# Removed legacy test/prototype paths. The canonical suites live in tests/e2e.
+# Removed legacy ad hoc scripts. The canonical suites live in tests/e2e.
 /scripts/pw-*
-/src/components/prototype/
-/src/lib/identity.ts
-/src/lib/metric-provenance.ts
-/src/lib/specialized-models.ts
