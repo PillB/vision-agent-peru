@@ -107,7 +107,7 @@ export function EvidenceWorkspace() {
   useEffect(() => {
     probeIndexedDB().then(async status => {
       setProfile(detectProfile())
-      setWebGpu(typeof navigator !== 'undefined' && Boolean(navigator.gpu))
+      setWebGpu(typeof navigator !== 'undefined' && 'gpu' in navigator)
       setStorage(status)
       if (status.available) {
         await purgeExpired('evidence', RETENTION_MS)
