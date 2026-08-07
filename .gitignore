@@ -55,3 +55,5 @@ server.log
 
 # Test results
 /test-results/
+/playwright-report/
+/artifacts/runtime/

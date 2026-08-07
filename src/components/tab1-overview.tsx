@@ -547,7 +547,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
                 <span className="font-medium text-zinc-950">Model drift.</span> COCO-SSD trained on general images; Peru plaza footage may need fine-tuning for distant/small persons.
               </div>
               <div>
-                <span className="font-medium text-zinc-950">Browser perf.</span> Sustained 1+ fps requires WebGPU backend; WASM fallback runs at 0.3-0.7 fps; falls back to WebGL on older devices.
+                <span className="font-medium text-zinc-950">Browser perf.</span> Throughput is unvalidated and varies by device, decoder, sampling strategy, backend, source, and model. WASM is the supported fallback when WebGPU is absent.
               </div>
               <div>
                 <span className="font-medium text-zinc-950">Privacy compliance.</span> Snapshots store identifiable images — need retention policy + on-prem option for production.

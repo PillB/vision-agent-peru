@@ -8,7 +8,7 @@
   "Nav": {
     "overview": "Solution Overview",
     "brief": "Strategic Brief",
-    "prototype": "Live Prototype"
+    "prototype": "Evidence Workspace"
   },
   "Footer": {
     "source": "Source: TF.js COCO-SSD (Google); Z-AI Web Dev SDK; internal simulation on Pexels/Pixabay stock footage of Peru plaza scenes.",
@@ -216,7 +216,7 @@
     },
     "cta": {
       "title": "See the agentic loop run live on real footage of Peru's plazas.",
-      "body": "Switch to the Live Prototype tab. The model loads in your browser, detections stream in under 5 seconds, and you can trigger every action the agent can.",
+      "body": "Open the Evidence Workspace to check capabilities, analyze authorized local videos, review candidates, and export selected evidence.",
       "button": "Open live prototype"
     }
   },
@@ -440,7 +440,7 @@
     },
     "cta": {
       "title": "See the agentic loop running live on Peru's plazas.",
-      "body": "The prototype runs the full perceive-reason-act-reflect loop. Switch to the Live Prototype tab to trigger a real escalation.",
+      "body": "The workspace demonstrates the reviewable control loop. External escalation remains unavailable without approval and an authenticated service.",
       "buttonPrototype": "Live prototype",
       "buttonArchitecture": "Architecture"
     }

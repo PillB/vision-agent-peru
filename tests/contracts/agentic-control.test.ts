@@ -79,3 +79,41 @@ test('external action remains pending when approval is rejected', async () => {
   assert.deepEqual(result.approvalRejectedActions, ['send_email'])
   assert.deepEqual(result.executedActions, [])
 })
+
+test('failed verification retries, then compensates without claiming success', async () => {
+  let attempts = 0
+  let compensations = 0
+  const result = await runControlledActions({
+    incidentId: 'incident-retry', proposedActions: ['generate_report'], allowedActions: ['generate_report'],
+    profile: 'github_pages', evidence: { available: true, visual: true, evidenceIds: ['ev-5'] },
+    approval: async () => false, maxAttempts: 2,
+    execute: async () => { attempts++; return { ok: false, verified: false, message: 'write verification failed' } },
+    compensate: async () => { compensations++; return { ok: true, message: 'partial draft removed' } },
+  })
+  assert.equal(attempts, 2)
+  assert.equal(compensations, 1)
+  assert.equal(result.outcome, 'failed')
+  assert.equal(result.executedActions[0].status, 'failed')
+})
+
+test('idempotency and circuit breaker block duplicate or excessive external execution', async () => {
+  const keys = new Set<string>(['incident-duplicate:generate_report'])
+  let calls = 0
+  const duplicate = await runControlledActions({
+    incidentId: 'incident-duplicate', proposedActions: ['generate_report'], allowedActions: ['generate_report'],
+    profile: 'github_pages', evidence: { available: true, visual: true, evidenceIds: ['ev-6'] },
+    approval: async () => true, executedActionKeys: keys,
+    execute: async () => { calls++; return { ok: true, verified: true, message: 'ok' } },
+  })
+  assert.equal(calls, 0)
+  assert.equal(duplicate.events.some(event => event.detail?.includes('Duplicate blocked')), true)
+
+  const breaker = await runControlledActions({
+    incidentId: 'incident-breaker', proposedActions: ['send_email'], allowedActions: ['send_email'],
+    profile: 'secure_service', evidence: { available: true, visual: true, evidenceIds: ['ev-7'] },
+    approval: async () => true, externalCircuitBreakerOpen: true,
+    execute: async () => { calls++; return { ok: true, verified: true, message: 'ok' } },
+  })
+  assert.equal(calls, 0)
+  assert.deepEqual(breaker.rejectedActions, ['send_email'])
+})

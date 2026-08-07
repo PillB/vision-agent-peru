@@ -9,12 +9,17 @@ test('only selected, implemented adapters are scheduled', () => {
 })
 
 test('pending adapters are unavailable rather than decorative selections', () => {
-  const plan = resolveRuntimePlan(['yolos-tiny'], 'intrusion')
+  const plan = resolveRuntimePlan(['yolov10n'], 'intrusion')
   assert.deepEqual(plan.adapters, [])
-  assert.deepEqual(plan.unavailable, ['yolos-tiny'])
+  assert.deepEqual(plan.unavailable, ['yolov10n'])
 })
 
 test('zero-valued best rank is retained', () => {
-  const plan = resolveRuntimePlan(['coco-ssd', 'pixel-anomaly'], 'intrusion')
+  const plan = resolveRuntimePlan(['yolos-tiny', 'pixel-anomaly'], 'intrusion')
   assert.equal(plan.adapters[0]?.rank, 0)
+})
+
+test('active detector uses an immutable revision', () => {
+  const plan = resolveRuntimePlan(['yolos-tiny'], 'intrusion')
+  assert.match(plan.adapters[0]?.revision ?? '', /^[0-9a-f]{40}$/)
 })

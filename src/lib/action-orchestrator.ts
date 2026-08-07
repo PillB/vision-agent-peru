@@ -20,6 +20,8 @@ export interface ControlledActionEvent {
     | 'request_approval'
     | 'execute'
     | 'verify_outcome'
+    | 'retry'
+    | 'compensate'
     | 'close'
   action?: ActionName
   status: 'started' | 'succeeded' | 'failed' | 'blocked' | 'unavailable' | 'rejected'
@@ -46,6 +48,10 @@ export interface RunControlledActionsOptions {
   judge?: () => Promise<JudgeResult>
   approval: (action: ActionName) => Promise<boolean>
   execute: (action: ActionName) => Promise<{ ok: boolean; verified: boolean; message: string }>
+  compensate?: (action: ActionName) => Promise<{ ok: boolean; message: string }>
+  maxAttempts?: number
+  executedActionKeys?: Set<string>
+  externalCircuitBreakerOpen?: boolean
   onEvent?: (event: ControlledActionEvent) => void
 }
 
@@ -139,6 +145,11 @@ export async function runControlledActions(options: RunControlledActionsOptions)
   for (const action of executable) {
     emit({ stage: 'propose_action', action, status: 'succeeded' })
     const external = EXTERNAL_ACTIONS.has(action)
+    if (external && options.externalCircuitBreakerOpen) {
+      result.rejectedActions.push(action)
+      emit({ stage: 'apply_policy', action, status: 'blocked', detail: 'External-action circuit breaker is open' })
+      continue
+    }
     if (external && options.profile !== 'secure_service') {
       result.unavailableActions.push(action)
       emit({ stage: 'execute', action, status: 'unavailable', detail: 'Authenticated external service is not configured' })
@@ -155,17 +166,33 @@ export async function runControlledActions(options: RunControlledActionsOptions)
       emit({ stage: 'request_approval', action, status: 'succeeded' })
     }
 
-    emit({ stage: 'execute', action, status: 'started' })
-    const execution = await options.execute(action)
-    const status = execution.ok && execution.verified ? 'verified' : 'failed'
-    result.executedActions.push({ action, status, message: execution.message })
-    emit({
-      stage: 'verify_outcome',
-      action,
-      status: status === 'verified' ? 'succeeded' : 'failed',
-      detail: execution.message,
-    })
-    if (status === 'failed') result.outcome = 'failed'
+    const idempotencyKey = `${options.incidentId}:${action}`
+    if (options.executedActionKeys?.has(idempotencyKey)) {
+      emit({ stage: 'execute', action, status: 'blocked', detail: `Duplicate blocked by ${idempotencyKey}` })
+      continue
+    }
+    const maxAttempts = Math.max(1, options.maxAttempts ?? 3)
+    let verified = false
+    let message = 'No execution attempt'
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      emit({ stage: 'execute', action, status: 'started', detail: `attempt ${attempt}/${maxAttempts}` })
+      const execution = await options.execute(action)
+      verified = execution.ok && execution.verified
+      message = execution.message
+      emit({ stage: 'verify_outcome', action, status: verified ? 'succeeded' : 'failed', detail: execution.message })
+      if (verified) break
+      if (attempt < maxAttempts) emit({ stage: 'retry', action, status: 'started', detail: `retrying after failed verification ${attempt}` })
+    }
+    const status = verified ? 'verified' : 'failed'
+    result.executedActions.push({ action, status, message })
+    if (verified) options.executedActionKeys?.add(idempotencyKey)
+    if (!verified) {
+      result.outcome = 'failed'
+      if (options.compensate) {
+        const compensation = await options.compensate(action)
+        emit({ stage: 'compensate', action, status: compensation.ok ? 'succeeded' : 'failed', detail: compensation.message })
+      }
+    }
   }
 
   emit({ stage: 'close', status: result.outcome === 'failed' ? 'failed' : 'succeeded' })

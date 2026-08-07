@@ -43,6 +43,7 @@ export interface EvidenceRecord {
   id: string
   createdAt: number
   cameraId: string
+  videoId?: string
   useCaseId: string
   timestamp: number
   snapshotDataUrl: string
@@ -51,6 +52,12 @@ export interface EvidenceRecord {
   trackId?: string
   note?: string
   confirmed?: boolean
+  sourceTimestampSeconds?: number
+  contextPosition?: 'entry' | 'middle' | 'exit'
+  trajectoryPoint?: { x: number; y: number }
+  modelId?: string
+  modelRevision?: string
+  quality?: 'high' | 'medium' | 'low'
 }
 
 export interface SearchResult {
@@ -141,6 +148,83 @@ function keywordScore(query: string, rec: EvidenceRecord): number {
   let hits = 0
   for (const t of qTokens) if (docTokens.has(t)) hits++
   return hits / qTokens.size
+}
+
+export interface EvidenceSearchFilters {
+  cameraIds?: string[]
+  videoIds?: string[]
+  objectType?: string
+  from?: number
+  to?: number
+  minQuality?: 'low' | 'medium' | 'high'
+}
+
+export type EvidenceRankMode = 'relevance' | 'recency' | 'balanced'
+
+export interface ExplainedSearchResult extends SearchResult {
+  relevanceScore: number
+  recencyScore: number
+  explanation: string[]
+  outcome: 'candidate' | 'near_miss'
+}
+
+/** Hard filters run before retrieval. Recency is applied only in the selected
+ * ranking mode and every score component remains visible to the reviewer. */
+export async function searchEvidenceAdvanced(options: {
+  queryText: string
+  queryEmbedding?: Float32Array
+  filters?: EvidenceSearchFilters
+  rankMode?: EvidenceRankMode
+  threshold?: number
+  nearMissFloor?: number
+  limit?: number
+}): Promise<{ candidates: ExplainedSearchResult[]; nearMisses: ExplainedSearchResult[] }> {
+  const filters = options.filters ?? {}
+  const rankMode = options.rankMode ?? 'relevance'
+  const threshold = options.threshold ?? 0.65
+  const nearMissFloor = options.nearMissFloor ?? Math.max(0, threshold - 0.15)
+  const qualityRank = { low: 0, medium: 1, high: 2 }
+  const now = Date.now()
+  const eligible = (await listEvidence()).filter(record => {
+    if (filters.cameraIds?.length && !filters.cameraIds.includes(record.cameraId)) return false
+    if (filters.videoIds?.length && (!record.videoId || !filters.videoIds.includes(record.videoId))) return false
+    if (filters.objectType && record.detection.class !== filters.objectType) return false
+    if (filters.from && record.timestamp < filters.from) return false
+    if (filters.to && record.timestamp > filters.to) return false
+    if (filters.minQuality && qualityRank[record.quality ?? 'low'] < qualityRank[filters.minQuality]) return false
+    return true
+  })
+
+  const results = eligible.map(record => {
+    const embeddingScore = Math.max(0, cosineSim(options.queryEmbedding, record.embedding))
+    const keyword = keywordScore(options.queryText, record)
+    const relevanceScore = embeddingScore > 0 ? embeddingScore : keyword
+    const ageHours = Math.max(0, now - record.timestamp) / 3_600_000
+    const recencyScore = 1 / (1 + ageHours / 24)
+    const score = rankMode === 'recency'
+      ? recencyScore
+      : rankMode === 'balanced' ? relevanceScore * 0.8 + recencyScore * 0.2 : relevanceScore
+    const explanation = [
+      `relevance=${relevanceScore.toFixed(3)}`,
+      `recency=${recencyScore.toFixed(3)}`,
+      `rank_mode=${rankMode}`,
+      `source=${embeddingScore > 0 ? 'experimental CLIP embedding' : 'structured/keyword metadata'}`,
+    ]
+    return {
+      record,
+      score,
+      relevanceScore,
+      recencyScore,
+      matchedOn: embeddingScore > 0 ? 'embedding' as const : 'keyword' as const,
+      explanation,
+      outcome: relevanceScore >= threshold ? 'candidate' as const : 'near_miss' as const,
+    }
+  }).sort((left, right) => right.score - left.score)
+
+  return {
+    candidates: results.filter(item => item.relevanceScore >= threshold).slice(0, options.limit ?? 20),
+    nearMisses: results.filter(item => item.relevanceScore >= nearMissFloor && item.relevanceScore < threshold).slice(0, options.limit ?? 20),
+  }
 }
 
 /**
@@ -260,6 +344,43 @@ export async function exportEvidenceJSON(): Promise<string> {
     idbAvailable: idbAvailable(),
     records: exportable,
   }, null, 2)
+}
+
+export async function createEvidenceExport(options: {
+  selectedIds?: string[]
+  query?: string
+  threshold?: number
+  coverage?: unknown
+  associationDecisions?: unknown[]
+  actionTrace?: unknown[]
+} = {}): Promise<{ json: string; sha256: string }> {
+  const selected = new Set(options.selectedIds ?? [])
+  const records = (await listEvidence())
+    .filter(record => selected.size === 0 || selected.has(record.id))
+    .map(record => ({
+      ...record,
+      embedding: record.embedding ? Array.from(record.embedding) : undefined,
+    }))
+  const payload = {
+    schema: 'vision-agent-evidence-export/v1',
+    exportedAt: new Date().toISOString(),
+    classification: 'local evidence package — not an immutable chain of custody',
+    query: options.query,
+    threshold: options.threshold,
+    coverage: options.coverage,
+    modelLimitations: [
+      'Similarity scores are not probabilities',
+      'Detection and retrieval quality vary with lighting, occlusion, sampling, and domain shift',
+      'Candidate association never establishes identity',
+    ],
+    associationDecisions: options.associationDecisions ?? [],
+    actionTrace: options.actionTrace ?? [],
+    records,
+  }
+  const json = JSON.stringify(payload, null, 2)
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json))
+  const sha256 = Array.from(new Uint8Array(digest)).map(value => value.toString(16).padStart(2, '0')).join('')
+  return { json, sha256 }
 }
 
 /**

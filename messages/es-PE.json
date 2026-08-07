@@ -8,7 +8,7 @@
   "Nav": {
     "overview": "Resumen de la solución",
     "brief": "Resumen estratégico",
-    "prototype": "Prototipo en vivo"
+    "prototype": "Espacio de evidencia"
   },
   "Footer": {
     "source": "Fuente: TF.js COCO-SSD (Google); Z-AI Web Dev SDK; simulación interna con videos de Pexels/Pixabay de plazas del Perú.",
@@ -440,7 +440,7 @@
     },
     "cta": {
       "title": "Vea el ciclo autónomo ejecutándose en vivo en las plazas del Perú.",
-      "body": "El prototipo ejecuta el ciclo completo percibir-razonar-actuar-reflexionar. Cambie a la pestaña Prototipo en vivo para activar una escalada real.",
+      "body": "El espacio demuestra el ciclo revisable. La escalada externa no está disponible sin aprobación y un servicio autenticado.",
       "buttonPrototype": "Prototipo en vivo",
       "buttonArchitecture": "Arquitectura"
     }

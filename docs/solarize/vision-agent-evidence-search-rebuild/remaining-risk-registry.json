@@ -1,0 +1,16 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "risks":[
+    {"id":"R1","area":"model","severity":"high","status":"open","risk":"YOLOS recall/precision, browser throughput, and thresholds lack a consented held-out surveillance benchmark","mitigation":"experimental label; no consequential action authority"},
+    {"id":"R2","area":"retrieval","severity":"high","status":"open","risk":"CLIP similarities and association fusion are not calibrated and may amplify clothing/background bias","mitigation":"near misses, conflicts, open-set rejection, human confirmation"},
+    {"id":"R3","area":"privacy","severity":"high","status":"open","risk":"scene crops and embeddings can remain sensitive even without facial recognition","mitigation":"local-first, 24h startup purge, explicit deletion/export, no watchlists"},
+    {"id":"R4","area":"retention","severity":"medium","status":"open","risk":"browser purge is not a guaranteed wall-clock deletion service and downloads escape it","mitigation":"truthful best-effort wording and explicit reset"},
+    {"id":"R5","area":"operations","severity":"high","status":"open","risk":"no authenticated email, ticket, dispatch, access-control, emergency messaging, or evidence-transmission service exists","mitigation":"controls unavailable; never simulated as success"},
+    {"id":"R6","area":"accessibility","severity":"medium","status":"open","risk":"automated axe/keyboard coverage does not replace manual assistive-technology testing","mitigation":"manual audit required before production readiness"},
+    {"id":"R7","area":"security","severity":"medium","status":"open","risk":"browser model supply chain and malicious media decoder inputs","mitigation":"immutable active revisions, file limits, browser sandbox, CSP/SRI review roadmap"},
+    {"id":"R8","area":"availability","severity":"medium","status":"open","risk":"IndexedDB, quota, decoder, model download, memory, or WASM can fail per device","mitigation":"explicit failures, cancellation, coverage accounting, inconclusive result"},
+    {"id":"R9","area":"evidence","severity":"high","status":"open","risk":"local JSON exports are not tamper-proof legal chain of custody","mitigation":"SHA-256 integrity field and explicit non-immutable disclaimer"},
+    {"id":"R10","area":"scope","severity":"high","status":"closed by prohibition","risk":"facial recognition, permanent watchlists, demographics, body or gait could be repurposed as identity","mitigation":"not implemented; rejected from normal query/index/action paths"}
+  ]
+}

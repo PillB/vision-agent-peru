@@ -1,0 +1,37 @@
+# Deliverable index
+
+Status reflects evidence available in the repository. “Experimental” is not promoted to validated merely because an adapter exists.
+
+| # | Required deliverable | Status | Exact evidence |
+|---:|---|---|---|
+| 1 | Forensic audit | Complete | `round-0-forensic-audit.md`, `artifacts/baseline/live-baseline.json` |
+| 2 | Live baseline screenshots and traces | Partial: trace facts preserved; screenshot capture pending hosted artifact | baseline JSON and deployment workflow artifact policy |
+| 3 | Capability truth ledger | Complete | `capability_truth_ledger.json` |
+| 4 | Competitor capability matrix | Complete | `competitor-capability-matrix.md`, primary links only |
+| 5 | Current-claim audit | Complete | `claim_registry.json`, corrected `messages/*.json`, `tab1-overview.tsx` |
+| 6 | Model and adapter inventory | Complete | `model-and-adapter-inventory.md`, `src/lib/models/registry.ts` |
+| 7 | Use-case evidence contracts | Complete | `use-case-evidence-contracts.json`, negative-control tests |
+| 8 | Corrected action state machine | Complete | `src/lib/action-orchestrator.ts` |
+| 9 | Static capability profiles | Complete | `src/lib/deployment.ts`, `incident-state-machine.ts` |
+| 10 | Reproducible test scripts | Complete | exact scripts in `package.json`, locked dependencies |
+| 11 | Complete Playwright suite | Implemented; execution gated on CI browsers | `playwright.config.ts`, `tests/e2e`, 5 projects |
+| 12 | Semantic multi-video search | Experimental | `evidence-workspace.tsx`, `vlm-embeddings.ts`, `evidence.ts` |
+| 13 | Browser index | Validated prototype | `idb.ts`, reopen/purge test |
+| 14 | Reference-image search | Experimental | visible reference input and pinned CLIP adapter |
+| 15 | Candidate association review | Experimental proposal + validated review controls | `association.ts`, visible confirm/reject test |
+| 16 | Safe absence workflow | Complete deterministic contract | exact wording/coverage unit and visible tests |
+| 17 | Calibrated model-fusion policy | Corrected: uncalibrated experimental fusion | `association.ts`; calibration is prohibited until held-out benchmark |
+| 18 | Model cards | Complete | `model-cards.md` |
+| 19 | Dataset cards | Complete | `dataset-cards.md` |
+| 20 | Action policy registry | Complete | `action-policy-registry.json` |
+| 21 | Approval workflow | Complete locally; external service unavailable | orchestrator and approval/rejection test |
+| 22 | Evidence export | Validated prototype | `createEvidenceExport`, sample artifact |
+| 23 | Privacy and retention controls | Complete as bounded browser controls | privacy report, query tests, IndexedDB purge |
+| 24 | Accessibility report | Implemented suite; hosted results pending | privacy/security/accessibility/performance report, axe tests |
+| 25 | Security report | Complete with open risks | same report, action contracts, risk registry |
+| 26 | Performance report | Complete without unsupported metrics | same report, benchmark JSON |
+| 27 | Benchmark reports | Honest incomplete benchmark | null metrics in benchmark JSON; no fabricated promotion |
+| 28 | Deployment evidence | Pending publish | workflow will retain build, Playwright, and Pages evidence |
+| 29 | Live-site retest | Pending deployed commit | `test:e2e:live` plus route probes |
+| 30 | Phase retrospectives | Complete | `phase-retrospectives.md` |
+| 31 | Remaining-risk registry | Complete | `remaining-risk-registry.json` |

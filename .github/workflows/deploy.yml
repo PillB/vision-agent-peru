@@ -12,11 +12,11 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,10 +24,37 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: npm
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
+
+      - name: Static analysis and contract tests
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run test:unit
+          npm run test:contracts
+          npm run test:models
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Visible-UI browser matrix
+        run: npm run test:e2e
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence-${{ github.sha }}
+          path: |
+            test-results/
+            playwright-report/
+            artifacts/
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Remove API routes (incompatible with static export)
         run: rm -rf src/app/api

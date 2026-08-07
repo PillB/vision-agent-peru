@@ -1,0 +1,21 @@
+{
+  "schemaVersion":"1.0.0",
+  "globalNegativeControl":"A person detection, count, color histogram, bounding-box geometry, or frame-difference score alone cannot satisfy a fire, flood, graffiti, landslide, slip, structural, or identity contract.",
+  "contracts":[
+    {"useCase":"intrusion","required":["person detection","configured ROI intersection","time/sustain rule when configured"],"negative":["person outside ROI"],"actionClass":"local evidence; external notification unavailable on GitHub Pages"},
+    {"useCase":"after_hours","required":["person detection","deterministic local-time gate"],"negative":["person during allowed hours"],"actionClass":"local evidence"},
+    {"useCase":"crowd_surge","required":["person-only local tracks","validated baseline and sustained change"],"negative":["single-frame count spike"],"actionClass":"local evidence"},
+    {"useCase":"parking","required":["vehicle detection","configured ROI","positive dwell threshold for alerting"],"negative":["threshold zero"],"actionClass":"telemetry-only while threshold is zero"},
+    {"useCase":"queue_anomaly","required":["person tracks","queue ROI","sustained threshold"],"negative":["unstructured pedestrian count"],"actionClass":"local evidence"},
+    {"useCase":"abandoned_object","required":["non-person object track","stationary dwell","person separation evidence"],"negative":["person count"],"actionClass":"experimental"},
+    {"useCase":"graffiti","required":["dedicated/validated visual signal plus localization"],"negative":["person detection","red pixels"],"actionClass":"unavailable until model validation"},
+    {"useCase":"fire_smoke","required":["dedicated/validated fire or smoke visual signal","sustain","reviewable frame"],"negative":["person detection","sunset/red pixels alone"],"actionClass":"unavailable until model validation"},
+    {"useCase":"slip_hazard","required":["dedicated/validated hazard or pose evidence"],"negative":["person detection","bounding-box aspect ratio alone"],"actionClass":"unavailable until model validation"},
+    {"useCase":"incident_description","required":["reviewable visual evidence","authenticated optional judge","validated schema"],"negative":["text-only fabricated scene"],"actionClass":"unavailable on GitHub Pages"},
+    {"useCase":"auto_report","required":["validated incident evidence","deterministic local report template"],"negative":["API 404/405"],"actionClass":"local deterministic export only"},
+    {"useCase":"visual_memory","required":["local evidence records and bounded retention"],"negative":["in-memory-only claim","identity inference"],"actionClass":"validated prototype"},
+    {"useCase":"flood_watch","required":["dedicated/validated water-region evidence","change/context","reviewable frame"],"negative":["person detection","blue pixels alone"],"actionClass":"unavailable until model validation"},
+    {"useCase":"landslide_watch","required":["dedicated/validated terrain-change evidence","temporal context"],"negative":["person detection","frame difference alone"],"actionClass":"unavailable until model validation"},
+    {"useCase":"post_quake","required":["dedicated/validated structural-change evidence","before/after context"],"negative":["person detection","dark pixels alone"],"actionClass":"unavailable until model validation"}
+  ]
+}

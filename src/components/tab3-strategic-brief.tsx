@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { prefixPath } from '@/lib/path-utils'
+import { apiRoutesAvailable } from '@/lib/deployment'
 import {
   ArrowRight,
   Eye,
@@ -45,11 +46,18 @@ const TOTAL_SLIDES = 10
 
 export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
   const t = useTranslations()
+  const serverExportsAvailable = apiRoutesAvailable()
   const [downloading, setDownloading] = useState(false)
   const [downloadingV2, setDownloadingV2] = useState(false)
   const [downloadingV3, setDownloadingV3] = useState(false)
 
   const handleDownloadPptx = useCallback(async (version: 'v1' | 'v2' | 'v3' = 'v1') => {
+    if (!apiRoutesAvailable()) {
+      toast.error('Unavailable on this static deployment', {
+        description: 'PowerPoint generation requires a configured server and is not simulated.',
+      })
+      return
+    }
     const setter = version === 'v3' ? setDownloadingV3 : version === 'v2' ? setDownloadingV2 : setDownloading
     setter(true)
     try {
@@ -104,19 +112,19 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               <Button onClick={onSeeOverview} variant="outline">
                 {t('Tab3.slide1.ctaArchitecture')}
               </Button>
-              <Button onClick={() => handleDownloadPptx('v1')} disabled={downloading} variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
+              <Button onClick={() => handleDownloadPptx('v1')} disabled={downloading || !serverExportsAvailable} variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
                 {downloading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Download className="mr-2 h-4 w-4" />{t('Tab3.download.button')}</>}
               </Button>
-              <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2} variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
+              <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2 || !serverExportsAvailable} variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
                 {downloadingV2 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Sparkles className="mr-2 h-4 w-4" />{t('Tab3.download.button')} V2</>}
               </Button>
-              <Button onClick={() => handleDownloadPptx('v3')} disabled={downloadingV3} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button onClick={() => handleDownloadPptx('v3')} disabled={downloadingV3 || !serverExportsAvailable} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 {downloadingV3 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('Tab3.download.generating')}</> : <><Zap className="mr-2 h-4 w-4" />BCP Z-Flow V3</>}
               </Button>
             </div>
             <p className="mt-3 text-xs text-zinc-400 flex items-center gap-1.5">
               <FileText className="h-3 w-3" />
-              {t('Tab3.download.hint')}
+              {serverExportsAvailable ? t('Tab3.download.hint') : 'Unavailable on this static deployment; no request will be sent.'}
             </p>
           </div>
           <div className="lg:col-span-5">
@@ -484,11 +492,11 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button onClick={onTryPrototype} size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50"><Zap className="mr-2 h-4 w-4" />{t('Tab3.cta.buttonPrototype')}</Button>
-            <Button onClick={() => handleDownloadPptx('v1')} disabled={downloading} size="lg" variant="outline" className="border-white text-white hover:bg-emerald-800 hover:text-white bg-transparent">
+            <Button onClick={() => handleDownloadPptx('v1')} disabled={downloading || !serverExportsAvailable} size="lg" variant="outline" className="border-white text-white hover:bg-emerald-800 hover:text-white bg-transparent">
               {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
               {downloading ? t('Tab3.download.generating') : t('Tab3.download.ctaButton')}
             </Button>
-            <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2} size="lg" variant="outline" className="border-amber-300 text-amber-200 hover:bg-amber-900/30 hover:text-white bg-transparent">
+            <Button onClick={() => handleDownloadPptx('v2')} disabled={downloadingV2 || !serverExportsAvailable} size="lg" variant="outline" className="border-amber-300 text-amber-200 hover:bg-amber-900/30 hover:text-white bg-transparent">
               {downloadingV2 ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
               {downloadingV2 ? t('Tab3.download.generating') : `${t('Tab3.download.ctaButton')} V2`}
             </Button>

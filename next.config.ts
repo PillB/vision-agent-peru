@@ -6,9 +6,6 @@ const repoName = 'vision-agent-peru'
 
 const nextConfig: NextConfig = {
   output: isGitHubPages ? "export" : "standalone",
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   reactStrictMode: false,
   ...(isGitHubPages ? {
     basePath: `/${repoName}`,
