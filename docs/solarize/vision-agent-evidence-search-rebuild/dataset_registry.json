@@ -1,0 +1,8 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "datasets":[
+    {"id":"repository-workflow-fixture","purpose":"visible workflow and deterministic control testing","origin":"synthetic/repository-authored","consent":"non-personal fixture","license":"repository license","status":"simulated","proves":["UI workflow","near-miss display","confirmation/rejection","false-positive suppression"],"doesNotProve":["model accuracy","threshold calibration","fairness","FPS"]},
+    {"id":"consented-held-out-surveillance-set","purpose":"retrieval, tracking, association, absence, fairness and performance validation","origin":null,"consent":null,"license":null,"status":"roadmap","proves":[]}
+  ]
+}

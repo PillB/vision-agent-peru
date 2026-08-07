@@ -1,0 +1,14 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "projects":["chromium-desktop","firefox-desktop","webkit-desktop","chromium-tablet","chromium-mobile"],
+  "enumeratedCases":70,
+  "expectedExecutedCases":68,
+  "standardsBasedSkips":2,
+  "synchronization":"accessible locators and web-first assertions; no principal arbitrary waits",
+  "forbiddenMechanisms":{"directZustandMutation":false,"windowVisionStore":false,"rawDomDispatch":false,"internalNavigation":false,"forcedClicks":false},
+  "artifacts":{"trace":"on first retry","screenshot":"on failure","video":"retained on failure","reports":["HTML","JUnit","JSON"]},
+  "coverage":["visible navigation","keyboard tabs","reduced motion","axe serious/critical","200 percent desktop zoom equivalence","desktop/tablet/mobile","simulation label","semantic query","near misses","association confirmation and rejection","safe absence","corrupted video","sensitive query rejection","false-positive suppression","IndexedDB failure","WebGPU absence/WASM fallback","production API absence and hook absence"],
+  "separateDeterministicCoverage":["large video limits","cancellation state","model selection/failure","open-set rejection","approval/rejection","retry/compensation","idempotency","circuit breaker"],
+  "evidence":["playwright.config.ts","tests/e2e","tests/unit","tests/contracts","tests/models"]
+}

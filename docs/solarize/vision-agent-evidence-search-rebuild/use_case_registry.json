@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0.0",
+  "updated": "2026-08-07",
+  "useCases": [
+    {"id":"authorized_video_investigation","status":"validated prototype","executionMode":"local","requiredEvidence":["authorized video","coverage accounting"],"allowedActions":["local_report","local_export"],"evidence":"src/components/evidence-workspace.tsx"},
+    {"id":"person_or_vehicle_candidate_search","status":"experimental","executionMode":"local-model","requiredEvidence":["typed object detection","local track","representative crop"],"allowedActions":["local_report","local_export"],"evidence":"src/lib/evidence.ts"},
+    {"id":"fire_smoke","status":"validated prototype","executionMode":"deterministic-policy","requiredEvidence":["fire or smoke class","temporal confirmation"],"forbiddenEvidence":["generic person count"],"allowedActions":["local_report"],"evidence":"tests/contracts/agent-use-case-safety.test.ts"},
+    {"id":"flood_watch","status":"validated prototype","executionMode":"deterministic-policy","requiredEvidence":["water class or configured level evidence","temporal confirmation"],"forbiddenEvidence":["generic person count"],"allowedActions":["local_report"],"evidence":"tests/contracts/agent-use-case-safety.test.ts"},
+    {"id":"graffiti","status":"validated prototype","executionMode":"deterministic-policy","requiredEvidence":["scene-change evidence in configured surface ROI","before/after context"],"forbiddenEvidence":["generic person count"],"allowedActions":["local_report"],"evidence":"tests/contracts/agent-use-case-safety.test.ts"},
+    {"id":"landslide_watch","status":"validated prototype","executionMode":"deterministic-policy","requiredEvidence":["terrain/debris evidence","configured ROI","temporal change"],"forbiddenEvidence":["generic person count"],"allowedActions":["local_report"],"evidence":"tests/contracts/agent-use-case-safety.test.ts"},
+    {"id":"slip_hazard","status":"validated prototype","executionMode":"deterministic-policy","requiredEvidence":["surface hazard evidence","configured floor ROI"],"forbiddenEvidence":["generic person count"],"allowedActions":["local_report"],"evidence":"tests/contracts/agent-use-case-safety.test.ts"},
+    {"id":"post_quake","status":"validated prototype","executionMode":"deterministic-policy","requiredEvidence":["structural-change evidence","before/after context"],"forbiddenEvidence":["generic person count"],"allowedActions":["local_report"],"evidence":"tests/contracts/agent-use-case-safety.test.ts"}
+  ]
+}

@@ -1,16 +1,19 @@
 'use client'
 
 import { useLocale, useTranslations } from 'next-intl'
-import { useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { Languages } from 'lucide-react'
 import { prefixPath } from '@/lib/path-utils'
+import { apiRoutesAvailable } from '@/lib/deployment'
 import { Button } from '@/components/ui/button'
 import { localeLabels, type Locale, getOtherLocale } from '@/i18n/locale'
 
 /**
- * Language toggle — switches between English (en) and Peruvian Spanish (es-PE).
+ * Language toggle — switches between English (en) and Peruvian Spanish (es-PE)
+ * only when the authenticated server route is available. Static deployments
+ * expose the fixed build locale and keep this control disabled.
  *
- * STRATEGY:
+ * SERVER STRATEGY:
  *   1. POST to /api/set-locale to set the NEXT_LOCALE cookie server-side.
  *   2. Call window.location.reload() to force a full browser navigation.
  *
@@ -33,9 +36,13 @@ export function LocaleSwitcher() {
   const t = useTranslations('LocaleSwitcher')
   const current = useLocale() as Locale
   const [isPending, startTransition] = useTransition()
+  const [serverAvailable, setServerAvailable] = useState(false)
   const next = getOtherLocale(current)
 
+  useEffect(() => setServerAvailable(apiRoutesAvailable()), [])
+
   async function onToggle() {
+    if (!serverAvailable) return
     startTransition(async () => {
       try {
         const res = await fetch(prefixPath('/api/set-locale'), {
@@ -52,8 +59,6 @@ export function LocaleSwitcher() {
         window.location.reload()
       } catch (err) {
         console.error('[LocaleSwitcher] error:', err)
-        // Fallback: try navigate to root with query param to force reload
-        window.location.href = '/'
       }
     })
   }
@@ -63,13 +68,14 @@ export function LocaleSwitcher() {
       variant="ghost"
       size="sm"
       onClick={onToggle}
-      disabled={isPending}
+      disabled={isPending || !serverAvailable}
       className="gap-1.5 h-8 px-2 text-xs"
-      title={t('switching')}
+      aria-label={serverAvailable ? t('switching') : 'Language switching unavailable on static deployment'}
+      title={serverAvailable ? t('switching') : 'Language switching unavailable on static deployment'}
     >
       <Languages className="h-3.5 w-3.5" />
       <span className="font-medium">
-        {isPending ? t('switching') : localeLabels[next].native}
+        {isPending ? t('switching') : localeLabels[serverAvailable ? next : current].native}
       </span>
     </Button>
   )

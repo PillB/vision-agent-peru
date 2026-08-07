@@ -60,7 +60,7 @@ The public copy no longer claims 60% false-positive reduction, 10 FPS, fixed sub
 
 - Round 0: `round-0-forensic-audit.md`, `artifacts/baseline/live-baseline.json`.
 - Unit/contract/model: `tests/unit`, `tests/contracts`, `tests/models` and exact `package.json` scripts.
-- Browser matrix: `playwright.config.ts`, `tests/e2e`; reports, traces, screenshots, and failure video configured for retention.
+- Browser matrix: `playwright.config.ts`, `tests/e2e`; CI run `31201270165` passed 68 cases with two documented standards-based skips and retained reports/traces/screenshots/failure-video policy.
 - CI/deploy: `.github/workflows/deploy.yml`; final run URL, deployed commit, route probes, screenshots, and two quiet-round results must be appended after publication.
 
 No completion claim in this report relies on a simulated fixture to prove model quality.

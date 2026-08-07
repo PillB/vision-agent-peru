@@ -10,7 +10,7 @@ Red: negative controls showed concurrency, unrelated-person hazards, fake frame 
 
 ## Round 2 — reproducible verification
 
-Red: missing `tsx`, hard-coded paths, Chromium-only shallow scripts, waits/force/direct-store mutation. Green: pinned test dependencies, Node test suites, five Playwright projects, accessible locators, deterministic labeled fixtures, failure artifacts, and CI. Refactor: package scripts are the canonical entry points. Gate: local non-browser suites pass; browser execution is gated on CI because authoring-environment browser binaries could not be downloaded.
+Red: missing `tsx`, hard-coded paths, Chromium-only shallow scripts, waits/force/direct-store mutation. Green: pinned test dependencies, Node test suites, five Playwright projects, accessible locators, deterministic labeled fixtures, failure artifacts, and CI. Refactor: package scripts are the canonical entry points. Independent verification: CI run `31201270165` passed 68 browser cases across five projects with two documented desktop-zoom-equivalence skips on tablet/mobile. Gate: pass; hosted artifacts retain reports and retry evidence.
 
 ## Round 3 — local semantic evidence search
 

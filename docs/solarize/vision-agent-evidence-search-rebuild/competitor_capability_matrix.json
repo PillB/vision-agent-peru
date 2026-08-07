@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "updated": "2026-08-07",
+  "nonParityStatement": "These are public workflow observations, not claims about proprietary internals or feature parity.",
+  "products": [
+    {"vendor":"Flock Safety","publicWorkflow":"FreeForm natural-language video search","patterns":["natural-language query","review results"],"source":"https://www.flocksafety.com/products/flock-freeform"},
+    {"vendor":"Genetec","publicWorkflow":"Investigation task","patterns":["camera/time constraints","person/vehicle results","video context"],"source":"https://techdocs.genetec.com/r/en-US/Security-Center-SaaS-User-Guide/Finding-a-person-of-interest-from-the-Investigation-task-in-Security-Center-SaaS"},
+    {"vendor":"Axis","publicWorkflow":"Scene metadata and forensic search","patterns":["structured object metadata","filters","trajectory/context"],"source":"https://www.axis.com/solutions/forensic-search"},
+    {"vendor":"BriefCam","publicWorkflow":"Video content analytics review","patterns":["search","timeline review","case evidence"],"source":"https://www.briefcam.com/"},
+    {"vendor":"Avigilon","publicWorkflow":"Appearance Search","patterns":["reference candidate","similar-appearance results","review"],"source":"https://docs.avigilon.com/bundle/unity-video-investigators-8-5/page/using/appearance-search.htm"},
+    {"vendor":"Verkada","publicWorkflow":"People and vehicle history","patterns":["history filters","timeline","event review"],"source":"https://help.verkada.com/verkada-cameras/analytics/people-and-vehicle-history-search"},
+    {"vendor":"Milestone","publicWorkflow":"XProtect search and export","patterns":["search categories","preview","evidence export"],"source":"https://www.milestonesys.com/articles/finding-video-evidence-in-XProtect/"},
+    {"vendor":"March Networks","publicWorkflow":"Command investigation","patterns":["timeline","case organization","sharing"],"source":"https://www.marchnetworks.com/products/enterprise-video-management/command-client/"},
+    {"vendor":"Bosch","publicWorkflow":"VCA rules","patterns":["object class","spatial rule","temporal rule","negative controls"],"source":"https://cdn.commerce.boschsecurity.com/public/documents/VCA_8.10_Operation_Manual_enUS_88154623371.pdf"},
+    {"vendor":"Spot AI","publicWorkflow":"Cases","patterns":["incident evidence","collaboration","export/share"],"source":"https://www.spot.ai/blog/how-to-resolve-incidents-faster-with-cases"},
+    {"vendor":"NVIDIA","publicWorkflow":"Video Search and Summarization","patterns":["ingest","search","summarization","guarded deployment"],"source":"https://docs.nvidia.com/vss/latest/"},
+    {"vendor":"Intel OpenVINO","publicWorkflow":"Reference video retrieval notebooks","patterns":["sampling","embeddings","text-video retrieval","tracking"],"source":"https://docs.openvino.ai/2024/notebooks/mobileclip-video-search-with-output.html"}
+  ],
+  "independentlyImplementedPatterns": ["natural-language search","structured filters","relevance and recency ranking","timeline thumbnails","entry and exit context","similar-appearance candidates","nearby activity","trajectories","camera/time/location constraints","reference-image search","local evidence export","human confirmation","audit trace"]
+}

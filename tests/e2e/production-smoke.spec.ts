@@ -15,6 +15,7 @@ test('deployed surface exposes no production hook and makes no removed API reque
   await page.getByRole('tab', { name: /Strategic Brief|Resumen estratégico/i }).click()
   if (new URL(page.url()).hostname.endsWith('github.io')) {
     await expect(page.getByText(/Unavailable on this static deployment; no request will be sent\./i)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Language switching unavailable on static deployment' })).toBeDisabled()
   }
 
   const hooks = await page.evaluate(() => ({

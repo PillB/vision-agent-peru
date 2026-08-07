@@ -1,0 +1,10 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "benchmarkId":"browser-retrieval-promotion-gate",
+  "dataset":null,
+  "models":["clip-vit-base-patch32","mobileclip-s0","siglip-base-patch16-224"],
+  "metrics":{"recallAt1":null,"recallAt5":null,"meanReciprocalRank":null,"openSetFalseAcceptRate":null,"latencyMs":null,"memoryMb":null},
+  "decision":"No model-quality or performance promotion. CLIP remains experimental; MobileCLIP research-only; SigLIP not selected.",
+  "evidence":"artifacts/benchmarks/browser-model-benchmark.json"
+}

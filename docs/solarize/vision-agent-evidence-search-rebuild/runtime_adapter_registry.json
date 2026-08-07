@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "adapters":[
+    {"id":"yolos_transformersjs","modelId":"yolos-tiny","implemented":true,"selected":true,"backends":["wasm"],"revisionPassedAtRuntime":true,"fallback":"explicit model failure with coverage record","evidence":"src/lib/yolos-detector.ts"},
+    {"id":"clip_transformersjs","modelId":"clip-vit-base-patch32","implemented":true,"selected":true,"backends":["webgpu","wasm"],"revisionPassedAtRuntime":true,"fallback":"structured filters remain available; semantic score unavailable","evidence":"src/lib/vlm-embeddings.ts"},
+    {"id":"coco_ssd_tfjs","modelId":"coco-ssd","implemented":false,"selected":false,"backends":[],"revisionPassedAtRuntime":false,"fallback":null,"evidence":"src/lib/models/registry.ts"},
+    {"id":"yolov10_ort_web","modelId":"yolov10n-onnx","implemented":false,"selected":false,"backends":[],"revisionPassedAtRuntime":false,"fallback":null,"evidence":"src/lib/models/registry.ts"},
+    {"id":"mobileclip_transformersjs","modelId":"mobileclip-s0","implemented":false,"selected":false,"backends":[],"revisionPassedAtRuntime":false,"fallback":null,"evidence":"docs/solarize/vision-agent-evidence-search-rebuild/model-and-adapter-inventory.md"},
+    {"id":"siglip_transformersjs","modelId":"siglip-base-patch16-224","implemented":false,"selected":false,"backends":[],"revisionPassedAtRuntime":false,"fallback":null,"evidence":"docs/solarize/vision-agent-evidence-search-rebuild/model-and-adapter-inventory.md"}
+  ]
+}

@@ -14,7 +14,7 @@ Status reflects evidence available in the repository. “Experimental” is not 
 | 8 | Corrected action state machine | Complete | `src/lib/action-orchestrator.ts` |
 | 9 | Static capability profiles | Complete | `src/lib/deployment.ts`, `incident-state-machine.ts` |
 | 10 | Reproducible test scripts | Complete | exact scripts in `package.json`, locked dependencies |
-| 11 | Complete Playwright suite | Implemented; execution gated on CI browsers | `playwright.config.ts`, `tests/e2e`, 5 projects |
+| 11 | Complete Playwright suite | Complete: 68 passed, 2 standards-based skips | `playwright.config.ts`, `tests/e2e`, CI run `31201270165` |
 | 12 | Semantic multi-video search | Experimental | `evidence-workspace.tsx`, `vlm-embeddings.ts`, `evidence.ts` |
 | 13 | Browser index | Validated prototype | `idb.ts`, reopen/purge test |
 | 14 | Reference-image search | Experimental | visible reference input and pinned CLIP adapter |
@@ -27,7 +27,7 @@ Status reflects evidence available in the repository. “Experimental” is not 
 | 21 | Approval workflow | Complete locally; external service unavailable | orchestrator and approval/rejection test |
 | 22 | Evidence export | Validated prototype | `createEvidenceExport`, sample artifact |
 | 23 | Privacy and retention controls | Complete as bounded browser controls | privacy report, query tests, IndexedDB purge |
-| 24 | Accessibility report | Implemented suite; hosted results pending | privacy/security/accessibility/performance report, axe tests |
+| 24 | Accessibility report | Complete automated gate; manual AT audit remains a recorded risk | privacy/security/accessibility/performance report, axe tests, CI run `31201270165` |
 | 25 | Security report | Complete with open risks | same report, action contracts, risk registry |
 | 26 | Performance report | Complete without unsupported metrics | same report, benchmark JSON |
 | 27 | Benchmark reports | Honest incomplete benchmark | null metrics in benchmark JSON; no fabricated promotion |

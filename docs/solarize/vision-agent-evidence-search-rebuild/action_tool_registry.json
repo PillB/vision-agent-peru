@@ -1,0 +1,16 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "tools":[
+    {"action":"badge","mode":"local","pagesStatus":"validated prototype","approvalRequired":false,"verification":"local state record"},
+    {"action":"snapshot","mode":"local","pagesStatus":"validated prototype","approvalRequired":false,"verification":"evidence persistence or explicit failure"},
+    {"action":"log_hit","mode":"local","pagesStatus":"validated prototype","approvalRequired":false,"verification":"action persistence or explicit failure"},
+    {"action":"log_tick","mode":"local","pagesStatus":"validated prototype","approvalRequired":false,"verification":"telemetry persistence or explicit failure"},
+    {"action":"generate_report","mode":"local deterministic JSON","pagesStatus":"validated prototype","approvalRequired":false,"verification":"export hash and download result"},
+    {"action":"llm_judge","mode":"authenticated service","pagesStatus":"unavailable","approvalRequired":false,"requirements":["visual evidence reference","structured verdict schema"],"authority":"advisory only"},
+    {"action":"send_email","mode":"authenticated service","pagesStatus":"unavailable","approvalRequired":true,"requirements":["explicit approval","configured authenticated service","idempotency key","outcome verification"]},
+    {"action":"escalate","mode":"authenticated service","pagesStatus":"unavailable","approvalRequired":true,"requirements":["explicit approval","configured authenticated service","idempotency key","outcome verification"]},
+    {"action":"ticket_dispatch_access_emergency_or_external_transmission","mode":"authenticated service","pagesStatus":"unavailable","approvalRequired":true,"requirements":["separately implemented adapter","explicit approval","configured authenticated service","outcome verification"]}
+  ],
+  "evidence":["src/lib/action-orchestrator.ts","docs/solarize/vision-agent-evidence-search-rebuild/action-policy-registry.json"]
+}

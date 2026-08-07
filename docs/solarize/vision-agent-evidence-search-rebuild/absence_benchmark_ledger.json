@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "benchmarkId":"safe-absence-language-and-coverage-gate",
+  "dataset":"synthetic coverage fixtures",
+  "metrics":{"definitiveAbsenceStatements":0,"requiredCoverageFields":6,"threshold":0.72,"empiricalFalseNegativeRate":null},
+  "requiredWording":"No candidate exceeded the validated threshold within the analyzed coverage.",
+  "requiredFields":["analyzed duration","skipped intervals","failed decoding","model limitations","threshold","near misses"],
+  "inconclusiveTriggers":["failed decoding materially limits coverage","analyzed duration is inadequate","model result unavailable"],
+  "decision":"Deterministic wording/coverage contract validated; model-level absence accuracy remains unvalidated.",
+  "evidence":["src/lib/association.ts","tests/unit/association.test.ts","tests/e2e/workspace.spec.ts"]
+}

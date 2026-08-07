@@ -1,0 +1,16 @@
+{
+  "schemaVersion":"1.0.0",
+  "updated":"2026-08-07",
+  "evidence":[
+    {"id":"E1","claim":"Live baseline APIs are absent","artifact":"artifacts/baseline/live-baseline.json","status":"validated prototype"},
+    {"id":"E2","claim":"False-positive verdict prevents escalation","artifact":"artifacts/action-traces/false-positive-proof.json","tests":["tests/contracts/agentic-control.test.ts","tests/e2e/workspace.spec.ts"],"status":"validated prototype"},
+    {"id":"E3","claim":"Person-only input cannot trigger unrelated hazards","tests":["tests/contracts/agent-use-case-safety.test.ts"],"status":"validated prototype"},
+    {"id":"E4","claim":"Active model revisions and runtime selection are enforced","tests":["tests/models/runtime-selection.test.ts"],"status":"validated prototype"},
+    {"id":"E5","claim":"Search and association workflow controls function through visible UI","tests":["tests/e2e/workspace.spec.ts"],"status":"demonstrated","limitation":"Uses labelled fixture for deterministic UI path; does not validate model quality."},
+    {"id":"E6","claim":"IndexedDB reopen and expiry purge work","tests":["tests/unit/idb-retention.test.ts"],"status":"validated prototype"},
+    {"id":"E7","claim":"Safe absence and open-set rejection contracts hold","tests":["tests/unit/association.test.ts"],"status":"validated prototype"},
+    {"id":"E8","claim":"Public copy no longer makes unsupported performance or production claims","artifact":"claim_registry.json","tests":["tests/contracts/solarize-evidence-ledgers.test.ts"],"status":"validated prototype"},
+    {"id":"E9","claim":"Model accuracy, fairness, calibration and throughput remain unvalidated","artifact":"artifacts/benchmarks/browser-model-benchmark.json","status":"experimental"},
+    {"id":"E10","claim":"Evidence export structure and disclaimer are reproducible","artifact":"artifacts/evidence-exports/sample-evidence-export.json","status":"validated prototype"}
+  ]
+}
