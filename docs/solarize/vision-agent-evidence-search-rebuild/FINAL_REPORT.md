@@ -61,6 +61,22 @@ The public copy no longer claims 60% false-positive reduction, 10 FPS, fixed sub
 - Round 0: `round-0-forensic-audit.md`, `artifacts/baseline/live-baseline.json`, and hashed screenshots/trace/video/results under `artifacts/baseline/live-capture/` from CI run `31202076015`.
 - Unit/contract/model: `tests/unit`, `tests/contracts`, `tests/models` and exact `package.json` scripts.
 - Browser matrix: `playwright.config.ts`, `tests/e2e`; CI run `31201270165` passed 68 cases with two documented standards-based skips and retained reports/traces/screenshots/failure-video policy.
-- CI/deploy: `.github/workflows/deploy.yml`; final run URL, deployed commit, route probes, screenshots, and two quiet-round results must be appended after publication.
+- CI/deploy: `.github/workflows/deploy.yml`; quiet runs `31202697338` and `31203192364` passed on `dee1ff6`; merged commit `d88c53d` passed build, Pages deployment and live smoke in run `31203666357`. Exact route probes and artifact names are in `deployment_verification.json` and `artifacts/deployment/deployment-evidence.json`.
+
+## Completion claim evidence
+
+| Completion claim | Classification | Exact evidence |
+|---|---|---|
+| Pages sends no removed API request and disables unavailable controls | Validated | `tests/e2e/production-smoke.spec.ts`; live-smoke job and network attachment in run `31203666357`; independent route probes in `deployment_verification.json` |
+| False-positive verdict prevents escalation | Validated | `tests/contracts/agentic-control.test.ts`; visible proof in `tests/e2e/workspace.spec.ts`; `artifacts/action-traces/false-positive-proof.json` |
+| Use-case action policy is authoritative | Validated | `src/lib/action-orchestrator.ts`; allowlist-bypass contract test |
+| Generic person detections cannot trigger unrelated hazards | Validated | six negative controls in `tests/contracts/agent-use-case-safety.test.ts` |
+| Frame difference and parking-zero semantics are corrected | Validated | pixel-difference and telemetry-only contracts in `tests/contracts/agent-use-case-safety.test.ts` |
+| Browser index, retention and privacy query rejection work within stated limits | Validated prototype | `tests/unit/idb-retention.test.ts`, `tests/unit/query-privacy.test.ts`, `src/lib/idb.ts` |
+| Search, tracking and association model quality | Experimental | immutable adapters in `src/lib/yolos-detector.ts` and `src/lib/vlm-embeddings.ts`; null held-out metrics in benchmark ledgers |
+| Fixture review workflow | Simulated | explicit labels and visible controls in `src/components/evidence-workspace.tsx`; fixture Playwright test |
+| External actions and authenticated judge on Pages | Unavailable | `action_tool_registry.json`; disabled-control production smoke |
+| Sensitive attribute inference | Research-only | operational denylist in `src/lib/query-parser.ts`; privacy tests |
+| Cryptographic chain of custody and calibrated production deployment | Roadmap | open risks R1, R2 and R9 in `remaining-risk-registry.json` |
 
 No completion claim in this report relies on a simulated fixture to prove model quality.

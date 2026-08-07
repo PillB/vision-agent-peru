@@ -5,9 +5,12 @@
   "pullRequest":"https://github.com/PillB/vision-agent-peru/pull/1",
   "liveUrl":"https://pillb.github.io/vision-agent-peru/",
   "baseline":{"commit":"ea584dcb043fa1ad95467d8efd8e8f359c321a34","api":{"get":404,"post":405},"observedCyclesPerSecond":0.1,"observedLatencyMs":7301},
-  "releaseCandidate":{"commit":"e39c0e1","status":"evidence-complete pre-freeze verification passed in run 31202076015","localStaticRoutes":["/","/_not-found"],"apiRoutesInStaticArtifact":false},
-  "quietRounds":[],
-  "deployment":null,
-  "liveRetest":null,
-  "gate":"closed until two quiet rounds, merge, deployment and production smoke pass"
+  "releaseCandidate":{"commit":"dee1ff65e59c1a8a7e89018ee2b19c2199c0c241","status":"validated","localStaticRoutes":["/","/_not-found"],"apiRoutesInStaticArtifact":false},
+  "quietRounds":[
+    {"round":1,"runId":31202697338,"event":"pull_request","commit":"dee1ff65e59c1a8a7e89018ee2b19c2199c0c241","result":"success","newMaterialDefects":0},
+    {"round":2,"runId":31203192364,"event":"workflow_dispatch","commit":"dee1ff65e59c1a8a7e89018ee2b19c2199c0c241","result":"success","newMaterialDefects":0}
+  ],
+  "deployment":{"mergeCommit":"d88c53dabee61c847b39a2839dddf8452485295c","runId":31203666357,"build":"success","pagesDeploy":"success","liveSmoke":"success","verificationArtifact":"deployment-verification-d88c53dabee61c847b39a2839dddf8452485295c"},
+  "liveRetest":{"homeStatus":200,"homeSha256":"7ec32edca4c5fa5487ccde69b106b74aa8bda8ea2c41c1dbf6615d5509a3ee88","visibleMarker":"Evidence Workspace","clientApiRequests":0,"productionHooks":{"visionStore":false,"cocoModel":false,"tf":false,"judge":false},"routeProbes":{"alert":{"GET":404,"POST":405},"report":{"GET":404,"POST":405},"judge":{"GET":404,"POST":405},"set-locale":{"GET":404,"POST":405},"export-pptx":{"GET":404,"POST":405}}},
+  "gate":"passed for the validated local/static scope; experimental, unavailable, research-only and roadmap limits remain authoritative"
 }

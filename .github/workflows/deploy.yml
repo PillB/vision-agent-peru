@@ -6,6 +6,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      capture_baseline:
+        description: 'Capture the current live site as an explicitly requested baseline artifact'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -44,13 +50,13 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Capture unchanged live baseline
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch' && inputs.capture_baseline
         env:
           BASE_URL: https://pillb.github.io/vision-agent-peru/
         run: npx playwright test --config=playwright.baseline.config.ts
 
       - name: Upload live baseline screenshots and trace
-        if: (github.event_name != 'push' || github.ref != 'refs/heads/main') && always()
+        if: github.event_name == 'workflow_dispatch' && inputs.capture_baseline && always()
         uses: actions/upload-artifact@v4
         with:
           name: live-baseline-${{ github.sha }}

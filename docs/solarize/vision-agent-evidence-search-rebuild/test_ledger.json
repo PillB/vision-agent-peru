@@ -18,7 +18,10 @@
     {"runId":31199947145,"commit":"31fbc44b7db1e31e06fa353782aaeb8894c314cb","result":"failure","browser":{"passed":63,"failed":5,"skipped":2},"finding":"All failures were corrupted-video error wording mismatch."},
     {"runId":31200597071,"commit":"a3a946170169a028df8943c5612175a94f681c6f","result":"failure","browser":{"passed":68,"failed":0,"skipped":2},"finding":"Browser matrix passed; static export found stale Next development validator state."},
     {"runId":31201270165,"commit":"fc6450d","result":"success","browser":{"passed":68,"failed":0,"skipped":2},"finding":"Complete pre-freeze deterministic, browser and API-free static-export gate passed."},
-    {"runId":31202076015,"commit":"e39c0e1","result":"success","browser":{"passed":68,"failed":0,"skipped":2},"baselineCapture":{"passed":1,"failed":0},"finding":"Evidence-complete pre-freeze run and live baseline capture passed."}
+    {"runId":31202076015,"commit":"e39c0e1","result":"success","browser":{"passed":68,"failed":0,"skipped":2},"baselineCapture":{"passed":1,"failed":0},"finding":"Evidence-complete pre-freeze run and live baseline capture passed."},
+    {"runId":31202697338,"commit":"dee1ff65e59c1a8a7e89018ee2b19c2199c0c241","result":"success","classification":"Quiet Round 1","newMaterialDefects":0},
+    {"runId":31203192364,"commit":"dee1ff65e59c1a8a7e89018ee2b19c2199c0c241","result":"success","classification":"Quiet Round 2","newMaterialDefects":0},
+    {"runId":31203666357,"commit":"d88c53dabee61c847b39a2839dddf8452485295c","result":"success","classification":"production deployment and live smoke","browser":{"passed":68,"failed":0,"skipped":2},"liveSmoke":{"passed":2,"failed":0}}
   ],
   "evidence":"GitHub Actions retained verification-evidence artifacts for every run."
 }

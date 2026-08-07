@@ -22,4 +22,4 @@ Red: appearance proxies were labeled identity and absence could be overconfident
 
 ## Round 5 — agentic control and hardening
 
-Red: advisory judge did not gate and missing APIs could be shown as successful. Green: ordered state machine, validated judge output, false-positive suppression, approvals, idempotency, verification, retry/compensation, circuit breaker, and unavailable external actions. Gate: source/unit/build pass; deployment and two quiet hosted rounds must append their evidence before release closure.
+Red: advisory judge did not gate and missing APIs could be shown as successful. Green: ordered state machine, validated judge output, false-positive suppression, approvals, idempotency, verification, retry/compensation, circuit breaker, and unavailable external actions. Independent verification: quiet runs `31202697338` and `31203192364` found no new material defect; merged deployment run `31203666357` passed build, Pages publish and post-deploy smoke. Gate: pass for validated local/static scope; unresolved model, privacy and operational risks remain open.
