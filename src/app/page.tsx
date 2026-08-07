@@ -2,14 +2,15 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Camera, FileText, Activity, Presentation } from 'lucide-react'
+import { Camera, FileText, Activity, Database, Presentation } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Tab1Overview } from '@/components/tab1-overview'
 import { Tab2Prototype } from '@/components/tab2-prototype'
 import { Tab3StrategicBrief } from '@/components/tab3-strategic-brief'
+import { EvidenceWorkspace } from '@/components/evidence-workspace'
 import { LocaleSwitcher } from '@/components/locale-switcher'
 
-type TabId = 'overview' | 'prototype' | 'brief'
+type TabId = 'overview' | 'prototype' | 'evidence' | 'brief'
 
 export default function Home() {
   const [tab, setTab] = useState<TabId>('overview')
@@ -49,9 +50,9 @@ export default function Home() {
 
       {/* Tab Nav */}
       <div className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto max-w-[1400px] px-4 md:px-8">
+        <div className="mx-auto max-w-[1400px] px-4 md:px-8 overflow-x-auto">
           <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)}>
-            <TabsList className="bg-transparent h-12 p-0 gap-4 md:gap-6">
+            <TabsList className="bg-transparent h-12 min-w-max p-0 gap-4 md:gap-6">
               <TabsTrigger
                 value="overview"
                 className="bg-transparent px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-600 data-[state=active]:text-zinc-950 text-zinc-500 hover:text-zinc-900 transition"
@@ -73,6 +74,13 @@ export default function Home() {
                 <Activity className="h-4 w-4 mr-2" />
                 <span className="text-sm font-medium">{t('Nav.prototype')}</span>
               </TabsTrigger>
+              <TabsTrigger
+                value="evidence"
+                className="bg-transparent px-0 py-3 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-600 data-[state=active]:text-zinc-950 text-zinc-500 hover:text-zinc-900 transition"
+              >
+                <Database className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">{t('Nav.evidence')}</span>
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="mt-0 focus-visible:outline-none">
               <Tab1Overview onTryPrototype={() => setTab('prototype')} />
@@ -85,6 +93,9 @@ export default function Home() {
             </TabsContent>
             <TabsContent value="prototype" className="mt-0 focus-visible:outline-none">
               <Tab2Prototype />
+            </TabsContent>
+            <TabsContent value="evidence" className="mt-0 focus-visible:outline-none">
+              <EvidenceWorkspace />
             </TabsContent>
           </Tabs>
         </div>

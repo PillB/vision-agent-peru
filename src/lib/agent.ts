@@ -231,7 +231,7 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
       if (measuredDifference > threshold && trackedCount > 0) {
         ruleTriggered = true
         ruleReason = `Measured frame difference ${(measuredDifference * 100).toFixed(1)}% with ${trackedCount} relevant detection(s)`
-      } else if (measuredDifference > threshold && useCase.detectionClasses.length === 0) {
+      } else if (measuredDifference > threshold && useCase.detectionClasses.length === 0 && detections.length === 0) {
         ruleTriggered = true
         ruleReason = `Measured frame difference ${(measuredDifference * 100).toFixed(1)}% exceeds ${(threshold * 100).toFixed(1)}%`
       }

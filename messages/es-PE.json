@@ -8,10 +8,11 @@
   "Nav": {
     "overview": "Resumen de la solución",
     "brief": "Resumen estratégico",
-    "prototype": "Espacio de evidencia"
+    "prototype": "Prototipo en vivo",
+    "evidence": "Espacio de evidencia"
   },
   "Footer": {
-    "source": "Fuente: TF.js COCO-SSD (Google); Z-AI Web Dev SDK; simulación interna con videos de Pexels/Pixabay de plazas del Perú.",
+    "source": "Fuente: adaptadores fijados YOLOS-tiny y CLIP; fixtures locales etiquetados y videos autorizados por el usuario.",
     "date": "14/07/2026 · Cusco, Perú"
   },
   "LocaleSwitcher": {
@@ -21,7 +22,7 @@
     "hero": {
       "kicker": "Resumen ejecutivo",
       "title": "Un sistema de inteligencia de cámaras autónoma que convierte las transmisiones de las plazas públicas del Perú en respuesta a incidentes automatizada y auditable — ejecutándose completamente en el navegador.",
-      "body": "El sistema combina una capa tradicional de visión por computadora (TF.js COCO-SSD, detección de objetos de 90 clases) con una capa de razonamiento autónomo (motor de reglas + LLM como juez) que percibe, decide y actúa sobre anomalías en tiempo real — sin enviar fotogramas de cámara a un servidor remoto.",
+      "body": "El sistema combina adaptadores experimentales de visión fijados con política determinista, revisión humana y acciones locales auditables. GitHub Pages no envía fotogramas ni acciones externas a un backend.",
       "ctaPrototype": "Abrir prototipo en vivo",
       "ctaArchitecture": "Leer la arquitectura"
     },
@@ -31,19 +32,19 @@
       "complication": "Complicación",
       "complicationBody": "El monitoreo manual implica un tiempo de respuesta de 10 a 15 minutos, alta fatiga por falsas alarmas, sin evidencia fotográfica en el momento del incidente y cero historial consultable.",
       "resolution": "Resolución",
-      "resolutionBody": "Un ciclo autónomo en el navegador: COCO-SSD percibe → el motor de reglas razona → la escalada de 3 niveles actúa → se registra captura + reporte. Menos de 2 segundos por ciclo, con trazabilidad completa de evidencia."
+      "resolutionBody": "Un ciclo en el navegador: detección fijada observa → política determinista evalúa → evidencia y reportes locales se registran. Las acciones externas permanecen no disponibles sin aprobación y servicio autenticado."
     },
     "bigNumber": {
       "kicker": "El número clave",
       "value": "Local",
       "unit": "percibir → razonar → actuar",
       "title": "Flujo experimental local en el navegador; el rendimiento varía según dispositivo, backend, fuente y modelo.",
-      "body": "Desglose de latencia: inferencia TF.js COCO-SSD ≈ 250–500 ms en GPU de laptop de gama media · razonamiento del motor de reglas < 5 ms · dispatch de acciones (captura, email simulado, juez LLM opcional) ≈ 200–800 ms. El presupuesto restante es redibujado de canvas y propagación de estado de React. Todos los números medidos en el prototipo en vivo.",
-      "source": "Fuente: medición interna en MacBook Pro M2, 14/07/2026. Línea base de revisión manual: MTTR típico de la industria de 8 a 15 min para CCTV no monitoreado.",
+      "body": "No se afirma un rendimiento o latencia fijos. Decodificación, inferencia, canvas, almacenamiento y descarga del modelo varían por navegador, dispositivo, fuente y backend; faltan benchmarks representativos.",
+      "source": "Estado: no se completó un benchmark representativo de rendimiento ni comparación con revisión manual.",
       "stat1Value": "No validado",
       "stat1Label": "Más rápido que el manual",
-      "stat2Value": "90",
-      "stat2Label": "Clases de objetos detectadas",
+      "stat2Value": "Según modelo",
+      "stat2Label": "Cobertura de etiquetas",
       "stat3Value": "3",
       "stat3Label": "Niveles de escalada",
       "stat4Value": "0",
@@ -53,9 +54,9 @@
       "kicker": "Arquitectura del sistema",
       "title": "Un pipeline de cinco etapas convierte fotogramas de video sin procesar en incidentes escalados con respaldo de evidencia — cada etapa añade una capa de inteligencia.",
       "stage1Name": "Percibir",
-      "stage1Role": "TF.js COCO-SSD",
+      "stage1Role": "YOLOS-tiny fijado",
       "stage1Layer": "Analítica / IA",
-      "stage1Desc": "Captura cada fotograma de video, ejecuta el modelo de detección de objetos de 90 clases en el navegador y emite cajas delimitadoras + puntajes de confianza. Percepción pura — sin decisiones.",
+      "stage1Desc": "Muestrea fotogramas, ejecuta el detector experimental fijado en el navegador y emite cajas candidatas + puntajes. La calidad no está validada para identidad ni autoridad de acción.",
       "stage1Outputs": "bbox[], clase[], puntaje[]",
       "stage1Value": "Detecciones sin procesar",
       "stage2Name": "Conteo y línea base",
@@ -73,18 +74,18 @@
       "stage4Name": "Actuar",
       "stage4Role": "Registro de herramientas",
       "stage4Layer": "Autónomo",
-      "stage4Desc": "Ejecuta las acciones decididas: registrar_hit, captura, enviar_email, generar_reporte, escalar. Cada acción es observable en la trazabilidad de auditoría con marca de tiempo + payload.",
+      "stage4Desc": "Ejecuta acciones locales permitidas secuencialmente y registra resultados. Email y escalada requieren aprobación y servicio autenticado, y no están disponibles en GitHub Pages.",
       "stage4Outputs": "ActionLogEntry[]",
       "stage4Value": "Acciones auditables",
       "stage5Name": "Evidencia y adaptación",
       "stage5Role": "Captura + reporte",
       "stage5Layer": "Autónomo",
-      "stage5Desc": "En nivel ≥ 2, congela una captura JPEG con cajas delimitadoras superpuestas. En nivel 3, genera automáticamente un reporte de incidente corporativo. Los operadores pueden reconocer o silenciar para ajustar umbrales.",
+      "stage5Desc": "Crea capturas locales y borradores deterministas para revisión. Los registros del navegador son eliminables y no forman una cadena de custodia inmutable.",
       "stage5Outputs": "captura.jpg, reporte.md",
       "stage5Value": "Trazabilidad de evidencia",
       "layerIATitle": "Capa de analítica / IA",
       "layerIASubtitle": "Etapas 1–2 · percepción y estadística puras",
-      "layerIAItem1": "Detección de objetos YOLO/COCO-SSD — sin decisiones, solo cajas delimitadoras",
+      "layerIAItem1": "Detección candidata con YOLOS-tiny fijado — sin autoridad de decisión",
       "layerIAItem2": "Media + desviación estándar + z-score en ventana deslizante de 2 minutos",
       "layerIAItem3": "EMA + varianza en línea (gráfico de control EWMA)",
       "layerIAItem4": "Determinista, reproducible, sin costo de LLM",
@@ -100,7 +101,7 @@
       "title": "Tres capacidades diferencian al sistema de la vigilancia pasiva: percepción en tiempo real, razonamiento autónomo y escalada automatizada.",
       "pillar1Name": "Percepción",
       "pillar1Tag": "ML en navegador",
-      "pillar1Body": "TensorFlow.js + COCO-SSD ejecuta el mismo modelo de detección de objetos de 90 clases que usan los sistemas de visión por computadora de producción, pero del lado del cliente. Sin servidor GPU, ningún fotograma sale del navegador — aborda latencia y privacidad al mismo tiempo.",
+      "pillar1Body": "YOLOS-tiny fijado se ejecuta experimentalmente en el navegador. Los fotogramas permanecen locales en GitHub Pages; calidad y rendimiento dependen del dispositivo y dominio.",
       "pillar1Metric": "Ejecución experimental dependiente del dispositivo",
       "pillar2Name": "Razonamiento",
       "pillar2Tag": "Reglas + juez LLM",
@@ -181,7 +182,7 @@
       "v1Phase": "v1 — Ahora",
       "v1Status": "entregado",
       "v1Title": "Ciclo autónomo central",
-      "v1Item1": "Percepción en navegador con TF.js COCO-SSD",
+      "v1Item1": "Percepción con YOLOS-tiny fijado (experimental)",
       "v1Item2": "Razonamiento con motor de reglas + LLM como juez",
       "v1Item3": "Escalada de 3 niveles con disyuntor",
       "v1Item4": "Captura + reporte de incidente autogenerado",
@@ -200,7 +201,7 @@
       "v3Item3": "Aprendizaje federado entre cámaras",
       "v3Item4": "Integración con el tablero de operaciones de la ciudad",
       "risksTitle": "Riesgos y dependencias",
-      "risk1": "Deriva del modelo. COCO-SSD entrenado con imágenes generales; la filmación de plazas del Perú puede necesitar ajuste fino para personas distantes/pequeñas.",
+      "risk1": "Recall de dominio. YOLOS-tiny es general; objetos distantes y pequeños en videos del Perú requieren validación representativa.",
       "risk2": "El rendimiento varía; se deben medir ausencia de WebGPU, fallback WASM, memoria y decodificación por dispositivo.",
       "risk3": "Cumplimiento de privacidad. Las capturas almacenan imágenes identificables — necesita política de retención + opción on-premise para producción."
     },
@@ -221,7 +222,7 @@
     }
   },
   "Tab2": {
-    "banner": "La capa de analítica/IA (detección TF.js COCO-SSD + estadísticas z-score/EMA) alimenta la capa autónoma (motor de reglas + LLM como juez + escalada de 3 niveles). Cada acción se registra en la trazabilidad de auditoría. Cambie de cámara, ajuste umbrales, active anomalías.",
+    "banner": "YOLOS-tiny fijado, adaptadores locales seleccionados y telemetría z-score/EMA alimentan política determinista. Email y escalada externos no están disponibles sin aprobación y servicio autenticado. Las pistas de apariencia nunca establecen identidad.",
     "camera": {
       "selectPlaceholder": "Seleccionar cámara",
       "start": "Iniciar análisis",
@@ -231,15 +232,15 @@
       "realML": "ML real",
       "simulation": "Simulación",
       "loadingModel": "Cargando modelo...",
-      "modelReady": "COCO-SSD listo",
+      "modelReady": "YOLOS-tiny listo",
       "modelFailed": "Falló la carga del modelo",
       "simBadge": "Simulación · 1 Hz",
       "personsNow": "Personas ahora",
       "zScore": "z-score",
       "pressStart": "Presione \"Iniciar análisis\" para comenzar",
-      "loadingCoco": "Cargando modelo COCO-SSD (~5s)...",
+      "loadingCoco": "Cargando YOLOS-tiny fijado…",
       "modelFailedTitle": "Falló la carga del modelo",
-      "modelFailedBody": "El modelo COCO-SSD no se pudo cargar. Cambie a modo Simulación para continuar la demostración, o refresque para reintentar.",
+      "modelFailedBody": "YOLOS-tiny fijado no se pudo cargar. Refresque para reintentar o use la verificación de capacidades del Espacio de evidencia.",
       "manualSnapshot": "Captura manual",
       "close": "Cerrar"
     },
@@ -306,7 +307,7 @@
     "help": {
       "title": "Cómo usar el prototipo",
       "step1": "Elija una cámara (tráfico urbano con personas y vehículos reales).",
-      "step2": "Haga clic en Iniciar análisis — el modelo de IA (COCO-SSD) se carga en su navegador (~5s la primera vez) luego detecta personas y vehículos en tiempo real.",
+      "step2": "Haga clic en Iniciar análisis después de que cargue YOLOS-tiny fijado. Rendimiento y calidad varían por navegador, dispositivo y fuente.",
       "step3": "Observe el gráfico. Después de ~10 segundos el sistema aprende el patrón normal; actividad inusual activará alertas (Tier 1=vigilancia, 2=anomalía, 3=crítico).",
       "step4": "Use los controles en Razonamiento del agente para ajustar sensibilidad. Active el juez LLM para filtrar falsos positivos. Cambie de nivel de capacidad para ver cómo cambia el comportamiento.",
       "step5": "Haga clic en Reconocer en alertas que ya vio, o Silenciar 5m para un descanso. Revise el panel de Identidades para ver personas/vehículos rastreados con IDs únicos."
@@ -417,11 +418,11 @@
       "body": "La mayoría de los sistemas de cámaras cívicas son Etapa 2: cuentan personas y activan una alerta de umbral estático. Vision Agent cierra el ciclo. El diagrama siguiente mapea el ciclo autónomo canónico sobre los componentes reales del prototipo. El sistema maneja detección de avalanchas de multitud, alertas de grafiti y vandalismo, detección temprana de fuego y humo, detección de objetos abandonados, y evaluación de daño estructural post-sismo — todo a través del mismo ciclo percibir-razonar-actuar-reflexionar con retroalimentación humana para gobernanza.",
       "mappingTitle": "Qué significa esto en la práctica",
       "analyticsLayer": "Capa de analítica (Etapa 2)",
-      "analyticsBody": "TF.js COCO-SSD detecta personas. Un z-score + EMA de ventana deslizante de 2 minutos calcula el puntaje de anomalía. Percepción + estadística puras — sin decisiones.",
+      "analyticsBody": "YOLOS-tiny fijado produce detecciones experimentales. Un z-score + EMA de ventana deslizante calcula telemetría; la política determinista toma decisiones.",
       "agenticLayer": "Capa autónoma (Etapa 4)",
       "agenticBody": "El motor de reglas decide el nivel. El LLM como juez filtra falsos positivos. El registro de herramientas ejecuta acciones. El disyuntor (máx 5 escaladas/hora) previene descontrol. El ciclo se ejecuta a 1 Hz, de forma autónoma.",
       "proofTitle": "La prueba:",
-      "proofBody": "Cuando se detecta una avalancha de multitud, el sistema no solo pita — captura una foto, envía un email, invoca al juez LLM y autogenera un reporte de incidente corporativo. De extremo a extremo, <2 segundos.",
+      "proofBody": "El prototipo puede capturar evidencia local, aplicar política determinista y crear un borrador local. Juez, email y escalada no están disponibles en GitHub Pages; no se afirma latencia fija de extremo a extremo.",
       "ctaPrototype": "Abrir el prototipo en vivo"
     },
     "slide10": {

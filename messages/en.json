@@ -8,10 +8,11 @@
   "Nav": {
     "overview": "Solution Overview",
     "brief": "Strategic Brief",
-    "prototype": "Evidence Workspace"
+    "prototype": "Live Prototype",
+    "evidence": "Evidence Workspace"
   },
   "Footer": {
-    "source": "Source: TF.js COCO-SSD (Google); Z-AI Web Dev SDK; internal simulation on Pexels/Pixabay stock footage of Peru plaza scenes.",
+    "source": "Source: pinned YOLOS-tiny and CLIP browser adapters; local labeled fixtures and authorized user-provided videos.",
     "date": "2026-07-14 · Cusco, Peru"
   },
   "LocaleSwitcher": {
@@ -21,7 +22,7 @@
     "hero": {
       "kicker": "Executive Summary",
       "title": "An agentic camera intelligence system that converts Peru's public plaza feeds into automated, auditable incident response — running entirely in the browser.",
-      "body": "The system pairs a traditional computer-vision layer (TF.js COCO-SSD, 90-class object detection) with an agentic reasoning layer (rule engine + LLM-as-judge) that perceives, decides, and acts on anomalies in real time — without sending camera frames to a remote server.",
+      "body": "The system pairs experimental pinned browser vision adapters with deterministic policy, human review, and auditable local actions. GitHub Pages sends no camera frames or external actions to a backend.",
       "ctaPrototype": "Open live prototype",
       "ctaArchitecture": "Read the architecture"
     },
@@ -31,19 +32,19 @@
       "complication": "Complication",
       "complicationBody": "Manual monitoring means 10–15 min mean-time-to-respond, high false-alarm fatigue, no snapshot evidence at the moment of incident, and zero searchable history.",
       "resolution": "Resolution",
-      "resolutionBody": "An in-browser agentic loop: COCO-SSD perceives → rule engine reasons → 3-tier escalation acts → snapshot+report logged. Under 2 seconds per cycle, with full evidence trail."
+      "resolutionBody": "An in-browser control loop: pinned detection observes → deterministic policy evaluates → local evidence and reports are recorded. External actions remain unavailable without approval and an authenticated service."
     },
     "bigNumber": {
       "kicker": "The Big Number",
       "value": "Local",
       "unit": "perceive → reason → act",
       "title": "Experimental local-first browser workflow; performance varies by device, backend, source, and selected model.",
-      "body": "Latency budget breakdown: TF.js COCO-SSD inference ≈ 250–500 ms on a mid-tier laptop GPU · rule-engine reasoning < 5 ms · action dispatch (snapshot, email sim, optional LLM judge) ≈ 200–800 ms. The remaining budget is canvas redraw and React state propagation. All numbers measured on the live prototype.",
-      "source": "Source: internal measurement on MacBook Pro M2, 2026-07-14. Manual review baseline: industry typical 8–15 min MTTR for unmonitored CCTV.",
+      "body": "No fixed throughput or latency is claimed. Decode, inference, canvas, storage, and model-download time vary by browser, device, source, and backend; representative benchmarks remain required.",
+      "source": "Status: no representative performance or manual-review comparison benchmark has been completed.",
       "stat1Value": "Unvalidated",
       "stat1Label": "Faster than manual",
-      "stat2Value": "90",
-      "stat2Label": "Object classes detected",
+      "stat2Value": "Model-dependent",
+      "stat2Label": "Detector label coverage",
       "stat3Value": "3",
       "stat3Label": "Escalation tiers",
       "stat4Value": "0",
@@ -53,9 +54,9 @@
       "kicker": "System Architecture",
       "title": "Five-stage pipeline turns raw video frames into escalated, evidence-backed incidents — each stage adding a layer of intelligence.",
       "stage1Name": "Perceive",
-      "stage1Role": "TF.js COCO-SSD",
+      "stage1Role": "Pinned YOLOS-tiny",
       "stage1Layer": "Analytics / IA",
-      "stage1Desc": "Captures each video frame, runs the 90-class object-detection model in-browser, and emits bounding boxes + confidence scores. Pure perception — no decisions.",
+      "stage1Desc": "Samples video frames, runs the pinned experimental detector in-browser, and emits candidate boxes + scores. Detection quality is not validated for identity or action authority.",
       "stage1Outputs": "bbox[], class[], score[]",
       "stage1Value": "Raw detections",
       "stage2Name": "Count & Baseline",
@@ -73,18 +74,18 @@
       "stage4Name": "Act",
       "stage4Role": "Tool registry",
       "stage4Layer": "Agentic",
-      "stage4Desc": "Executes the decided actions: log_hit, snapshot, send_email, generate_report, escalate. Each action is observable in the audit trail with timestamp + payload.",
+      "stage4Desc": "Executes allowed local actions sequentially and records outcomes. Email and escalation require approval plus a configured authenticated service and are unavailable on GitHub Pages.",
       "stage4Outputs": "ActionLogEntry[]",
       "stage4Value": "Auditable actions",
       "stage5Name": "Evidence & Adapt",
       "stage5Role": "Snapshot + report",
       "stage5Layer": "Agentic",
-      "stage5Desc": "On Tier ≥ 2, freezes a JPEG snapshot with bounding boxes overlaid. On Tier 3, auto-generates a corporate incident report. Operators can acknowledge or silence to tune thresholds.",
+      "stage5Desc": "Creates local snapshots and deterministic report drafts for review. Browser records are deletable and are not an immutable chain of custody.",
       "stage5Outputs": "snapshot.jpg, report.md",
       "stage5Value": "Evidence trail",
       "layerIATitle": "Analytics / IA layer",
       "layerIASubtitle": "Stages 1–2 · pure perception & statistics",
-      "layerIAItem1": "YOLO/COCO-SSD object detection — no decisions, just bounding boxes",
+      "layerIAItem1": "Pinned YOLOS-tiny candidate detection — no decision authority",
       "layerIAItem2": "2-minute sliding-window mean + stddev + z-score",
       "layerIAItem3": "EMA + online variance (EWMA control chart)",
       "layerIAItem4": "Deterministic, reproducible, no LLM cost",
@@ -100,7 +101,7 @@
       "title": "Three capabilities differentiate the system from passive surveillance: real-time perception, agentic reasoning, and automated escalation.",
       "pillar1Name": "Perception",
       "pillar1Tag": "In-browser ML",
-      "pillar1Body": "TensorFlow.js + COCO-SSD runs the same 90-class object detection model used by production CV systems, but client-side. No GPU server, no frame leaves the browser — addresses both latency and privacy at once.",
+      "pillar1Body": "Pinned YOLOS-tiny runs experimentally in the browser. Frames remain local in the GitHub Pages workflow, while quality and throughput remain device- and domain-dependent.",
       "pillar1Metric": "Device-dependent experimental runtime",
       "pillar2Name": "Reasoning",
       "pillar2Tag": "Rule + LLM judge",
@@ -181,7 +182,7 @@
       "v1Phase": "v1 — Now",
       "v1Status": "shipped",
       "v1Title": "Core agentic loop",
-      "v1Item1": "TF.js COCO-SSD in-browser perception",
+      "v1Item1": "Pinned YOLOS-tiny browser perception (experimental)",
       "v1Item2": "Rule engine + LLM-as-judge reasoning",
       "v1Item3": "3-tier escalation with circuit breaker",
       "v1Item4": "Snapshot + auto-generated incident report",
@@ -200,7 +201,7 @@
       "v3Item3": "Federated learning across cameras",
       "v3Item4": "Integration with city ops dashboard",
       "risksTitle": "Risks & dependencies",
-      "risk1": "Model drift. COCO-SSD trained on general images; Peru plaza footage may need fine-tuning for distant/small persons.",
+      "risk1": "Domain recall. YOLOS-tiny is a general detector; distant and small objects in Peru video require representative validation.",
       "risk2": "Browser performance varies substantially; WebGPU absence, WASM fallback, memory, and decode limits must be measured per device.",
       "risk3": "Privacy compliance. Snapshots store identifiable images — need retention policy + on-prem option for production."
     },
@@ -221,7 +222,7 @@
     }
   },
   "Tab2": {
-    "banner": "Analytics/IA layer (TF.js COCO-SSD detection + z-score/EMA statistics) feeds the Agentic layer (rule engine + LLM-as-judge + 3-tier escalation). Every action is logged in the audit trail. Switch cameras, tune thresholds, trigger anomalies.",
+    "banner": "Experimental pinned YOLOS-tiny, selected local adapters, and z-score/EMA telemetry feed deterministic policy. External email and escalation are unavailable without approval and an authenticated service. Appearance tracks never establish identity.",
     "camera": {
       "selectPlaceholder": "Select camera",
       "start": "Start analysis",
@@ -231,15 +232,15 @@
       "realML": "Real ML",
       "simulation": "Simulation",
       "loadingModel": "Loading model...",
-      "modelReady": "COCO-SSD ready",
+      "modelReady": "YOLOS-tiny ready",
       "modelFailed": "Model load failed",
       "simBadge": "Simulation · 1 Hz",
       "personsNow": "Persons now",
       "zScore": "z-score",
       "pressStart": "Press \"Start analysis\" to begin",
-      "loadingCoco": "Loading COCO-SSD model (~5s)...",
+      "loadingCoco": "Loading pinned YOLOS-tiny model…",
       "modelFailedTitle": "Model failed to load",
-      "modelFailedBody": "The COCO-SSD model could not be loaded. Switch to Simulation mode to continue the demo, or refresh to retry.",
+      "modelFailedBody": "The pinned YOLOS-tiny model could not be loaded. Refresh to retry or use the Evidence Workspace capability check.",
       "manualSnapshot": "Manual snapshot",
       "close": "Close"
     },
@@ -306,7 +307,7 @@
     "help": {
       "title": "How to use the prototype",
       "step1": "Pick a camera feed (urban traffic with real people and vehicles).",
-      "step2": "Click Start analysis — the AI model (COCO-SSD) loads in your browser (~5s first time) then detects people and vehicles in real time.",
+      "step2": "Click Start analysis after the pinned YOLOS-tiny adapter loads. Throughput and detection quality vary by browser, device, and source.",
       "step3": "Watch the chart fill in. After ~10 seconds the system learns the normal pattern; unusual activity will trigger alerts (Tier 1=watch, 2=anomaly, 3=critical).",
       "step4": "Use the sliders in Agent reasoning to adjust sensitivity. Toggle the LLM judge to filter false positives. Switch capability levels to see how the system behavior changes.",
       "step5": "Review alerts and local tracks. Track IDs reset with the source and never establish identity."
@@ -417,11 +418,11 @@
       "body": "Most civic-camera systems are Stage 2: they count people and trigger a static threshold alert. Vision Agent closes the loop. The diagram below maps the canonical agentic loop onto the actual prototype components. The system handles crowd surge detection, graffiti and vandalism alerts, fire and smoke early warning, abandoned object detection, and post-earthquake structural damage assessment — all through the same perceive-reason-act-reflect pipeline with human feedback for governance.",
       "mappingTitle": "What this means in practice",
       "analyticsLayer": "Analytics layer (Stage 2)",
-      "analyticsBody": "TF.js COCO-SSD detects persons. A 2-minute sliding-window z-score + EMA computes the anomaly score. Pure perception + statistics — no decisions.",
+      "analyticsBody": "Pinned YOLOS-tiny produces experimental detections. A sliding-window z-score + EMA computes telemetry; deterministic policy owns decisions.",
       "agenticLayer": "Agentic layer (Stage 4)",
       "agenticBody": "Rule engine decides tier. LLM-as-judge filters false positives. Tool registry executes actions. Circuit breaker (max 5 escalations/hour) prevents runaway. The loop runs at 1 Hz, autonomously.",
       "proofTitle": "The proof:",
-      "proofBody": "When a crowd surge is detected, the system doesn't just beep — it captures a snapshot, sends an email, invokes the LLM judge, and auto-generates a corporate incident report. End-to-end, <2 seconds.",
+      "proofBody": "The prototype can capture local evidence, apply deterministic policy, and create a local report draft. Judge, email, and escalation remain unavailable on GitHub Pages; no fixed end-to-end latency is claimed.",
       "ctaPrototype": "Open the live prototype"
     },
     "slide10": {

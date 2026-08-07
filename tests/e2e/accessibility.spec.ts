@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 
 for (const destination of [
   /Overview|Resumen/i,
+  /Live Prototype|Prototipo en vivo/i,
   /Evidence Workspace|Espacio de evidencia/i,
 ]) {
   test(`has no critical or serious axe violations: ${destination}`, async ({ page }) => {

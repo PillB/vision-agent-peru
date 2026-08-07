@@ -33,6 +33,10 @@ for (const useCaseId of ['fire_smoke', 'flood_watch', 'graffiti', 'landslide_wat
   test(`person-only detection cannot trigger ${useCaseId}`, () => {
     assert.equal(decision(useCaseId, ['person'], 0).tier, 0)
   })
+
+  test(`person motion cannot masquerade as ${useCaseId}`, () => {
+    assert.equal(decision(useCaseId, ['person'], 0.9).tier, 0)
+  })
 }
 
 test('frame_diff ignores detection-count z-score and uses actual pixel difference', () => {

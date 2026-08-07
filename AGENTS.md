@@ -38,12 +38,12 @@ npx next build                 # Static export (used by CI)
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Root page — 3 tabs (Overview / Brief / Prototype)
+│   ├── page.tsx              # Root page — 4 tabs (Overview / Brief / Prototype / Evidence)
 │   ├── api/                  # API routes — REMOVED during CI build (static export)
 │   └── actions/              # Server actions (set-locale only)
 ├── components/
 │   ├── prototype/            # The functional prototype tab
-│   │   ├── camera-view.tsx          # Detection pipeline (COCO-SSD + HF + pixel-anomaly)
+│   │   ├── camera-view.tsx          # Detection pipeline (pinned YOLOS + selected HF + pixel-anomaly)
 │   │   ├── alerts-panel.tsx         # Tier-based alert folding
 │   │   ├── evidence-panel.tsx       # Evidence search UI (Round 3)
 │   │   ├── nl-search-panel.tsx      # Natural-language search (Round 3)
@@ -128,6 +128,12 @@ The `orderActionsSequentially()` function in `src/lib/incident-state-machine.ts`
 The `assessAbsence()` function in `src/lib/association.ts` never says "this person is not in the video." It returns `candidate_found`, `no_confident_candidate`, or `inconclusive`. See section 17 of SOLARIZE SYSTEM PROMPT.
 
 **Never** claim definitive absence — always include coverage + limitations.
+
+### 9. Prototype and Evidence Workspace are independent products
+
+The Live Prototype preserves the camera/use-case/model/telemetry/alert/report/search/incident demonstration. The Evidence Workspace provides the authorized-video investigation workflow. Both must remain visible top-level tabs.
+
+**Never** replace, relabel, or remove one destination when changing the other. `tests/e2e/prototype-regression.spec.ts` is the regression gate.
 
 ## Common pitfalls — issues we've already fixed
 

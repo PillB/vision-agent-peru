@@ -2,7 +2,7 @@
  * Use Case definitions — commercial + disaster modes.
  *
  * Each use case defines:
- *   - detection classes (which COCO-SSD classes to track)
+ *   - detection classes (which object-detector classes to track)
  *   - the rule logic (threshold, ROI, time gate, frame-diff, etc.)
  *   - the agentic actions to trigger
  *   - the capability level (Traditional / ML-DL / Cognitive / Agentic)
@@ -22,10 +22,9 @@ export interface UseCase {
   level: CapabilityLevel
   description: string
   descriptionEn: string
-  /** COCO-SSD classes to track for this use case (person, car, backpack, etc.).
-   * These are the classes COCO-SSD can actually detect. */
+  /** Object-detector classes to track for this use case. */
   detectionClasses: string[]
-  /** The class label to use when a specialized HF model (not COCO-SSD) detects
+  /** The class label to use when a specialized model detects
    * something. This prevents fire from being mislabeled as 'person'.
    * e.g., fire_smoke → 'fire', graffiti → 'graffiti', flood_watch → 'flood'. */
   specializedClassName?: string
@@ -67,7 +66,7 @@ export const USE_CASES: UseCase[] = [
     description: 'Detecta cuando una persona o vehículo entra en un ROI definido. Regla determinista — sin ML.',
     descriptionEn: 'Detects when a person or vehicle enters a defined ROI. Deterministic rule — no ML.',
     detectionClasses: ['person', 'car', 'truck'],
-    primaryModel: 'COCO-SSD (TF.js)',
+    primaryModel: 'YOLOS-tiny (pinned, experimental)',
     ruleType: 'roi_breach',
     params: { roiPolygon: [{ x: 0.6, y: 0.4 }, { x: 0.9, y: 0.4 }, { x: 0.9, y: 0.8 }, { x: 0.6, y: 0.8 }] },
     actions: ['badge', 'snapshot', 'log_hit', 'send_email'],
@@ -82,7 +81,7 @@ export const USE_CASES: UseCase[] = [
     description: 'Cualquier vehículo detectado después de horario de atención → Tier 2.',
     descriptionEn: 'Any vehicle detected after business hours → Tier 2.',
     detectionClasses: ['car', 'truck', 'bus', 'motorcycle'],
-    primaryModel: 'COCO-SSD (TF.js)',
+    primaryModel: 'YOLOS-tiny (pinned, experimental)',
     ruleType: 'time_gate',
     params: { timeGate: { after: '20:00', before: '06:00' }, threshold: 1 },
     actions: ['badge', 'snapshot', 'log_hit', 'send_email', 'escalate'],
@@ -98,7 +97,7 @@ export const USE_CASES: UseCase[] = [
     description: 'z-score del conteo de personas vs línea base de 2 min. z>2.5 sostenido → Tier 2.',
     descriptionEn: 'z-score of person count vs 2-min baseline. z>2.5 sustained → Tier 2.',
     detectionClasses: ['person'],
-    primaryModel: 'COCO-SSD (TF.js)',
+    primaryModel: 'YOLOS-tiny (pinned, experimental)',
     ruleType: 'density_anomaly',
     params: { threshold: 2.5, sustainTicks: 3 },
     actions: ['badge', 'snapshot', 'log_hit', 'send_email'],
@@ -113,7 +112,7 @@ export const USE_CASES: UseCase[] = [
     description: 'Cuenta vehículos en ROI. No mapea espacios individuales — solo conteo de ocupación.',
     descriptionEn: 'Counts vehicles in ROI. Does not map individual slots — occupancy count only.',
     detectionClasses: ['car', 'truck'],
-    primaryModel: 'COCO-SSD (TF.js)',
+    primaryModel: 'YOLOS-tiny (pinned, experimental)',
     ruleType: 'count_threshold',
     params: { threshold: 0, roiPolygon: [{ x: 0.1, y: 0.5 }, { x: 0.5, y: 0.5 }, { x: 0.5, y: 0.9 }, { x: 0.1, y: 0.9 }] },
     actions: ['log_tick'],
@@ -128,7 +127,7 @@ export const USE_CASES: UseCase[] = [
     description: 'Detecta colas largas en zona de cajeros. z-score del conteo > 2 → Tier 1.',
     descriptionEn: 'Detects long queues at ATM zone. z-score of count > 2 → Tier 1.',
     detectionClasses: ['person'],
-    primaryModel: 'COCO-SSD (TF.js)',
+    primaryModel: 'YOLOS-tiny (pinned, experimental)',
     ruleType: 'density_anomaly',
     params: { threshold: 2.0, sustainTicks: 2 },
     actions: ['badge', 'log_hit'],
@@ -143,7 +142,7 @@ export const USE_CASES: UseCase[] = [
     description: 'Objeto (mochila/maleta) detectado por 5 ciclos (~7.5s) sin persona cercana → Tier 2.',
     descriptionEn: 'Object (backpack/suitcase) detected for 5 cycles (~7.5s) without nearby person → Tier 2.',
     detectionClasses: ['backpack', 'suitcase', 'handbag'],
-    primaryModel: 'COCO-SSD (TF.js)',
+    primaryModel: 'YOLOS-tiny (pinned, experimental)',
     specializedClassName: 'abandoned_object',
     ruleType: 'sustain_verify',
     params: { sustainTicks: 5, threshold: 1 },
@@ -208,7 +207,7 @@ export const USE_CASES: UseCase[] = [
     description: 'LLM describe el incidente en lenguaje natural para el operador.',
     descriptionEn: 'LLM describes the incident in natural language for the operator.',
     detectionClasses: ['person', 'car'],
-    primaryModel: 'COCO-SSD + LLM Judge',
+    primaryModel: 'YOLOS-tiny + optional judge',
     ruleType: 'count_threshold',
     params: { threshold: 1 },
     actions: ['llm_judge', 'log_hit'],
@@ -224,7 +223,7 @@ export const USE_CASES: UseCase[] = [
     description: 'Ciclo completo: detecta → razona → actúa → reflexiona. Reporte automático + juez LLM.',
     descriptionEn: 'Full loop: detect → reason → act → reflect. Auto report + LLM judge.',
     detectionClasses: ['person', 'car'],
-    primaryModel: 'COCO-SSD + LLM Judge',
+    primaryModel: 'YOLOS-tiny + optional judge',
     ruleType: 'density_anomaly',
     params: { threshold: 3.0, sustainTicks: 3 },
     actions: ['badge', 'snapshot', 'log_hit', 'send_email', 'llm_judge', 'escalate', 'generate_report'],
@@ -239,7 +238,7 @@ export const USE_CASES: UseCase[] = [
     description: 'Prototipo: registra incidentes para búsqueda futura. Embeddings CLIP pendiente (roadmap v2).',
     descriptionEn: 'Prototype: logs incidents for future search. CLIP embeddings pending (roadmap v2).',
     detectionClasses: ['person'],
-    primaryModel: 'COCO-SSD + CLIP embeddings',
+    primaryModel: 'YOLOS-tiny + pinned CLIP embeddings',
     ruleType: 'density_anomaly',
     params: { threshold: 2.5, sustainTicks: 3 },
     actions: ['badge', 'snapshot', 'log_hit', 'generate_report'],
