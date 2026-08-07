@@ -29,6 +29,7 @@
  */
 
 import type { PixelAnomalyResult } from './pixel-anomaly'
+import { getModelById } from './models/registry'
 
 export interface SpecializedDetection {
   modelId: string
@@ -251,9 +252,16 @@ export function getSpecializedModelConfig(useCaseId: string): ModelConfig[] {
  */
 export async function runSpecializedDetectionEnsemble(
   canvas: HTMLCanvasElement,
-  useCaseId: string
+  useCaseId: string,
+  selectedModelIds?: string[],
 ): Promise<SpecializedDetection[]> {
-  const configs = MODEL_REGISTRY[useCaseId]
+  const configs = (MODEL_REGISTRY[useCaseId] ?? []).filter(entry => {
+    if (!selectedModelIds) return true
+    const registryId = entry.task === 'image-classification'
+      ? 'fire-vit'
+      : useCaseId === 'fire_smoke' ? 'clip-fire' : 'clip-zero-shot'
+    return selectedModelIds.includes(registryId)
+  })
   if (!configs || configs.length === 0) return []
 
   // Run all models in parallel with a timeout per model (R04 fix).
@@ -319,7 +327,14 @@ async function runSingleModel(
       const tryLoad = async (device: 'webgpu' | 'wasm', dtype?: Dtype) => {
         console.log(`[SpecializedModels] Trying backend: ${device}${dtype ? ` (dtype=${dtype})` : ''}`)
         try {
-          const opts: Record<string, unknown> = { device }
+          const registryId = entry.task === 'image-classification'
+            ? 'fire-vit'
+            : useCaseId === 'fire_smoke' ? 'clip-fire' : 'clip-zero-shot'
+          const revision = getModelById(registryId)?.revision
+          if (!revision || revision === 'unverified-candidate') {
+            throw new Error(`Model ${registryId} has no verified immutable revision`)
+          }
+          const opts: Record<string, unknown> = { device, revision }
           if (dtype) opts.dtype = dtype
           return await pipeline(entry.task, entry.modelId, opts as any)
         } catch (e) {
@@ -545,7 +560,9 @@ export async function prewarmClipModel(): Promise<boolean> {
         const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'low-power' })
         if (adapter) {
           try {
-            classifier = await pipeline('zero-shot-image-classification', clipModelId, { device: 'webgpu', dtype: 'q4' } as any)
+            classifier = await pipeline('zero-shot-image-classification', clipModelId, {
+              device: 'webgpu', dtype: 'q4', revision: getModelById('clip-zero-shot')?.revision,
+            } as any)
           } catch (e) {
             console.warn('[SpecializedModels] WebGPU prewarm failed, falling back to WASM:', e instanceof Error ? e.message : e)
           }
@@ -554,9 +571,13 @@ export async function prewarmClipModel(): Promise<boolean> {
     }
     if (!classifier) {
       try {
-        classifier = await pipeline('zero-shot-image-classification', clipModelId, { device: 'wasm', dtype: 'q8' } as any)
+        classifier = await pipeline('zero-shot-image-classification', clipModelId, {
+          device: 'wasm', dtype: 'q8', revision: getModelById('clip-zero-shot')?.revision,
+        } as any)
       } catch (e) {
-        classifier = await pipeline('zero-shot-image-classification', clipModelId, { device: 'wasm' } as any)
+        classifier = await pipeline('zero-shot-image-classification', clipModelId, {
+          device: 'wasm', revision: getModelById('clip-zero-shot')?.revision,
+        } as any)
       }
     }
     if (classifier) {

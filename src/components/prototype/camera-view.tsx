@@ -7,16 +7,18 @@ import { usePrototypeStore, CAMERA_SOURCES, type Detection } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { decide } from '@/lib/agent'
-import { agenticResponse, type AgenticResponse } from '@/lib/agentic-response'
+import { decide, type ActionName } from '@/lib/agent'
 import { USE_CASES } from '@/lib/use-cases'
-import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from '@/lib/identity'
-import { computePixelAnomaly, computeAnomalyBbox, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
+import { WithinFeedTracker } from '@/lib/identity'
+import { computePixelAnomaly, computeAnomalyBbox, computeFrameDifferenceScore, getPixelAnomalyType, resetPixelAnomalyBuffer } from '@/lib/pixel-anomaly'
 import { runSpecializedDetection, runSpecializedDetectionEnsemble, hasSpecializedModel, getSpecializedModelInfo, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
 import { addEvidence } from '@/lib/evidence'
 import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
 import type { RealMlHandle } from './real-ml-loader'
+import { runControlledActions } from '@/lib/action-orchestrator'
+import { detectProfile } from '@/lib/incident-state-machine'
+import { resolveRuntimePlan } from '@/lib/models/runtime-plan'
 
 /**
  * CameraView — Real ML only, no simulation.
@@ -47,7 +49,6 @@ export function CameraView() {
   const lastFpsTickRef = useRef<{ t: number; n: number }>({ t: Date.now(), n: 0 })
   const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number } | null>(null)
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
-  const appearanceTrackerRef = useRef<AppearanceTracker>(new AppearanceTracker(0.6, 24))
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
 
@@ -81,7 +82,7 @@ export function CameraView() {
   const activeUseCase = USE_CASES.find((uc) => uc.id === activeUseCaseId)
 
   // ===== Agent loop (shared) =====
-  const runAgentLoop = (canvas: HTMLCanvasElement | null, dets: Detection[]) => {
+  const runAgentLoop = async (canvas: HTMLCanvasElement | null, dets: Detection[], frameDiffScore: number) => {
     const state = usePrototypeStore.getState()
     if (!state.stats) return
 
@@ -114,41 +115,10 @@ export function CameraView() {
         detections: dets,
         canvasW: canvas?.width ?? 480,
         canvasH: canvas?.height ?? 270,
+        frameDiffScore,
       },
       state.agentConfig
     )
-
-    // ─── AGENTIC RESPONSE (9-stage loop) ───
-    // Run the new 9-stage agentic response alongside decide() for the audit
-    // trail. The trace is pushed to the agent trace so operators can see
-    // WHY each action was proposed. decide() still drives action dispatch
-    // for backward compatibility — agenticResponse() will replace it fully
-    // once the React layer is migrated to consume its trace + outcome.
-    const agentic = agenticResponse(
-      {
-        cameraId: activeCamera.id,
-        cameraLabel: activeCamera.label,
-        useCase,
-        capabilityLevel: state.capabilityLevel,
-        stats: state.stats,
-        detections: dets,
-        canvasW: canvas?.width ?? 480,
-        canvasH: canvas?.height ?? 270,
-        sustainCount: newSustainCount,
-        escalationHistory: state.escalationHistory,
-        acknowledgedUntil: state.acknowledgedUntil,
-        llmJudgeEnabled: state.llmJudgeEnabled,
-      },
-      state.agentConfig
-    )
-    // Push the agentic trace stages (compact — one line per stage)
-    const agenticTraceLines = agentic.trace
-      .filter(t => t.status === 'fail' || t.status === 'pass' || t.detail.includes('fired'))
-      .slice(0, 3)  // keep trace concise — top 3 stages
-      .map(t => `[${t.stage}] ${t.detail}`)
-    if (agenticTraceLines.length > 0) {
-      pushTrace(agenticTraceLines.join(' | '))
-    }
 
     setAgentState({
       sustainCount: newSustainCount,
@@ -158,18 +128,39 @@ export function CameraView() {
     })
     pushTrace(decision.reasoning)
 
-    Promise.all(
-      decision.actions.map((action) =>
-        agentActions.execute(action, {
-          cameraId: activeCamera.id,
-          cameraLabel: activeCamera.label,
-          stats: state.stats!,
-          detections: dets,
-          reasoning: decision.reasoning,
-          canvas: canvas ?? ({} as HTMLCanvasElement),
-        })
-      )
-    ).catch((err) => console.error('[agent] action error:', err))
+    const executionContext = {
+      cameraId: activeCamera.id,
+      cameraLabel: activeCamera.label,
+      stats: state.stats!,
+      detections: dets,
+      reasoning: decision.reasoning,
+      canvas: canvas ?? ({} as HTMLCanvasElement),
+    }
+    const controlResult = await runControlledActions({
+      incidentId: `${activeCamera.id}:${useCase.id}:${state.agentCycleCount + 1}`,
+      proposedActions: decision.actions.map(action => action.name),
+      allowedActions: ['log_tick', ...useCase.actions] as ActionName[],
+      profile: detectProfile(),
+      evidence: {
+        available: !!canvas && dets.length > 0,
+        visual: !!canvas && typeof canvas.toDataURL === 'function',
+        evidenceIds: canvas && dets.length > 0 ? [`cycle-${state.agentCycleCount + 1}`] : [],
+      },
+      // A judge service is intentionally not inferred from deployment. Until
+      // an authenticated adapter is configured, judge-required actions remain
+      // inconclusive and cannot escalate.
+      approval: async () => false,
+      execute: async actionName => {
+        const action = decision.actions.find(candidate => candidate.name === actionName)
+        if (!action) return { ok: false, verified: false, message: 'Action proposal missing' }
+        await agentActions.execute(action, executionContext)
+        return { ok: true, verified: true, message: `${actionName} completed locally` }
+      },
+      onEvent: event => pushTrace(`[${event.stage}] ${event.action ?? ''} ${event.status}${event.detail ? ` · ${event.detail}` : ''}`),
+    })
+    if (controlResult.outcome === 'suppressed_false_positive') {
+      pushTrace('False-positive verdict suppressed escalation and report execution')
+    }
 
     if (decision.tier >= 2 && canvas && typeof canvas.toDataURL === 'function') {
       try {
@@ -301,16 +292,16 @@ export function CameraView() {
         // D9 fix: Models with adapterImplemented=false are displayed in the
         // selector but cannot actually run — filter them out so the user
         // doesn't see "model selected, nothing happens" behavior.
-        const IMPLEMENTED_HF_MODEL_IDS = [
-          'fire-vit', 'clip-fire', 'clip-zero-shot'
-          // yolov10n, yolos-tiny, segformer-b0, yolov8n-pose are listed in the
-          // registry for transparency but have adapterImplemented=false.
-        ]
-        const runCocoSSD = true // always run base detector for frame drawing
-        const runPixelAnomaly = true // always run pixel anomaly (free, fast)
-        const runHFModels = userModels.length === 0 || userModels.some(id =>
-          IMPLEMENTED_HF_MODEL_IDS.includes(id)
-        )
+        const runtimePlan = resolveRuntimePlan(userModels, useCase?.id ?? 'unknown')
+        const runCocoSSD = runtimePlan.adapters.some(adapter => adapter.id === 'coco-ssd')
+        const runPixelAnomaly = runtimePlan.adapters.some(adapter => adapter.id === 'pixel-anomaly')
+        const selectedHfModels = runtimePlan.adapters
+          .filter(adapter => ['fire-vit', 'clip-fire', 'clip-zero-shot'].includes(adapter.id))
+          .map(adapter => adapter.id)
+        const runHFModels = selectedHfModels.length > 0
+        for (const unavailable of runtimePlan.unavailable) {
+          pushTrace(`Model ${unavailable}: unavailable — no functioning browser adapter`)
+        }
 
         // ─── Step 1: COCO-SSD detection (only if user selected a detector) ───
         let dets: Detection[] = []
@@ -361,7 +352,7 @@ export function CameraView() {
           if (useCase && runHFModels && hasSpecializedModel(useCase.id) && !hfInFlight) {
             hfInFlight = true
             // Fire and forget — don't block the loop
-            runSpecializedDetectionEnsemble(canvas, useCase.id)
+            runSpecializedDetectionEnsemble(canvas, useCase.id, selectedHfModels)
               .then(ensembleResults => {
                 if (cancelled) return
                 for (const specResult of ensembleResults) {
@@ -422,38 +413,20 @@ export function CameraView() {
           setLatency(latency)
           drawBoxes(ctx, canvas, dets, videoRef.current ?? undefined, imgRef.current ?? undefined)
 
-          // ===== TRACKING + IDENTITY MANAGEMENT =====
-          // Update within-feed tracker with new detections
+          // ===== WITHIN-FEED LOCAL TRACKING =====
           const tracked = trackerRef.current.update(dets)
-          const appearanceTracker = appearanceTrackerRef.current
-
-          // Match or create global identities for each tracked object
-          for (const track of tracked) {
-            const appearance = extractAppearanceFeatures(ctx, track.bbox, canvas.width, canvas.height)
-            const type = track.class === 'person' ? 'person' : 'vehicle'
-            const trackId = appearanceTracker.matchOrCreate(
-              track.localTrackId,
-              type,
-              appearance,
-              activeCamera.id,
-              track.bbox,
-              track.score
-            )
-          }
-
-          // Update store with current identities (throttled — every 5 frames)
+          // Local track IDs reset on source changes and never establish identity.
           const fpsTick = lastFpsTickRef.current
           if (fpsTick.n % 5 === 0) {
-            const identities = appearanceTracker.getIdentities().map((id) => ({
-              trackId: id.trackId,
-              type: id.type,
-              firstSeen: id.firstSeen,
-              lastSeen: id.lastSeen,
-              observations: id.observations.length,
-              plateString: id.plateString,
-              dominantColor: id.appearance.dominantColor,
+            const localTracks = tracked.map(track => ({
+              trackId: String(track.localTrackId),
+              type: track.class === 'person' ? 'person' as const : 'vehicle' as const,
+              firstSeen: Date.now(),
+              lastSeen: Date.now(),
+              observations: 1,
+              dominantColor: [128, 128, 128] as [number, number, number],
             }))
-            setAppearanceTracks(identities.slice(0, 50))
+            setAppearanceTracks(localTracks.slice(0, 50))
           }
         }
 
@@ -469,7 +442,10 @@ export function CameraView() {
           fpsTick.n = 0
         }
 
-        runAgentLoop(canvas, dets)
+        const measuredFrameDifference = useCase?.ruleType === 'frame_diff' && ctx
+          ? computeFrameDifferenceScore(ctx, canvas.width, canvas.height, `${activeCamera.id}:${useCase.id}`)
+          : 0
+        await runAgentLoop(canvas, dets, measuredFrameDifference)
 
         // ─── Lifecycle transition: mark resolved when tier drops to 0 ───
         // If the agent returned tier 0 (no anomaly) but there are active

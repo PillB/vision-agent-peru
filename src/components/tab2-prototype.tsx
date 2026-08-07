@@ -53,7 +53,7 @@ export function Tab2Prototype() {
           </div>
         </div>
 
-        {/* Bottom row — identities + actions + reports + evidence */}
+        {/* Bottom row — local tracks + actions + reports + evidence */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4">
           <IdentityPanel />
           <ActionsPanel />

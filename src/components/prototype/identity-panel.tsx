@@ -6,18 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Users, Car, Info, Clock, Eye } from 'lucide-react'
 
 /**
- * Identity Panel — shows persistent tracked identities (persons + vehicles).
- *
- * ELI5 (Para no técnicos):
- * "Este panel muestra la 'memoria' del sistema. Cada persona o vehículo que
- * aparece en el video recibe un ID único que se mantiene incluso si salen
- * y vuelven a entrar. Es como una lista de visitantes: el sistema anota
- * quién entró, a qué hora, y cuántas veces lo vio."
- *
- * Technical:
- * Displays the global identity gallery maintained by AppearanceTracker.
- * Each identity has: trackId, type (person/vehicle), first/last seen,
- * observation count, dominant color swatch, and optional plate string.
+ * Local tracks exist only inside the active feed and reset on source change.
+ * They are continuity hints, not identities or cross-video associations.
  */
 export function IdentityPanel() {
   const identities = usePrototypeStore((s) => s.appearanceTracks)
@@ -30,7 +20,7 @@ export function IdentityPanel() {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-emerald-600" />
-          <h3 className="text-sm font-semibold text-zinc-950">Appearance Tracks</h3>
+          <h3 className="text-sm font-semibold text-zinc-950">Local tracks</h3>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-[10px] font-mono">{persons.length} 👤</Badge>
@@ -41,16 +31,15 @@ export function IdentityPanel() {
       {/* ELI5 explanation */}
       <div className="mb-3 rounded-md bg-emerald-50 border border-emerald-100 px-3 py-2 text-[11px] text-zinc-600 leading-relaxed">
         <Info className="h-3 w-3 text-emerald-500 inline mr-1" />
-        <strong>¿Qué es esto?</strong> Cada persona o vehículo recibe un ID único.
-        El sistema los recuerda incluso si salen del cuadro y vuelven — como una
-        lista de visitantes con hora de entrada y salida.
+        <strong>Alcance:</strong> cada ID representa continuidad aproximada dentro
+        de este video. Se reinicia al cambiar de fuente y nunca establece identidad.
       </div>
 
       <ScrollArea className="flex-1 max-h-[280px] pr-2">
         {identities.length === 0 ? (
           <div className="text-center py-8 text-xs text-zinc-400">
             <Eye className="h-6 w-6 mx-auto mb-2 text-zinc-300" />
-            Sin identidades rastreadas aún.
+            Sin pistas locales todavía.
             <br />
             <span className="text-zinc-500">Inicie el análisis para comenzar el rastreo.</span>
           </div>
@@ -61,13 +50,6 @@ export function IdentityPanel() {
                 key={id.trackId}
                 className="rounded-md border border-zinc-100 bg-zinc-50/50 p-2 flex items-center gap-2"
               >
-                {/* Color swatch */}
-                <div
-                  className="h-6 w-6 rounded-full flex-shrink-0 border border-zinc-200"
-                  style={{ backgroundColor: `rgb(${id.dominantColor[0]}, ${id.dominantColor[1]}, ${id.dominantColor[2]})` }}
-                  title="Color dominante (apariencia)"
-                />
-
                 {/* Type icon */}
                 {id.type === 'person' ? (
                   <Users className="h-3.5 w-3.5 text-zinc-500 flex-shrink-0" />
@@ -103,15 +85,11 @@ export function IdentityPanel() {
         )}
       </ScrollArea>
 
-      {/* Legend */}
+      {/* Scope */}
       <div className="mt-3 pt-2 border-t border-zinc-100 text-[10px] text-zinc-400 space-y-1">
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full border border-zinc-200" />
-          <span>Color dominante — ayuda a distinguir personas/vehículos</span>
-        </div>
-        <div className="flex items-center gap-2">
           <Clock className="h-2.5 w-2.5" />
-          <span>Última vez visto · número de observaciones</span>
+          <span>Continuidad local aproximada · revisión humana requerida</span>
         </div>
       </div>
     </div>

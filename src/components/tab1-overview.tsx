@@ -97,39 +97,37 @@ export function Tab1Overview({ onTryPrototype }: Props) {
       </section>
 
       {/* ============================================================
-          SECTION 2 — THE BIG NUMBER
-          "The agentic loop completes a full perceive→reason→act cycle
-          in under 2 seconds, 30× faster than manual review."
+          SECTION 2 — MEASURED STATUS
       ============================================================ */}
       <section className="border-b border-zinc-200">
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-16 md:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7">
               <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-3">
-                The Big Number
+                Measured status
               </p>
               <div className="flex items-baseline gap-3">
                 <span className="font-serif text-7xl md:text-8xl lg:text-9xl text-emerald-700 leading-none tabular-nums">
-                  &lt;2s
+                  Local
                 </span>
                 <span className="font-mono text-sm text-zinc-500">perceive → reason → act</span>
               </div>
               <h2 className="mt-6 font-serif text-2xl md:text-3xl text-zinc-950 leading-tight max-w-2xl">
-                The agentic loop completes a full perceive→reason→act cycle in under 2 seconds — roughly 30× faster than manual review of the same camera.
+                This is an experimental, local-first browser prototype. Performance and detection quality vary by device, backend, source video, and model.
               </h2>
               <p className="mt-4 text-sm md:text-base text-zinc-600 leading-relaxed max-w-2xl">
-                Latency budget breakdown: Multi-model inference ≈ 200-800 ms (COCO-SSD base + optional HF models) on a mid-tier laptop GPU · rule-engine reasoning &lt; 5 ms · action dispatch (snapshot, email sim, optional LLM judge) ≈ 200–800 ms. The remaining budget is canvas redraw and React state propagation. All numbers measured on the live prototype.
+                The live baseline measured approximately 0.1 analysis cycles per second with roughly 7.3 seconds inference latency in the tested Chromium environment. Those observations are diagnostic, not a general performance guarantee.
               </p>
               <p className="mt-4 text-xs text-zinc-400 font-mono">
-                Source: internal measurement on MacBook Pro M2, 2026-07-14. Manual review baseline: industry typical 8–15 min MTTR for unmonitored CCTV.
+                Evidence: Round 0 live-site reproduction at commit ea584dc. See the benchmark and deployment ledgers for scope and limitations.
               </p>
             </div>
             <div className="lg:col-span-5">
               <div className="grid grid-cols-2 gap-3">
-                <BigStat value="30×" label="Faster than manual" tone="emerald" />
-                <BigStat value="90" label="Object classes detected" tone="zinc" />
+                <BigStat value="0.1" label="Observed cycles/s in baseline" tone="zinc" />
+                <BigStat value="80" label="COCO label vocabulary" tone="zinc" />
                 <BigStat value="3" label="Escalation tiers" tone="zinc" />
-                <BigStat value="0" label="Backend servers required" tone="emerald" />
+                <BigStat value="0" label="External actions on static site" tone="emerald" />
               </div>
             </div>
           </div>
@@ -252,22 +250,22 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               icon={<Eye className="h-6 w-6" />}
               name="Perception"
               tag="In-browser ML"
-              body="Multi-model ensemble runs COCO-SSD (27MB) or YOLOv10n (2.5MB) for person/vehicle detection, plus specialized HF ONNX models (Fire ViT, CLIP zero-shot, SegFormer, Pose) for use-case-specific events. All in-browser, no server. Users choose models from a dropdown with pros/cons."
-              metric="0.3-1 fps (WASM) · 2-5 fps (WebGPU)"
+              body="The experimental COCO-SSD adapter can detect its COCO classes in-browser. Candidate adapters remain disabled until their revisions, licenses, output contracts, and browser benchmarks are verified."
+              metric="Experimental · device-dependent"
             />
             <PillarCard
               icon={<Brain className="h-6 w-6" />}
               name="Reasoning"
               tag="Rule + LLM judge"
-              body="A deterministic rule engine decides tier 0→3 escalation from z-scores + sustain counters. An optional LLM-as-judge filters false positives at Tier 3, filtering Tier 3 escalations when enabled (no measured FP reduction rate available)."
-              metric="Optional LLM judge"
+              body="A deterministic policy evaluates evidence first. An optional authenticated judge is advisory and must finish before any consequential action can be proposed. No false-positive reduction rate has been validated."
+              metric="Sequential policy gate"
             />
             <PillarCard
               icon={<Zap className="h-6 w-6" />}
               name="Action"
               tag="3-tier escalation"
-              body="A tool registry executes auditable actions: badge → snapshot+email → escalate+report. A human-acknowledge gate and a max-5/hour circuit breaker prevent alert fatigue and runaway automation."
-              metric="<2s decision-to-action"
+              body="The static site can create local badges, logs, snapshots, and deterministic draft reports. Email, dispatch, escalation, access control, messaging, and evidence transmission are unavailable without approval and an authenticated service."
+              metric="Local actions only"
             />
           </div>
         </div>
@@ -282,7 +280,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-16 md:py-24">
           <SectionHeader
             kicker="Traditional vs Agentic"
-            title="Agentic systems cut mean-time-to-respond from ~15 minutes to under 30 seconds while adding a full evidence trail."
+            title="The prototype demonstrates a reviewable control flow; response-time improvement has not been validated."
           />
 
           <div className="mt-12 overflow-hidden rounded-xl border border-zinc-200">
@@ -455,14 +453,14 @@ export function Tab1Overview({ onTryPrototype }: Props) {
 
       {/* ============================================================
           SECTION 8 — USE CASES (4-COL)
-          "Four high-value use cases are production-ready in v1:
-          crowd surge, loitering, abandoned object, restricted-zone breach."
+          "Use cases are demonstrations or experiments until validated against
+          representative authorized footage and documented negative controls."
       ============================================================ */}
       <section className="border-b border-zinc-200">
         <div className="mx-auto max-w-[1400px] px-4 md:px-10 py-16 md:py-24">
           <SectionHeader
             kicker="Use Cases"
-            title="Four high-value use cases are production-ready in v1: crowd surge, sustained-density escalation, loitering, and restricted-zone breach."
+            title="Use-case demonstrations with explicit evidence contracts and limitations"
           />
 
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -530,7 +528,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
               status="research"
               title="Multi-camera mesh"
               items={[
-                'Cross-camera tracking (person re-ID)',
+                'Human-reviewed appearance candidate association',
                 'City-wide heatmap of incidents',
                 'Federated learning across cameras',
                 'Integration with city ops dashboard',
@@ -573,7 +571,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
             <PrivacyCard
               icon={<Cpu className="h-5 w-5" />}
               title="Local-first inference"
-              body="TensorFlow.js runs entirely client-side. The video element, the canvas pixel buffer, and the detection tensors never touch a server. The only network calls are the optional LLM-judge and email endpoints, which receive only telemetry JSON — not raw frames."
+              body="Uploaded-video analysis and the evidence index are local-first. If a future authenticated judge or transmission service is configured, imagery may leave the device only after an explicit disclosure and required approval. GitHub Pages makes no server-action call."
             />
             <PrivacyCard
               icon={<FileText className="h-5 w-5" />}
@@ -836,17 +834,17 @@ const COMPARISON_ROWS = [
   {
     dim: 'Mean time to respond',
     traditional: '8–15 min — operator must notice, verify, decide, act',
-    agentic: '<30 s — agent detects, reasons, escalates in one cycle',
+    agentic: 'Unvalidated — depends on device, model, review, and configured service',
   },
   {
     dim: 'False-positive rate',
     traditional: 'High — every motion triggers review; operator fatigue compounds',
-    agentic: '~60% lower — LLM-as-judge filters texture/lighting artifacts at Tier 3',
+    agentic: 'Unvalidated — false-positive reduction requires a held-out benchmark',
   },
   {
     dim: 'Audit trail',
     traditional: 'None — incidents vanish when the operator looks away',
-    agentic: 'Every action logged with timestamp, payload, outcome — replayable',
+    agentic: 'Session audit plus IndexedDB evidence; browser storage is deletable and not immutable',
   },
   {
     dim: 'Evidence at incident',
@@ -856,7 +854,7 @@ const COMPARISON_ROWS = [
   {
     dim: 'Cost to scale',
     traditional: 'Linear with operators — every camera needs eyes',
-    agentic: 'Marginal — one browser tab per camera cluster',
+    agentic: 'Unvalidated — browser memory, decoding, and model load limit scale',
   },
 ]
 

@@ -43,10 +43,6 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
         const model = await cocoSsd.load({ base: 'lite_mobilenet_v2' })
         if (!mounted) return
         modelRef.current = model
-        if (typeof window !== 'undefined') {
-          ;(window as any).__cocoModel = model
-          ;(window as any).__tf = tf
-        }
         onModelStatus('ready')
         // Provide a detect handle
         onModelReady({

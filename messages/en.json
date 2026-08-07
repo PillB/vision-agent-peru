@@ -35,12 +35,12 @@
     },
     "bigNumber": {
       "kicker": "The Big Number",
-      "value": "<2s",
+      "value": "Local",
       "unit": "perceive → reason → act",
-      "title": "The agentic loop completes a full perceive→reason→act cycle in under 2 seconds — roughly 30× faster than manual review of the same camera.",
+      "title": "Experimental local-first browser workflow; performance varies by device, backend, source, and selected model.",
       "body": "Latency budget breakdown: TF.js COCO-SSD inference ≈ 250–500 ms on a mid-tier laptop GPU · rule-engine reasoning < 5 ms · action dispatch (snapshot, email sim, optional LLM judge) ≈ 200–800 ms. The remaining budget is canvas redraw and React state propagation. All numbers measured on the live prototype.",
       "source": "Source: internal measurement on MacBook Pro M2, 2026-07-14. Manual review baseline: industry typical 8–15 min MTTR for unmonitored CCTV.",
-      "stat1Value": "30×",
+      "stat1Value": "Unvalidated",
       "stat1Label": "Faster than manual",
       "stat2Value": "90",
       "stat2Label": "Object classes detected",
@@ -101,15 +101,15 @@
       "pillar1Name": "Perception",
       "pillar1Tag": "In-browser ML",
       "pillar1Body": "TensorFlow.js + COCO-SSD runs the same 90-class object detection model used by production CV systems, but client-side. No GPU server, no frame leaves the browser — addresses both latency and privacy at once.",
-      "pillar1Metric": "~10 fps on M2 laptop",
+      "pillar1Metric": "Device-dependent experimental runtime",
       "pillar2Name": "Reasoning",
       "pillar2Tag": "Rule + LLM judge",
-      "pillar2Body": "A deterministic rule engine decides tier 0→3 escalation from z-scores + sustain counters. An optional LLM-as-judge filters false positives at Tier 3, cutting ~60% of spurious escalations without missing real incidents.",
-      "pillar2Metric": "~60% FP reduction",
+      "pillar2Body": "A deterministic evidence policy owns authority. An optional authenticated judge is advisory and runs before action proposal; no false-positive reduction rate has been validated.",
+      "pillar2Metric": "Sequential judge gate",
       "pillar3Name": "Action",
       "pillar3Tag": "3-tier escalation",
       "pillar3Body": "A tool registry executes auditable actions: badge → snapshot+email → escalate+report. A human-acknowledge gate and a max-5/hour circuit breaker prevent alert fatigue and runaway automation.",
-      "pillar3Metric": "<2s decision-to-action"
+      "pillar3Metric": "Local actions only on GitHub Pages"
     },
     "comparison": {
       "kicker": "Traditional vs Agentic",
@@ -122,7 +122,7 @@
       "row1Agentic": "<30 s — agent detects, reasons, escalates in one cycle",
       "row2Dim": "False-positive rate",
       "row2Traditional": "High — every motion triggers review; operator fatigue compounds",
-      "row2Agentic": "~60% lower — LLM-as-judge filters texture/lighting artifacts at Tier 3",
+      "row2Agentic": "Unvalidated — requires a held-out false-positive benchmark",
       "row3Dim": "Audit trail",
       "row3Traditional": "None — incidents vanish when the operator looks away",
       "row3Agentic": "Every action logged with timestamp, payload, outcome — replayable",
@@ -159,7 +159,7 @@
       "kicker": "Value Chain",
       "title": "Each pipeline stage compounds value: raw frames become detections, detections become anomalies, anomalies become judged incidents, incidents become resolved cases with evidence.",
       "stage1Label": "Raw frames",
-      "stage1Note": "Continuous video stream at ~10 fps",
+      "stage1Note": "Adaptive, device-dependent sampling",
       "stage2Label": "Anomalies",
       "stage2Note": "z-score > 2 vs 2-min baseline",
       "stage3Label": "Judge-pass",
@@ -172,7 +172,7 @@
     },
     "useCases": {
       "kicker": "Use Cases",
-      "title": "Four high-value use cases are production-ready in v1: crowd surge, sustained-density escalation, loitering, and restricted-zone breach.",
+      "title": "Use cases are demonstrations or experiments until their evidence contracts pass representative benchmarks.",
       "v1Ready": "v1 ready · live in prototype"
     },
     "roadmap": {
@@ -195,13 +195,13 @@
       "v3Phase": "v3 — Two quarters out",
       "v3Status": "research",
       "v3Title": "Multi-camera mesh",
-      "v3Item1": "Cross-camera tracking (person re-ID)",
+      "v3Item1": "Human-reviewed appearance candidate association",
       "v3Item2": "City-wide heatmap of incidents",
       "v3Item3": "Federated learning across cameras",
       "v3Item4": "Integration with city ops dashboard",
       "risksTitle": "Risks & dependencies",
       "risk1": "Model drift. COCO-SSD trained on general images; Peru plaza footage may need fine-tuning for distant/small persons.",
-      "risk2": "Browser perf. Sustained 10 fps requires WebGPU backend; falls back to WebGL on older devices.",
+      "risk2": "Browser performance varies substantially; WebGPU absence, WASM fallback, memory, and decode limits must be measured per device.",
       "risk3": "Privacy compliance. Snapshots store identifiable images — need retention policy + on-prem option for production."
     },
     "privacy": {
@@ -210,9 +210,9 @@
       "card1Title": "Local-first inference",
       "card1Body": "TensorFlow.js runs entirely client-side. The video element, the canvas pixel buffer, and the detection tensors never touch a server. The only network calls are the optional LLM-judge and email endpoints, which receive only telemetry JSON — not raw frames.",
       "card2Title": "Snapshot retention",
-      "card2Body": "Snapshots are stored in browser memory (zustand + IndexedDB) for the duration of the session. A retention policy (configurable, default 24h) auto-purges. Production deployments should add on-prem snapshot storage with role-based access.",
+      "card2Body": "Evidence may be stored in IndexedDB when available. Browser storage is best-effort, user-deletable, and subject to eviction; the UI exposes deletion and retention status.",
       "card3Title": "Audit trail",
-      "card3Body": "Every agentic action (log_tick, badge, snapshot, send_email, escalate, generate_report) is appended to an immutable action log with timestamp + payload + outcome. Operators can replay any decision after the fact."
+      "card3Body": "Actions record timestamps and outcomes for review. Browser logs are not immutable and must not be treated as a tamper-proof chain of custody."
     },
     "cta": {
       "title": "See the agentic loop run live on real footage of Peru's plazas.",
@@ -309,7 +309,7 @@
       "step2": "Click Start analysis — the AI model (COCO-SSD) loads in your browser (~5s first time) then detects people and vehicles in real time.",
       "step3": "Watch the chart fill in. After ~10 seconds the system learns the normal pattern; unusual activity will trigger alerts (Tier 1=watch, 2=anomaly, 3=critical).",
       "step4": "Use the sliders in Agent reasoning to adjust sensitivity. Toggle the LLM judge to filter false positives. Switch capability levels to see how the system behavior changes.",
-      "step5": "Click Acknowledge on alerts you've seen, or Silence 5m for a break. Check the Identity panel to see tracked people/vehicles with unique IDs."
+      "step5": "Review alerts and local tracks. Track IDs reset with the source and never establish identity."
     }
   },
   "Tab3": {
@@ -333,7 +333,7 @@
       "complicationBody": "Gartner: AI agents are the fastest-advancing tech on the 2025 Hype Cycle. 60% of orgs expect to deploy within 2 years.",
       "resolution": "Resolution",
       "resolutionBody": "Vision Agent is built natively on the agentic pattern: perceive → reason → act → reflect, end to end.",
-      "stat1Value": "<2s",
+      "stat1Value": "Unvalidated",
       "stat1Label": "Perceive → reason → act cycle",
       "stat2Value": "4",
       "stat2Label": "AI capability eras, 70 years"

@@ -55,6 +55,8 @@ export function ModelSelector() {
   if (compatibleModels.length <= 1) return null // No choice to offer
 
   const toggleModel = (modelId: string) => {
+    const model = compatibleModels.find(item => item.id === modelId)
+    if (!model?.adapterImplemented || !model.browserReady) return
     setSelectionState(prev => {
       const next = new Set(prev.modelIds)
       if (next.has(modelId)) {
@@ -120,6 +122,8 @@ export function ModelSelector() {
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleModel(model.id)}
+                    disabled={!model.adapterImplemented || !model.browserReady}
+                    aria-label={`${model.label}${model.adapterImplemented && model.browserReady ? '' : ' unavailable'}`}
                     className="h-3 w-3 accent-emerald-600"
                   />
                   <button

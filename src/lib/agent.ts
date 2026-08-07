@@ -89,6 +89,8 @@ export interface AgentContext {
   /** Canvas dimensions (for ROI normalization). */
   canvasW: number
   canvasH: number
+  /** Measured 0..1 pixel difference for frame_diff rules. */
+  frameDiffScore?: number
 }
 
 /**
@@ -193,9 +195,12 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
     }
 
     case 'count_threshold': {
-      if (trackedCount >= (useCase.params.threshold || 0)) {
+      const threshold = useCase.params.threshold ?? 1
+      // A zero threshold is telemetry-only; it must never create an
+      // always-true incident condition.
+      if (threshold > 0 && trackedCount >= threshold) {
         ruleTriggered = true
-        ruleReason = `Count threshold: ${trackedCount} >= ${useCase.params.threshold}`
+        ruleReason = `Count threshold: ${trackedCount} >= ${threshold}`
       }
       break
     }
@@ -221,18 +226,14 @@ export function decide(ctx: AgentContext, config: AgentConfig = DEFAULT_AGENT_CO
     }
 
     case 'frame_diff': {
-      // Pixel-anomaly detection runs in camera-view.tsx BEFORE the agent.
-      // It injects specialized detections (fire, flood, graffiti, etc.) into
-      // the detection array. The agent sees these as trackedCount > 0.
-      // The z-score check is a SECONDARY trigger for detection-count anomalies
-      // (e.g., sudden crowd increase). The primary trigger is trackedCount.
-      const threshold = useCase.params.frameDiffThreshold || 0.15
-      if (trackedCount > 0) {
+      const threshold = useCase.params.frameDiffThreshold ?? 0.15
+      const measuredDifference = ctx.frameDiffScore ?? 0
+      if (measuredDifference > threshold && trackedCount > 0) {
         ruleTriggered = true
-        ruleReason = `Pixel-anomaly or specialized model detected ${trackedCount} object(s)`
-      } else if (stats.peakZ > config.t1Z) {
+        ruleReason = `Measured frame difference ${(measuredDifference * 100).toFixed(1)}% with ${trackedCount} relevant detection(s)`
+      } else if (measuredDifference > threshold && useCase.detectionClasses.length === 0) {
         ruleTriggered = true
-        ruleReason = `Detection-count anomaly: peakZ=${stats.peakZ.toFixed(2)} (z-score proxy)`
+        ruleReason = `Measured frame difference ${(measuredDifference * 100).toFixed(1)}% exceeds ${(threshold * 100).toFixed(1)}%`
       }
       break
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
 import { usePrototypeStore } from '@/lib/store'
 import type { ActionLogEntry, IncidentReport } from '@/lib/store'
@@ -39,6 +39,7 @@ interface ExecuteCtx {
  *   - acknowledge / silence: not executed here (manual operator action)
  */
 export function useAgentActions() {
+  const judgeFlightsRef = useRef(new Set<string>())
   const pushAction = usePrototypeStore((s) => s.pushAction)
   const updateAction = usePrototypeStore((s) => s.updateAction)
   const pushReport = usePrototypeStore((s) => s.pushReport)
@@ -80,13 +81,12 @@ export function useAgentActions() {
 
           case 'send_email': {
             if (!apiRoutesAvailable()) {
-              // GitHub Pages: no API route — simulate locally
               updateAction(entry.id, {
-                status: 'success',
-                message: 'Email simulated (GH Pages mode — no API route)',
+                status: 'skipped',
+                message: 'Unavailable — configure an authenticated service and obtain approval',
               })
-              toast.info('Email alert simulated (offline mode)', {
-                description: `Would send to ops team · ${ctx.cameraLabel}`,
+              toast.info('Email unavailable in local-only mode', {
+                description: 'No message was sent.',
               })
               break
             }
@@ -116,14 +116,11 @@ export function useAgentActions() {
                 throw new Error(data.error || 'email failed')
               }
             } catch (err) {
-              // Fallback: simulate locally if API unavailable
               updateAction(entry.id, {
-                status: 'success',
-                message: 'Email simulated (API unavailable)',
+                status: 'failed',
+                message: err instanceof Error ? err.message : 'Email service failed',
               })
-              toast.info('Email alert simulated (offline)', {
-                description: `Would send to: ${to}`,
-              })
+              throw err
             }
             break
           }
@@ -138,6 +135,36 @@ export function useAgentActions() {
             const windowSamples = freshSamples.filter((s) => now - s.t < 5 * 60_000)
             const peak = windowSamples.reduce((acc, s) => (s.count > acc.count ? s : acc), { count: currentState.personCount, t: now })
             const hitIds = freshHits.slice(0, 5).map((h) => h.id)
+            if (!apiRoutesAvailable()) {
+              const report: IncidentReport = {
+                id: `rpt-${uuid()}`,
+                createdAt: now,
+                cameraId: ctx.cameraId,
+                cameraLabel: ctx.cameraLabel,
+                windowStart: windowSamples[0]?.t ?? now,
+                windowEnd: now,
+                peakCount: peak.count,
+                peakZScore: ctx.stats.peakZ,
+                tier: action.tier,
+                hitIds,
+                summary: [
+                  '# Local deterministic draft',
+                  '',
+                  `Camera: ${ctx.cameraLabel}`,
+                  `Window: ${new Date(windowSamples[0]?.t ?? now).toISOString()} – ${new Date(now).toISOString()}`,
+                  `Observed detections: ${peak.count}`,
+                  `Measured peak z-score: ${ctx.stats.peakZ.toFixed(2)}`,
+                  `Policy reason: ${ctx.reasoning}`,
+                  '',
+                  'Generated locally. No external service was contacted. This draft requires human review.',
+                ].join('\n'),
+              }
+              pushReport(report)
+              updateAction(entry.id, { status: 'success', message: 'Local deterministic draft generated; human review required' })
+              toast.success('Local report draft generated', { description: 'No external service was contacted.' })
+              break
+            }
+
             const res = await fetch(prefixPath('/api/report'), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -184,11 +211,11 @@ export function useAgentActions() {
 
           case 'escalate':
             updateAction(entry.id, {
-              status: 'success',
-              message: `Tier 3 escalation · ${action.reason}`,
+              status: 'skipped',
+              message: 'Pending explicit approval and an authenticated external service',
             })
-            toast.error('Tier 3 — CRITICAL ESCALATION', {
-              description: action.reason,
+            toast.info('Escalation not executed', {
+              description: 'Explicit approval and a configured authenticated service are required.',
             })
             break
 
@@ -198,15 +225,15 @@ export function useAgentActions() {
             // instead of firing a parallel request. The dedup key is
             // cameraId + the action's payload useCase (if present).
             const dedupKey = `judge:${ctx.cameraId}:${action.payload?.useCase ?? 'default'}`
-            if ((window as any).__visionJudgeInFlight?.[dedupKey]) {
+            const judgeFlights = judgeFlightsRef.current
+            if (judgeFlights.has(dedupKey)) {
               updateAction(entry.id, {
                 status: 'skipped',
                 message: 'Skipped — judge already in flight for this camera+useCase (D2 single-flight)',
               })
               break
             }
-            ;(window as any).__visionJudgeInFlight = (window as any).__visionJudgeInFlight || {}
-            ;(window as any).__visionJudgeInFlight[dedupKey] = true
+            judgeFlights.add(dedupKey)
 
             try {
               // D3 fix: Pass VISUAL EVIDENCE (snapshot crop) to the judge,
@@ -233,8 +260,8 @@ export function useAgentActions() {
               // call and record the simulated verdict. Avoids 404→success.
               if (isGitHubPages() || !apiRoutesAvailable()) {
                 updateAction(entry.id, {
-                  status: 'success',
-                  message: `Judge: simulated (no API on GH Pages) — verdict=real (conservative)`,
+                  status: 'skipped',
+                  message: 'Judge unavailable — no authenticated service is configured',
                 })
                 break
               }
@@ -270,7 +297,7 @@ export function useAgentActions() {
                 })
               }
             } finally {
-              delete (window as any).__visionJudgeInFlight?.[dedupKey]
+              judgeFlights.delete(dedupKey)
             }
             break
           }
