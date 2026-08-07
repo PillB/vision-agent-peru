@@ -58,8 +58,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Remove API routes (incompatible with static export)
-        run: rm -rf src/app/api
+      - name: Prepare isolated static export
+        run: rm -rf .next src/app/api
 
       - name: Build static export
         env:
