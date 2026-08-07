@@ -17,6 +17,7 @@
     {"id":"D13","status":"fixed in canonical suite","evidence":["tests/e2e","playwright.config.ts"]},
     {"id":"D14","status":"fixed","evidence":["src/app/page.tsx","tests/e2e/production-smoke.spec.ts"]},
     {"id":"D15","status":"fixed","evidence":["package.json","playwright.config.ts"]},
-    {"id":"D16","status":"fixed by removal or qualification","evidence":["claim_registry.json","messages/en.json","messages/es-PE.json"]}
+    {"id":"D16","status":"fixed by removal or qualification","evidence":["claim_registry.json","messages/en.json","messages/es-PE.json"]},
+    {"id":"D17","status":"fixed after production screenshot review","evidence":["src/components/evidence-workspace.tsx:WebGPU status semantics","tests/e2e/workspace.spec.ts","tests/e2e/production-smoke.spec.ts"]}
   ]
 }
