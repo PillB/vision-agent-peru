@@ -76,7 +76,7 @@ export const ALL_MODELS: ModelOption[] = [
     id: 'yolos-tiny',
     label: 'YOLOS-tiny (ONNX)',
     modelId: 'Xenova/yolos-tiny',
-    revision: '1a00cc14a139ff40bac9aa00c745915cb7b5b751',
+    revision: 'e2f9c7673f0fa61849efe2b56a0d7774779ebb9d',
     task: 'object-detection',
     sizeMB: 7.12,
     license: 'Apache-2.0',

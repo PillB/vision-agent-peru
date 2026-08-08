@@ -2,7 +2,11 @@ import type { DetectionAdapter } from './video-indexer'
 
 export const YOLOS_TINY = {
   id: 'Xenova/yolos-tiny',
-  revision: '1a00cc14a139ff40bac9aa00c745915cb7b5b751',
+  // Pinned to the verified HEAD revision (2025-06-30).
+  // Previous revision 1a00cc14... returned 404 from HuggingFace, causing
+  // "Model load failed" on the live prototype. Verified via:
+  //   curl https://huggingface.co/api/models/Xenova/yolos-tiny
+  revision: 'e2f9c7673f0fa61849efe2b56a0d7774779ebb9d',
   license: 'Apache-2.0',
   status: 'experimental' as const,
   limitation: 'Browser throughput, small-object recall, and surveillance-domain thresholds are not yet validated.',

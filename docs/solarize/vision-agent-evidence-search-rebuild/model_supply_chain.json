@@ -3,7 +3,7 @@
   "updated":"2026-08-07",
   "policy":"Only an implemented adapter with an immutable revision may enter the runtime plan.",
   "artifacts":[
-    {"modelId":"yolos-tiny","origin":"https://huggingface.co/hustvl/yolos-tiny","revision":"1a00cc14a139ff40bac9aa00c745915cb7b5b751","contentHash":null,"fetch":"Transformers.js from_pretrained revision parameter","risk":"Individual downloaded files are not independently hashed in this repository","status":"experimental"},
+    {"modelId":"yolos-tiny","origin":"https://huggingface.co/hustvl/yolos-tiny","revision":"e2f9c7673f0fa61849efe2b56a0d7774779ebb9d","contentHash":null,"fetch":"Transformers.js from_pretrained revision parameter","risk":"Individual downloaded files are not independently hashed in this repository","status":"experimental"},
     {"modelId":"clip-vit-base-patch32","origin":"https://huggingface.co/Xenova/clip-vit-base-patch32","revision":"91f7a4bfa256ca85b019500008a355e2da0fe641","contentHash":null,"fetch":"Transformers.js from_pretrained revision parameter","risk":"Individual downloaded files are not independently hashed in this repository","status":"experimental"},
     {"modelId":"coco-ssd","origin":"https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd","revision":"npm@2.2.3","contentHash":null,"fetch":null,"risk":"Remote graph is mutable/unpinned","status":"deprecated"}
   ]

@@ -27,7 +27,7 @@ test('restored production path uses the pinned detector and exposes no model glo
   const detector = await read('src/lib/yolos-detector.ts')
   assert.match(loader, /loadYolosDetector/)
   assert.doesNotMatch(loader, /__cocoModel|__tf|window as any/)
-  assert.match(detector, /1a00cc14a139ff40bac9aa00c745915cb7b5b751/)
+  assert.match(detector, /e2f9c7673f0fa61849efe2b56a0d7774779ebb9d/)
 })
 
 test('static deployment cannot report email or escalation as successful', async () => {

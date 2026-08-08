@@ -2,7 +2,7 @@
 
 ## YOLOS-tiny detector — experimental
 
-Purpose: COCO object proposals for authorized, user-provided videos. Revision: `1a00cc14a139ff40bac9aa00c745915cb7b5b751`. Backend: WASM. Output: label, confidence, bounding box. It does not detect fire, flood, graffiti, landslide, slips, or structural safety from a person box. Known limits: small/occluded objects, domain shift, decoder quality, browser memory, and unvalidated thresholds. It may propose a local track; it cannot establish identity or authorize an action.
+Purpose: COCO object proposals for authorized, user-provided videos. Revision: `e2f9c7673f0fa61849efe2b56a0d7774779ebb9d`. Backend: WASM. Output: label, confidence, bounding box. It does not detect fire, flood, graffiti, landslide, slips, or structural safety from a person box. Known limits: small/occluded objects, domain shift, decoder quality, browser memory, and unvalidated thresholds. It may propose a local track; it cannot establish identity or authorize an action.
 
 ## CLIP ViT-B/32 retrieval — experimental
 
