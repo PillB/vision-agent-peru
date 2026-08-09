@@ -280,11 +280,27 @@ export function CameraView() {
 
     const scheduleNext = () => {
       if (cancelled) return
-      // FPS Optimization: Use requestVideoFrameCallback for video sources
-      // (fires exactly when a new video frame is decoded, avoiding wasted rAF cycles)
+      // Use requestVideoFrameCallback for video sources, but with a fallback
+      // to requestAnimationFrame if the video isn't playing (rVFC never fires
+      // when the video is paused/stuck, which causes 0 FPS).
       const video = videoRef.current
       if (video && !activeCamera.isStatic && typeof (video as any).requestVideoFrameCallback === 'function') {
-        ;(video as any).requestVideoFrameCallback(() => loop())
+        let rafFallback: number | null = null
+        // If rVFC doesn't fire within 500ms, fall back to rAF
+        const fallbackTimeout = setTimeout(() => {
+          if (rafFallback !== null) cancelAnimationFrame(rafFallback)
+          rafRef.current = requestAnimationFrame(loop)
+        }, 500)
+        ;(video as any).requestVideoFrameCallback(() => {
+          clearTimeout(fallbackTimeout)
+          if (rafFallback !== null) cancelAnimationFrame(rafFallback)
+          loop()
+        })
+        // Also schedule a rAF as a parallel fallback (will be cancelled if rVFC fires first)
+        rafFallback = requestAnimationFrame(() => {
+          clearTimeout(fallbackTimeout)
+          loop()
+        })
       } else {
         rafRef.current = requestAnimationFrame(loop)
       }
