@@ -21,6 +21,31 @@ import { Info } from 'lucide-react'
 export function Tab2Prototype() {
   const t = useTranslations('Tab2')
   const isRunning = usePrototypeStore((state) => state.isRunning)
+  const coOccurrenceData = usePrototypeStore((s) => s.coOccurrenceData)
+
+  // Convert store data to CoOccurrenceNetwork format for the graph
+  const network = coOccurrenceData ? {
+    nodes: coOccurrenceData.nodes.map(n => ({
+      trackId: n.trackId,
+      firstSeen: n.firstSeen,
+      lastSeen: n.lastSeen,
+      totalDurationMs: 0,
+      reappearanceCount: n.reappearanceCount,
+      detectionCount: n.detectionCount,
+      lastClass: n.lastClass,
+      coOccurrences: new Map<string, number>(),
+    })),
+    edges: coOccurrenceData.edges.map(e => ({
+      source: e.source,
+      target: e.target,
+      sharedFrames: e.sharedFrames,
+      sharedDurationMs: e.sharedFrames * 100,
+      familiarityScore: e.familiarityScore,
+      proximityScore: 0.5,
+    })),
+    totalFrames: coOccurrenceData.totalFrames,
+    totalSubjects: coOccurrenceData.totalSubjects,
+  } : null
 
   return (
     <main aria-label="Live prototype" className="bg-zinc-50 min-h-[calc(100vh-3.5rem-3rem)]">
@@ -71,7 +96,7 @@ export function Tab2Prototype() {
             Track IDs are NOT identity — appearance similarity does not establish identity.
           </p>
           <div className="flex justify-center">
-            <CoOccurrenceGraph network={null} width={500} height={350} />
+            <CoOccurrenceGraph network={network} width={500} height={350} />
           </div>
         </div>
 

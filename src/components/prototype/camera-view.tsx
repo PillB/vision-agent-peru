@@ -11,7 +11,7 @@ import { decide } from '@/lib/agent'
 import { agenticResponse, type AgenticResponse } from '@/lib/agentic-response'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from '@/lib/identity'
-import { SubjectReidentifier } from '@/lib/subject-reid'
+import { SubjectReidentifier, type CoOccurrenceNetwork } from '@/lib/subject-reid'
 import { computePixelAnomaly, computeAnomalyBbox, computeFrameDifferenceScore, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetectionEnsemble, hasSpecializedModel, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
 import { addEvidence } from '@/lib/evidence'
@@ -50,6 +50,8 @@ export function CameraView() {
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
   const appearanceTrackerRef = useRef<AppearanceTracker>(new AppearanceTracker(0.6, 24))
   const subjectReidRef = useRef<SubjectReidentifier>(new SubjectReidentifier(3000))
+  const [coOccurrenceNetwork, setCoOccurrenceNetwork] = useState<CoOccurrenceNetwork | null>(null)
+  const setCoOccurrenceData = usePrototypeStore((s) => s.setCoOccurrenceData)
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
 
@@ -556,6 +558,28 @@ export function CameraView() {
               dominantColor: id.appearance.dominantColor,
             }))
             setAppearanceTracks(localTracks.slice(0, 50))
+            // Update co-occurrence network and push to store for the graph component
+            const network = subjectReidRef.current.getCoOccurrenceNetwork()
+            setCoOccurrenceNetwork(network)
+            setCoOccurrenceData({
+              nodes: network.nodes.map(n => ({
+                trackId: n.trackId,
+                detectionCount: n.detectionCount,
+                reappearanceCount: n.reappearanceCount,
+                lastClass: n.lastClass,
+                firstSeen: n.firstSeen,
+                lastSeen: n.lastSeen,
+                coSubjects: n.coOccurrences.size,
+              })),
+              edges: network.edges.map(e => ({
+                source: e.source,
+                target: e.target,
+                sharedFrames: e.sharedFrames,
+                familiarityScore: e.familiarityScore,
+              })),
+              totalFrames: network.totalFrames,
+              totalSubjects: network.totalSubjects,
+            })
           }
         }
 
@@ -615,9 +639,43 @@ export function CameraView() {
 
   // Pause/play video — also handles headless Chromium where play() may
   // need an explicit currentTime nudge to start decoding frames.
+  // For device camera, the MediaStream is attached separately.
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
+
+    // Device camera: attach MediaStream via getUserMedia
+    if (activeCamera.isDeviceCamera) {
+      if (isRunning) {
+        // Request camera access
+        navigator.mediaDevices?.getUserMedia({
+          video: {
+            facingMode: 'environment', // prefer rear camera on mobile
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        }).then((stream) => {
+          if (v) {
+            v.srcObject = stream
+            v.play().catch(() => {})
+          }
+        }).catch((err) => {
+          console.error('[device-camera] getUserMedia failed:', err)
+          pushTrace(`Device camera error: ${err instanceof Error ? err.message : 'permission denied'}. Ensure HTTPS and grant camera permission.`)
+        })
+      } else {
+        // Stop all tracks when pausing
+        const stream = v.srcObject as MediaStream | null
+        if (stream) {
+          stream.getTracks().forEach(t => t.stop())
+          v.srcObject = null
+        }
+      }
+      return
+    }
+
+    // Regular video file
     if (isRunning) {
       // Nudge currentTime forward slightly to force a frame decode in headless
       if (v.currentTime === 0 && v.readyState >= 1) {
@@ -772,7 +830,7 @@ export function CameraView() {
         </div>
       </div>
 
-      {/* Video OR static image + canvas overlay */}
+      {/* Video OR static image OR device camera + canvas overlay */}
       <div className="relative rounded-xl overflow-hidden border border-zinc-200 bg-black aspect-video">
         {activeCamera.isStatic ? (
           <img
@@ -781,6 +839,15 @@ export function CameraView() {
             className="absolute inset-0 w-full h-full object-cover"
             crossOrigin="anonymous"
             alt={activeCamera.label}
+          />
+        ) : activeCamera.isDeviceCamera ? (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover"
+            autoPlay
+            muted
+            playsInline
+            // srcObject is set by the device camera useEffect below
           />
         ) : (
           <video

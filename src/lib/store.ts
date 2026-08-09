@@ -83,6 +83,11 @@ export interface CameraSource {
    * software GL). The camera-view draws the image to canvas once per
    * detect cycle instead of relying on video.currentTime. */
   isStatic?: boolean
+  /** When true, this camera uses the device's live camera via getUserMedia.
+   * The src field is ignored; instead, a MediaStream is attached to the
+   * video element. Works on iOS Safari, Android Chrome, macOS, Windows,
+   * Linux — any browser that supports getUserMedia. */
+  isDeviceCamera?: boolean
 }
 
 export const CAMERA_SOURCES: CameraSource[] = [
@@ -294,6 +299,20 @@ export const CAMERA_SOURCES: CameraSource[] = [
     category: 'urban',
     isStatic: true,
   },
+  // ─── Device Camera (live webcam via getUserMedia) ───
+  // Works on: iOS Safari 11+, Android Chrome, macOS Safari/Chrome,
+  // Windows Edge/Chrome, Linux Firefox/Chrome.
+  // Requires HTTPS (GitHub Pages is HTTPS ✓) or localhost.
+  // User must grant camera permission via browser prompt.
+  {
+    id: 'device-camera',
+    label: '📷 Device Camera (Live)',
+    location: 'Local device',
+    src: '', // src is ignored — MediaStream is used instead
+    useCases: ['crowd_surge', 'intrusion', 'after_hours', 'incident_description', 'auto_report', 'queue_anomaly', 'abandoned_object'],
+    category: 'urban',
+    isDeviceCamera: true,
+  },
 ]
 
 interface PrototypeState {
@@ -345,6 +364,14 @@ interface PrototypeState {
     dominantColor: [number, number, number]
   }>
 
+  // Co-occurrence network (JSON-serializable for store)
+  coOccurrenceData: {
+    nodes: Array<{ trackId: string; detectionCount: number; reappearanceCount: number; lastClass: string; firstSeen: number; lastSeen: number; coSubjects: number }>
+    edges: Array<{ source: string; target: string; sharedFrames: number; familiarityScore: number }>
+    totalFrames: number
+    totalSubjects: number
+  } | null
+
   // Model selection (user-chosen models for the active use case)
   selectedModelIds: string[]
 
@@ -377,6 +404,7 @@ interface PrototypeState {
   }) => void
   pushTrace: (line: string) => void
   setAppearanceTracks: (identities: PrototypeState['appearanceTracks']) => void
+  setCoOccurrenceData: (data: PrototypeState['coOccurrenceData']) => void
 }
 
 const MAX_SAMPLES = 600    // 10 min at 1 fps
@@ -416,6 +444,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   reports: [],
   agentTrace: [],
   appearanceTracks: [],
+  coOccurrenceData: null,
 
   setActiveCamera: (id) => set({ activeCameraId: id, samples: [], stats: null, sustainCount: 0, currentTier: 0 }),
   setModelStatus: (s, err = null) => set({ modelStatus: s, modelError: err }),
@@ -511,6 +540,7 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
     }),
 
   setAppearanceTracks: (identities) => set({ appearanceTracks: identities }),
+  setCoOccurrenceData: (data) => set({ coOccurrenceData: data }),
 }))
 
 // NOTE: The dev-only window.__visionStore hook has moved to
