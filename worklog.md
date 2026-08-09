@@ -1649,3 +1649,65 @@ Stage Summary:
 - 2071/2071 adversarial tests pass
 - 9/9 formal Playwright tests pass against production
 - All 5 Solarize implementation rounds complete (Round 0 baseline + 5 rounds)
+
+---
+Task ID: fix-model-load-failed
+Agent: orchestrator
+Task: Diagnose and fix "Model load failed" error on the live prototype
+
+Work Log:
+- Pulled latest from remote (7e61629) — a parallel agent had already
+  replaced COCO-SSD+WebGL with pinned YOLOS-tiny+WASM (fixes the
+  WebGL dependency that caused "Model load failed" in headless browsers).
+- Ran diagnostic tests to identify the remaining issue:
+  - Created tests/e2e/model-loading.spec.ts with detailed diagnostics
+  - Found 3 x 404 errors from HuggingFace:
+    - tokenizer_config.json (main branch) → 404
+    - config.json (pinned revision 1a00cc14...) → 404
+    - preprocessor_config.json (pinned revision 1a00cc14...) → 404
+- Root cause: The pinned revision '1a00cc14a139ff40bac9aa00c745915cb7b5b751'
+  does NOT exist on HuggingFace. The model repo's current HEAD is
+  'e2f9c7673f0fa61849efe2b56a0d7774779ebb9d' (verified via API).
+- Fix: Updated the pinned revision to the verified HEAD in 8 files:
+  - src/lib/yolos-detector.ts (primary fix)
+  - src/lib/models/registry.ts
+  - tests/contracts/prototype-restoration.test.ts
+  - tests/e2e/model-loading.spec.ts
+  - docs/solarize/.../model_registry.json
+  - docs/solarize/.../capability_truth_ledger.json
+  - docs/solarize/.../model-cards.md
+  - docs/solarize/.../model_supply_chain.json
+  - docs/solarize/.../model-and-adapter-inventory.md
+- Also installed tsx as devDependency (required by test:unit script).
+
+AUTH:
+- gh CLI was removed and token expired during the session.
+- Reinstalled gh CLI v2.65.0 from GitHub releases.
+- Used the persistent session technique: setsid + nohup + foreground
+  gh auth login process. This kept the process alive between tool calls.
+- Device code DCB6-0AF8 — user completed browser auth successfully.
+- Configured git credential helper with gh auth setup-git.
+- Token scopes: gist, read:org, repo (sufficient for push).
+
+DEPLOYMENT:
+- Commit ce51b19 pushed to main
+- CI/CD run 31285536786: build SUCCESS (7m0s), deploy SUCCESS
+- Production verified: https://pillb.github.io/vision-agent-peru/ → 200
+- Model files now return 200 from HuggingFace (previously 404)
+- "Model load failed" error is GONE from the live site
+
+VERIFICATION:
+- 6/6 unit tests pass
+- 27/27 contract tests pass
+- 6/6 model tests pass
+- 18/18 e2e tests pass (including new model-loading.spec.ts)
+- 2/2 production-smoke tests pass against live site
+- 2/2 prototype-regression tests pass against live site
+- TypeScript: 0 new errors
+- Lint: clean
+
+Stage Summary:
+- "Model load failed" root cause: wrong pinned revision (404 from HuggingFace)
+- Fix: Updated to verified HEAD revision e2f9c7673f0fa61849efe2b56a0d7774779ebb9d
+- Deployed to GitHub Pages — production verified
+- All 59 tests pass (39 local + 18 e2e + 2 production smoke)
