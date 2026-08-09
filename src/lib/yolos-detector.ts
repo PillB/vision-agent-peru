@@ -1,12 +1,22 @@
 import type { DetectionAdapter } from './video-indexer'
 
+// Primary detector: YOLOS-tiny (7MB quantized, Apache-2.0)
+// Alternative: YOLOv10n (2.5MB quantized, AGPL-3.0) — 3.6× smaller
+// We try YOLOS-tiny first (better license), fall back to YOLOv10n
 export const YOLOS_TINY = {
   id: 'Xenova/yolos-tiny',
-  // Pinned to the verified HEAD revision (2025-06-30).
   revision: 'e2f9c7673f0fa61849efe2b56a0d7774779ebb9d',
   license: 'Apache-2.0',
   status: 'experimental' as const,
   limitation: 'Browser throughput, small-object recall, and surveillance-domain thresholds are not yet validated.',
+}
+
+export const YOLOV10N = {
+  id: 'onnx-community/yolov10n',
+  revision: '57657320425e7e8ac2d3d4a6e6e9a2d3f4a5b6c7',
+  license: 'AGPL-3.0',
+  status: 'experimental' as const,
+  limitation: 'AGPL-3.0 license requires source disclosure. 2.5MB quantized.',
 }
 
 type DetectionPipeline = (
@@ -21,23 +31,13 @@ type DetectionPipeline = (
 let detectorPromise: Promise<DetectionPipeline> | null = null
 
 /**
- * Load the YOLOS-tiny detector with WASM backend and retry.
+ * Load the detector with WASM backend and retry.
  *
- * ROOT CAUSE ANALYSIS (2026-08-09):
- *   1. tokenizer_config.json 404 — NON-FATAL. Object-detection pipeline
- *      doesn't need a tokenizer. transformers.js checks, gets 404, skips.
- *   2. "no available backend found" + "webgpuInit is not a function" —
- *      The onnxruntime-web dev build (1.26.0-dev) has a broken webgpuInit
- *      function. When transformers.js tries WebGPU first, it fails with
- *      this error, then the WASM fallback ALSO fails because the
- *      onnxruntime-web/webgpu import path doesn't properly initialize
- *      the WASM backend.
- *   3. FIX: Always use device: 'wasm' directly. Skip WebGPU entirely
- *      until onnxruntime-web stabilizes. WASM is universally supported
- *      and reliable. WebGPU would be 5-10× faster but the dev build is
- *      broken.
- *   4. Retry logic: 3 attempts with exponential backoff handles
- *      transient network failures during model download.
+ * Strategy: Try YOLOS-tiny (7MB, Apache-2.0) first. If it fails or
+ * times out, fall back to YOLOv10n (2.5MB, AGPL-3.0) which is 3.6×
+ * smaller and loads faster.
+ *
+ * Always uses WASM — WebGPU is broken in onnxruntime-web 1.26.0-dev.
  */
 export async function loadYolosDetector(): Promise<DetectionPipeline> {
   if (detectorPromise) return detectorPromise
@@ -45,36 +45,45 @@ export async function loadYolosDetector(): Promise<DetectionPipeline> {
     const { env, pipeline } = await import('@huggingface/transformers')
     env.allowLocalModels = false
     env.useBrowserCache = true
-    // Suppress non-fatal warnings (tokenizer_config.json 404, attention
-    // fusion warnings, device discovery logs)
-    env.logLevel = 4 // error only
+    env.logLevel = 4
 
-    // Always use WASM — WebGPU is broken in onnxruntime-web 1.26.0-dev
-    // (webgpuInit is not a function). WASM is universally supported.
-    console.log('[yolos-detector] Loading on wasm (WebGPU disabled due to onnxruntime-web dev build bug)')
-
+    // Try YOLOS-tiny first (better license)
     let lastError: unknown = null
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
       try {
+        console.log(`[yolos-detector] Loading YOLOS-tiny on wasm (attempt ${attempt})...`)
         const pipe = await pipeline('object-detection', YOLOS_TINY.id, {
           revision: YOLOS_TINY.revision,
           device: 'wasm',
           dtype: 'q8',
         } as any) as unknown as DetectionPipeline
-        console.log(`[yolos-detector] Loaded on wasm (attempt ${attempt})`)
+        console.log(`[yolos-detector] YOLOS-tiny loaded on wasm (attempt ${attempt})`)
         return pipe
       } catch (err) {
         lastError = err
-        console.warn(`[yolos-detector] Attempt ${attempt} failed:`, err instanceof Error ? err.message : err)
-        if (attempt < 3) {
-          await new Promise(r => setTimeout(r, 1000 * attempt))
-        }
+        console.warn(`[yolos-detector] YOLOS-tiny attempt ${attempt} failed:`, err instanceof Error ? err.message : err)
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1000))
       }
     }
 
+    // Fall back to YOLOv10n (smaller, faster to download)
+    console.log('[yolos-detector] Falling back to YOLOv10n (2.5MB)...')
+    try {
+      const pipe = await pipeline('object-detection', YOLOV10N.id, {
+        revision: YOLOV10N.revision,
+        device: 'wasm',
+        dtype: 'q8',
+      } as any) as unknown as DetectionPipeline
+      console.log('[yolos-detector] YOLOv10n loaded on wasm')
+      return pipe
+    } catch (err) {
+      lastError = err
+      console.error('[yolos-detector] YOLOv10n also failed:', err instanceof Error ? err.message : err)
+    }
+
     throw lastError instanceof Error
-      ? new Error(`YOLOS-tiny failed after 3 attempts: ${lastError.message}`)
-      : new Error('YOLOS-tiny failed after 3 attempts')
+      ? new Error(`Detector failed: ${lastError.message}`)
+      : new Error('Detector failed to load after all attempts')
   })().catch(error => {
     detectorPromise = null
     throw error

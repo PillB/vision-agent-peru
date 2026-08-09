@@ -17,9 +17,7 @@ interface Props {
   onModelReady: (handle: RealMlHandle | null) => void
 }
 
-// ─── FPS Optimization: Cache dynamic imports at module level ───
-// Previously `await import('@huggingface/transformers')` ran on EVERY detect
-// call (every 300-800ms). Caching at module level saves ~5-10ms per cycle.
+// Cache dynamic imports at module level
 let _rawImageCtor: typeof import('@huggingface/transformers').RawImage | null = null
 async function getRawImage() {
   if (!_rawImageCtor) {
@@ -29,25 +27,23 @@ async function getRawImage() {
   return _rawImageCtor
 }
 
-// ─── FPS Optimization: Smaller canvas for faster inference ───
-// 256×144 = 36,864 pixels vs 320×180 = 57,600 pixels (36% fewer)
-// YOLOS-tiny accepts variable input sizes; smaller = faster with minimal
-// accuracy loss for surveillance-scale objects.
 const DETECTION_WIDTH = 256
 
 /**
  * Pinned browser detector for the restored live prototype.
  *
- * The previous implementation always downloaded COCO-SSD's mutable remote
- * graph and exposed the model and TF runtime on `window`. The restored path
- * now shares the same immutable YOLOS-tiny adapter as the Evidence Workspace,
- * runs on WASM, and exposes no production test/debug globals.
- *
  * FPS OPTIMIZATIONS (2026-08-09):
- *   - Module-level RawImage cache (avoids re-import per detect call)
+ *   - Module-level RawImage cache
  *   - Smaller canvas (256×144 vs 320×180, 36% fewer pixels)
- *   - desynchronized: true on canvas context (lower-latency rendering)
+ *   - desynchronized: true on canvas context
  *   - Lower threshold (0.35 vs 0.4, more recall)
+ *
+ * ARCHITECTURE NOTE:
+ *   This loader runs inference on the MAIN THREAD (WASM blocks for 8-12s).
+ *   A Web Worker version exists in detection-worker.ts but GitHub Pages
+ *   static export doesn't support worker URLs reliably. The main-thread
+ *   approach with adaptiveThrottle=1000ms and setTimeout(0) yield is the
+ *   pragmatic compromise — the UI paints between detections.
  */
 export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelStatus, onModelReady }: Props) {
   const modelRef = useRef<Awaited<ReturnType<typeof loadYolosDetector>> | null>(null)
@@ -97,7 +93,6 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
               canvas.width = targetWidth
               canvas.height = targetHeight
             }
-            // desynchronized: true reduces rendering latency on supported browsers
             const context = canvas.getContext('2d', {
               willReadFrequently: true,
               desynchronized: true,
@@ -106,10 +101,9 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
             context.drawImage(source, 0, 0, canvas.width, canvas.height)
 
             const startedAt = performance.now()
-            // FPS Optimization: Use cached RawImage constructor
             const RawImage = await getRawImage()
             const results = await model(RawImage.fromCanvas(canvas), {
-              threshold: 0.35,  // Lower threshold for more recall
+              threshold: 0.35,
               percentage: false,
             })
             const latency = performance.now() - startedAt
@@ -127,14 +121,12 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
         onModelStatus('error', `${YOLOS_TINY.id}@${YOLOS_TINY.revision}: ${error instanceof Error ? error.message : 'model load failed'}`)
       }
     }
-
-    void load()
+    load()
     return () => {
       mounted = false
-      modelRef.current = null
       onModelReady(null)
     }
-  }, [canvasRef, imgRef, onModelReady, onModelStatus, videoRef])
+  }, [])
 
   return null
 }
