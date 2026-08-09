@@ -45,7 +45,45 @@ export async function loadYolosDetector(): Promise<DetectionPipeline> {
     const { env, pipeline } = await import('@huggingface/transformers')
     env.allowLocalModels = false
     env.useBrowserCache = true
-    env.logLevel = 4
+    env.logLevel = 4 // error only — suppresses 200+ ONNX INFO logs
+
+    // Suppress onnxruntime-web console.error spam — the dev build (1.26.0-dev)
+    // logs all INFO-level messages via console.error(), creating 200+ false
+    // "errors" in the browser console. Override console.error to filter them.
+    if (typeof console !== 'undefined' && !(console as any).__onnxFiltered) {
+      const origError = console.error.bind(console)
+      const onnxFilters = [
+        /attention_fusion/i,
+        /GraphTransformer/i,
+        /inference_session/i,
+        /allocation_planner/i,
+        /graph_partitioner/i,
+        /MemcpyTransformer/i,
+        /CastFloat/i,
+        /FuseFp16/i,
+        /RemoveDuplicate/i,
+        /device_discovery/i,
+        /Flush-to-zero/i,
+        /global\/env threadpool/i,
+        /Initializing session/i,
+        /Adding default CPU/i,
+        /CleanUnusedInitializer/i,
+        /constant_sharing/i,
+        /graph_transformer/i,
+        /InlineFunctionsAOT/i,
+        /Session Options/i,
+        /TraceSessionOptions/i,
+        /Discovered OrtHardwareDevice/i,
+        /Graph Optimizations/i,
+        /Session successfully initialized/i,
+      ]
+      console.error = (...args: unknown[]) => {
+        const text = args.map(a => typeof a === 'string' ? a : '').join(' ')
+        if (onnxFilters.some(f => f.test(text))) return // suppress
+        origError(...args)
+      }
+      ;(console as any).__onnxFiltered = true
+    }
 
     // Try YOLOS-tiny first (better license)
     let lastError: unknown = null
