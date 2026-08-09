@@ -23,17 +23,56 @@ type DetectionPipeline = (
 
 let detectorPromise: Promise<DetectionPipeline> | null = null
 
+/**
+ * Detect the best available device for inference.
+ * WebGPU is 5-10× faster than WASM when available.
+ * Falls back to WASM (universally supported).
+ */
+async function detectBestDevice(): Promise<'webgpu' | 'wasm'> {
+  if (typeof navigator === 'undefined') return 'wasm'
+  // @ts-expect-error — gpu is not in the standard Navigator type yet
+  const gpu = navigator.gpu
+  if (!gpu) return 'wasm'
+  try {
+    const adapter = await gpu.requestAdapter()
+    return adapter ? 'webgpu' : 'wasm'
+  } catch {
+    return 'wasm'
+  }
+}
+
 export async function loadYolosDetector(): Promise<DetectionPipeline> {
   if (detectorPromise) return detectorPromise
   detectorPromise = (async () => {
     const { env, pipeline } = await import('@huggingface/transformers')
     env.allowLocalModels = false
     env.useBrowserCache = true
-    return await pipeline('object-detection', YOLOS_TINY.id, {
-      revision: YOLOS_TINY.revision,
-      device: 'wasm',
-      dtype: 'q8',
-    } as any) as unknown as DetectionPipeline
+
+    // FPS Optimization: Use WebGPU when available (5-10× faster than WASM)
+    const device = await detectBestDevice()
+
+    try {
+      const pipe = await pipeline('object-detection', YOLOS_TINY.id, {
+        revision: YOLOS_TINY.revision,
+        device,
+        dtype: 'q8',
+      } as any) as unknown as DetectionPipeline
+      console.log(`[yolos-detector] Loaded on ${device} (revision ${YOLOS_TINY.revision.slice(0, 8)})`)
+      return pipe
+    } catch (err) {
+      // If WebGPU failed, fall back to WASM
+      if (device === 'webgpu') {
+        console.warn(`[yolos-detector] WebGPU failed, falling back to WASM:`, err)
+        const pipe = await pipeline('object-detection', YOLOS_TINY.id, {
+          revision: YOLOS_TINY.revision,
+          device: 'wasm',
+          dtype: 'q8',
+        } as any) as unknown as DetectionPipeline
+        console.log(`[yolos-detector] Loaded on wasm (fallback)`)
+        return pipe
+      }
+      throw err
+    }
   })().catch(error => {
     detectorPromise = null
     throw error

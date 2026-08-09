@@ -264,27 +264,55 @@ export function CameraView() {
   // HF models run in a SEPARATE background task (slow, 30-60s first load).
   // This prevents the HF model loading from blocking the FPS counter and
   // detector results.
+  //
+  // FPS OPTIMIZATIONS (2026-08-09):
+  //   - Throttle reduced from 800ms to 300ms (3.3× faster detection rate)
+  //   - requestVideoFrameCallback for video sources (fires on new frame)
+  //   - Adaptive scheduling: auto-throttle to 2× inference time if slow
+  //   - Frame skipping: skip if previous inference still pending
+  //   - FPS counter updates every 1000ms (was 2000ms)
   useEffect(() => {
     if (!isRunning) return
     let cancelled = false
     let hfInFlight = false // prevent overlapping HF inferences
+    let detectInFlight = false // FPS Optimization: skip if previous detect pending
+    let adaptiveThrottle = 300 // Start at 300ms, adapt if inference is slow
+
+    const scheduleNext = () => {
+      if (cancelled) return
+      // FPS Optimization: Use requestVideoFrameCallback for video sources
+      // (fires exactly when a new video frame is decoded, avoiding wasted rAF cycles)
+      const video = videoRef.current
+      if (video && !activeCamera.isStatic && typeof (video as any).requestVideoFrameCallback === 'function') {
+        ;(video as any).requestVideoFrameCallback(() => loop())
+      } else {
+        rafRef.current = requestAnimationFrame(loop)
+      }
+    }
 
     const loop = async () => {
       if (cancelled) return
       const canvas = canvasRef.current
       const handle = realMlHandleRef.current
       if (!canvas || !handle) {
-        rafRef.current = requestAnimationFrame(loop)
+        scheduleNext()
+        return
+      }
+
+      // FPS Optimization: Skip if previous detection is still running
+      if (detectInFlight) {
+        scheduleNext()
         return
       }
 
       const now = Date.now()
-      // Throttle to ~0.66 Hz (every 1.5s) to keep CPU/GPU reasonable
-      if (now - lastDetectRef.current < 800) {
-        rafRef.current = requestAnimationFrame(loop)
+      // Use adaptive throttle (starts at 300ms, increases if inference is slow)
+      if (now - lastDetectRef.current < adaptiveThrottle) {
+        scheduleNext()
         return
       }
       lastDetectRef.current = now
+      detectInFlight = true
 
       try {
         // Read user's model selection from store
@@ -314,11 +342,20 @@ export function CameraView() {
         if (runYolos) {
           const result = await handle.detect()
           if (!result) {
-            rafRef.current = requestAnimationFrame(loop)
+            detectInFlight = false
+            scheduleNext()
             return
           }
           dets = result.dets
           latency = result.latency
+          // FPS Optimization: Adaptive throttle — if inference took > 400ms,
+          // set throttle to 2× inference time to avoid backlog.
+          // If inference was fast (< 200ms), restore 300ms throttle.
+          if (latency > 400) {
+            adaptiveThrottle = Math.min(2000, Math.round(latency * 2))
+          } else if (adaptiveThrottle > 300 && latency < 300) {
+            adaptiveThrottle = 300 // restore fast throttle
+          }
         } else {
           // No object detector selected — draw the frame for the selected local adapter.
           const ctx2 = canvas.getContext('2d')
@@ -463,10 +500,9 @@ export function CameraView() {
 
         const fpsTick = lastFpsTickRef.current
         fpsTick.n += 1
-        // Update FPS every 3 seconds (not 1s) to handle slow WASM inference
-        // where a single browser inference cycle can take several seconds.
-        if (now - fpsTick.t > 2000) {
-          // Show fractional FPS (e.g., 0.3) when cycles are slow
+        // FPS Optimization: Update FPS every 1000ms (was 2000ms) for finer
+        // granularity. Still shows fractional FPS for slow WASM cycles.
+        if (now - fpsTick.t > 1000) {
           const rawFps = (fpsTick.n * 1000) / (now - fpsTick.t)
           setFps(rawFps < 1 ? Math.round(rawFps * 10) / 10 : Math.round(rawFps))
           fpsTick.t = now
@@ -502,12 +538,14 @@ export function CameraView() {
       } catch (err) {
         console.error('[CameraView] detect error:', err)
         pushTrace(`detect error: ${err instanceof Error ? err.message : 'unknown'}`)
+      } finally {
+        detectInFlight = false
       }
 
-      if (!cancelled) rafRef.current = requestAnimationFrame(loop)
+      if (!cancelled) scheduleNext()
     }
 
-    rafRef.current = requestAnimationFrame(loop)
+    scheduleNext()
     return () => {
       cancelled = true
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
