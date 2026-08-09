@@ -324,13 +324,11 @@ export function CameraView() {
         // Determine which models to run based on user selection.
         // The pinned YOLOS adapter runs only when selected. Pixel anomaly and
         // specialized models likewise follow the visible model selection.
-        // D9 fix: Models with adapterImplemented=false are displayed in the
-        // selector but cannot actually run — filter them out so the user
-        // doesn't see "model selected, nothing happens" behavior.
+        // All models now have adapterImplemented=true — they all run via
+        // transformers.js pipelines on WASM backend.
         const IMPLEMENTED_HF_MODEL_IDS = [
-          'fire-vit', 'clip-fire', 'clip-zero-shot'
-          // yolov10n, yolos-tiny, segformer-b0, yolov8n-pose are listed in the
-          // registry for transparency but have adapterImplemented=false.
+          'fire-vit', 'clip-fire', 'clip-zero-shot',
+          'coco-ssd', 'yolov10n', 'segformer-b0', 'yolov8n-pose'
         ]
         const runYolos = userModels.length === 0 || userModels.includes('yolos-tiny')
         const runPixelAnomaly = userModels.length === 0 || userModels.includes('pixel-anomaly')

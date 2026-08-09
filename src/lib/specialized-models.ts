@@ -325,7 +325,7 @@ async function runSingleModel(
 
       let lastErr: unknown = null
       type Dtype = 'q4' | 'q8' | 'fp32' | 'fp16' | 'auto' | 'int8' | 'uint8'
-      const tryLoad = async (device: 'webgpu' | 'wasm', dtype?: Dtype) => {
+      const tryLoad = async (device: 'wasm', dtype?: Dtype) => {
         console.log(`[SpecializedModels] Trying backend: ${device}${dtype ? ` (dtype=${dtype})` : ''}`)
         try {
           const opts: Record<string, unknown> = { device, revision }
@@ -338,25 +338,9 @@ async function runSingleModel(
         }
       }
 
-      let webgpuAvailable = false
-      const gpu = typeof navigator === 'undefined'
-        ? undefined
-        : (navigator as Navigator & { gpu?: { requestAdapter: (options?: { powerPreference?: string }) => Promise<unknown> } }).gpu
-      if (gpu) {
-        try {
-          const adapter = await gpu.requestAdapter({ powerPreference: 'low-power' })
-          webgpuAvailable = !!adapter
-        } catch {
-          webgpuAvailable = false
-        }
-      }
-
-      if (webgpuAvailable) {
-        classifier = await tryLoad('webgpu', 'q4') ?? await tryLoad('webgpu')
-      }
-      if (!classifier) {
-        classifier = await tryLoad('wasm', 'q8') ?? await tryLoad('wasm')
-      }
+      // Always use WASM — WebGPU is broken in onnxruntime-web 1.26.0-dev
+      // (webgpuInit is not a function). WASM is universally supported.
+      classifier = await tryLoad('wasm', 'q8') ?? await tryLoad('wasm')
 
       if (!classifier) {
         console.error(`[SpecializedModels] All backends failed for ${entry.modelId}. Last error:`, lastErr)
@@ -554,27 +538,11 @@ export async function prewarmClipModel(): Promise<boolean> {
 
     console.log(`[SpecializedModels] Prewarming CLIP model...`)
     let classifier: any = null
-    const gpu = typeof navigator === 'undefined'
-      ? undefined
-      : (navigator as Navigator & { gpu?: { requestAdapter: (options?: { powerPreference?: string }) => Promise<unknown> } }).gpu
-    if (gpu) {
-      try {
-        const adapter = await gpu.requestAdapter({ powerPreference: 'low-power' })
-        if (adapter) {
-          try {
-            classifier = await pipeline('zero-shot-image-classification', clipModelId, { revision: clipRevision, device: 'webgpu', dtype: 'q4' } as any)
-          } catch (e) {
-            console.warn('[SpecializedModels] WebGPU prewarm failed, falling back to WASM:', e instanceof Error ? e.message : e)
-          }
-        }
-      } catch { /* no webgpu */ }
-    }
-    if (!classifier) {
-      try {
-        classifier = await pipeline('zero-shot-image-classification', clipModelId, { revision: clipRevision, device: 'wasm', dtype: 'q8' } as any)
-      } catch (e) {
-        classifier = await pipeline('zero-shot-image-classification', clipModelId, { revision: clipRevision, device: 'wasm' } as any)
-      }
+    // Always use WASM — WebGPU is broken in onnxruntime-web 1.26.0-dev
+    try {
+      classifier = await pipeline('zero-shot-image-classification', clipModelId, { revision: clipRevision, device: 'wasm', dtype: 'q8' } as any)
+    } catch (e) {
+      classifier = await pipeline('zero-shot-image-classification', clipModelId, { revision: clipRevision, device: 'wasm' } as any)
     }
     if (classifier) {
       pipelineCache.set(clipModelId, classifier)

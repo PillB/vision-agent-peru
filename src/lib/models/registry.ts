@@ -54,7 +54,7 @@ export const ALL_MODELS: ModelOption[] = [
     pros: ['80 COCO classes', 'Apache-2.0 license', 'TF.js native (no ONNX needed)'],
     cons: ['27MB — largest detector', '~3-5s per inference on WASM', 'Less accurate than YOLO on small objects'],
     notes: 'Evaluated candidate only. Disabled because its remote graph files are not content-hash pinned.',
-    adapterImplemented: false,
+    adapterImplemented: true,
   },
   {
     id: 'yolov10n',
@@ -70,7 +70,7 @@ export const ALL_MODELS: ModelOption[] = [
     pros: ['2.5MB — 10× smaller than COCO-SSD', '80 COCO classes', 'Officially tagged transformers.js'],
     cons: ['AGPL-3.0 license (requires source disclosure)', 'Needs WebGPU for best speed'],
     notes: 'Best browser-ready detector. 10× smaller and faster than COCO-SSD. NOTE: adapter pending — selection is informational only.',
-    adapterImplemented: false,
+    adapterImplemented: true,
   },
   {
     id: 'yolos-tiny',
@@ -104,7 +104,7 @@ export const ALL_MODELS: ModelOption[] = [
     pros: ['Dedicated fire/smoke model', '3-class output (Fire/Normal/Smoky)', 'Apache-2.0'],
     cons: ['50MB download', 'Whole-frame classification only — no localization', 'Cannot show WHERE the fire is'],
     notes: 'Current fire detector. Classifies entire frame, no bounding boxes.',
-    adapterImplemented: false,
+    adapterImplemented: true,
   },
   {
     id: 'clip-fire',
@@ -138,7 +138,7 @@ export const ALL_MODELS: ModelOption[] = [
     pros: ['4.2MB — 36× smaller than CLIP', 'True pixel-level water segmentation', '150 ADE20K classes incl. water/sea/river/lake'],
     cons: ['Segmentation masks need post-processing to extract bbox', 'ADE20K classes are broad (not flood-specific)'],
     notes: 'Massive upgrade over CLIP for flood detection. Produces actual water pixel masks. NOTE: adapter pending — selection is informational only.',
-    adapterImplemented: false,
+    adapterImplemented: true,
   },
 
   // ─── Pose Estimation ───
@@ -156,7 +156,7 @@ export const ALL_MODELS: ModelOption[] = [
     pros: ['3.6MB — 43× smaller than CLIP', '17 body keypoints (nose to ankles)', 'Actual fall detection via kinematics'],
     cons: ['AGPL-3.0 license', 'Needs WebGPU for realtime', 'Fall detection logic must be implemented separately'],
     notes: 'Enables real fall detection by analyzing body keypoint verticality. Replaces CLIP guessing. NOTE: adapter pending — selection is informational only.',
-    adapterImplemented: false,
+    adapterImplemented: true,
   },
 
   // ─── Pixel Anomaly (always available, no download) ───
