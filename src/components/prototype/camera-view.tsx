@@ -11,6 +11,7 @@ import { decide } from '@/lib/agent'
 import { agenticResponse, type AgenticResponse } from '@/lib/agentic-response'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from '@/lib/identity'
+import { SubjectReidentifier } from '@/lib/subject-reid'
 import { computePixelAnomaly, computeAnomalyBbox, computeFrameDifferenceScore, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetectionEnsemble, hasSpecializedModel, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
 import { addEvidence } from '@/lib/evidence'
@@ -48,6 +49,7 @@ export function CameraView() {
   const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number } | null>(null)
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
   const appearanceTrackerRef = useRef<AppearanceTracker>(new AppearanceTracker(0.6, 24))
+  const subjectReidRef = useRef<SubjectReidentifier>(new SubjectReidentifier(3000))
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
 
@@ -250,6 +252,7 @@ export function CameraView() {
     clearSamples()
     trackerRef.current.reset()
     appearanceTrackerRef.current.reset()
+    subjectReidRef.current.reset()
     setAppearanceTracks([])
     resetPixelAnomalyBuffer()
     // Clear HF model cache on camera switch to free memory
@@ -485,6 +488,45 @@ export function CameraView() {
           // Update within-feed tracker with new detections
           const tracked = trackerRef.current.update(dets)
           const appearanceTracker = appearanceTrackerRef.current
+
+          // ===== SUBJECT RE-IDENTIFICATION (Flock-style) =====
+          // Track subjects across frames with unique IDs, reappearance counts,
+          // and co-occurrence network. These are TRACK IDs, not identity.
+          const reidSubjects = subjectReidRef.current.processFrame(
+            dets, canvas.width, canvas.height
+          )
+
+          // Draw re-identification annotations on canvas
+          for (const subject of reidSubjects) {
+            const det = dets.find(d => d.class === subject.lastClass)
+            if (!det) continue
+            const [x, y, w, h] = det.bbox
+
+            // Draw track ID label
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'
+            ctx.fillRect(x, y - 18, 60, 16)
+            ctx.fillStyle = '#fff'
+            ctx.font = '10px monospace'
+            ctx.textAlign = 'left'
+            ctx.fillText(subject.trackId, x + 2, y - 6)
+
+            // Draw reappearance count if > 0
+            if (subject.reappearanceCount > 0) {
+              ctx.fillStyle = '#f59e0b'
+              ctx.fillRect(x + 42, y - 18, 18, 16)
+              ctx.fillStyle = '#fff'
+              ctx.fillText(`×${subject.reappearanceCount + 1}`, x + 44, y - 6)
+            }
+
+            // Draw co-occurrence indicator
+            if (subject.coOccurrences.size > 0) {
+              ctx.fillStyle = '#3b82f6'
+              ctx.fillRect(x, y + h, 40, 14)
+              ctx.fillStyle = '#fff'
+              ctx.font = '8px monospace'
+              ctx.fillText(`🔗${subject.coOccurrences.size}`, x + 2, y + h + 10)
+            }
+          }
 
           // Maintain local appearance tracks within this source only.
           // These cues never establish identity or authorize an action.

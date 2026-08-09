@@ -11,6 +11,7 @@ import { ReportsPanel } from './prototype/reports-panel'
 import { EvidencePanel } from './prototype/evidence-panel'
 import { NLSearchPanel } from './prototype/nl-search-panel'
 import { IncidentPanel } from './prototype/incident-panel'
+import { CoOccurrenceGraph } from './prototype/co-occurrence-graph'
 import { UseCaseSelector } from './prototype/use-case-selector'
 import { IdentityPanel } from './prototype/identity-panel'
 import { usePrototypeStore } from '@/lib/store'
@@ -56,6 +57,22 @@ export function Tab2Prototype() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
           <NLSearchPanel />
           <IncidentPanel />
+        </div>
+
+        {/* Subject re-identification + co-occurrence network */}
+        <div className="rounded-lg border border-zinc-200 bg-white p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="font-serif text-sm text-zinc-950">Subject Co-occurrence Network</h3>
+            <Badge variant="outline" className="text-[9px]">Flock-style re-ID</Badge>
+          </div>
+          <p className="text-[10px] text-zinc-500 mb-2">
+            Force-directed graph of subjects sharing the screen. Node size = detection count.
+            Edge thickness = familiarity score (Jaccard-normalized co-occurrence).
+            Track IDs are NOT identity — appearance similarity does not establish identity.
+          </p>
+          <div className="flex justify-center">
+            <CoOccurrenceGraph network={null} width={500} height={350} />
+          </div>
         </div>
 
         <div className="rounded-lg border border-zinc-200 bg-white p-3 text-xs text-zinc-600 leading-relaxed">
