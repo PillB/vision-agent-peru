@@ -276,7 +276,7 @@ export function CameraView() {
     let cancelled = false
     let hfInFlight = false // prevent overlapping HF inferences
     let detectInFlight = false // FPS Optimization: skip if previous detect pending
-    let adaptiveThrottle = 300 // Start at 300ms, adapt if inference is slow
+    let adaptiveThrottle = 1000 // Start at 1s — WASM inference takes 3-7s, don't queue up
 
     const scheduleNext = () => {
       if (cancelled) return
@@ -329,6 +329,11 @@ export function CameraView() {
       }
       lastDetectRef.current = now
       detectInFlight = true
+
+      // Yield to the browser before starting inference — WASM inference
+      // blocks the main thread for 3-7s. This yield lets the UI paint
+      // once (showing "Loading..." or the current frame) before freezing.
+      await new Promise(r => setTimeout(r, 0))
 
       try {
         // Read user's model selection from store
