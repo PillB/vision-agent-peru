@@ -57,7 +57,17 @@ export function ModelSelector() {
 
   const toggleModel = (modelId: string) => {
     const candidate = compatibleModels.find(model => model.id === modelId)
-    if (!candidate?.adapterImplemented || !candidate.browserReady) return
+    if (!candidate) return
+    // Don't allow toggling models that don't have working adapters
+    if (!candidate.adapterImplemented || !candidate.browserReady) {
+      // Show a verbose reason why this model can't be selected
+      const reason = !candidate.adapterImplemented
+        ? `Adapter pending — this model is listed for transparency but its runtime adapter has not been implemented yet. It cannot be activated until the adapter is built and tested.`
+        : `Model not browser-ready — ${candidate.notes}`
+      // Use console.warn for debugging; the UI tooltip shows the reason
+      console.warn(`[model-selector] Cannot select "${candidate.label}": ${reason}`)
+      return
+    }
     setSelectionState(prev => {
       const next = new Set(prev.modelIds)
       if (next.has(modelId)) {
@@ -114,6 +124,12 @@ export function ModelSelector() {
           {compatibleModels.map((model) => {
             const isSelected = effectiveSelection.has(model.id)
             const isExpandedDetail = expandedModelId === model.id
+            const isDisabled = !model.adapterImplemented || !model.browserReady
+            const disabledReason = !model.adapterImplemented
+              ? 'Adapter pending — runtime adapter not yet implemented. Listed for transparency only.'
+              : !model.browserReady
+              ? `Not browser-ready: ${model.notes}`
+              : ''
 
             return (
               <div key={model.id} className={`rounded-md border ${isSelected ? 'border-emerald-300 bg-emerald-50' : 'border-zinc-200 bg-white'}`}>
@@ -122,8 +138,9 @@ export function ModelSelector() {
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    disabled={!model.adapterImplemented || !model.browserReady}
+                    disabled={isDisabled}
                     aria-label={`Use ${model.label}`}
+                    title={isDisabled ? disabledReason : undefined}
                     onChange={() => toggleModel(model.id)}
                     className="h-3 w-3 accent-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
                   />
@@ -132,7 +149,12 @@ export function ModelSelector() {
                     className="flex-1 flex items-center gap-1.5 text-left"
                   >
                     {isExpandedDetail ? <ChevronDown className="h-2.5 w-2.5 text-zinc-400" /> : <ChevronRight className="h-2.5 w-2.5 text-zinc-400" />}
-                    <span className="text-xs font-medium text-zinc-950">{model.label}</span>
+                    <span className={`text-xs font-medium ${isDisabled ? 'text-zinc-400' : 'text-zinc-950'}`}>{model.label}</span>
+                    {isDisabled && (
+                      <Badge className="text-[8px] h-3.5 px-1 bg-zinc-200 text-zinc-600 ml-1">
+                        {model.adapterImplemented === false ? 'Adapter pending' : 'Not ready'}
+                      </Badge>
+                    )}
                   </button>
                   {/* Quick stats badges */}
                   <div className="flex items-center gap-1">
@@ -146,6 +168,12 @@ export function ModelSelector() {
                 {/* Expanded detail — pros/cons */}
                 {isExpandedDetail && (
                   <div className="px-3 pb-2 space-y-1">
+                    {/* Verbose disabled reason — shown prominently when model can't be selected */}
+                    {isDisabled && (
+                      <div className="rounded bg-amber-50 border border-amber-200 px-2 py-1.5 text-[10px] text-amber-800 mb-1">
+                        <span className="font-semibold">Cannot be selected:</span> {disabledReason}
+                      </div>
+                    )}
                     {/* License + bboxes + adapter status */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="outline" className="text-[8px] h-3.5 px-1">
