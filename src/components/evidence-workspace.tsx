@@ -397,7 +397,12 @@ export function EvidenceWorkspace() {
           </div>
           <nav className="mt-4 flex gap-2 overflow-x-auto" aria-label="Evidence destinations">
             {DESTINATIONS.map(item => (
-              <Button key={item.id} variant={destination === item.id ? 'default' : 'outline'} onClick={() => setDestination(item.id)}>
+              <Button
+                key={item.id}
+                variant={destination === item.id ? 'default' : 'outline'}
+                aria-current={destination === item.id ? 'page' : undefined}
+                onClick={() => setDestination(item.id)}
+              >
                 {item.label}
               </Button>
             ))}

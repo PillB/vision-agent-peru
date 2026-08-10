@@ -1,11 +1,13 @@
 {
   "schemaVersion":"1.0.0",
-  "updated":"2026-08-07",
+  "updated":"2026-08-09",
   "entries":[
     {"modelId":"yolos-tiny","license":"Apache-2.0","source":"https://huggingface.co/hustvl/yolos-tiny","operationalDecision":"experimental use permitted; attribution and model card retained"},
     {"modelId":"clip-vit-base-patch32","license":"Apache-2.0 browser port; upstream CLIP terms require downstream review","source":"https://huggingface.co/Xenova/clip-vit-base-patch32","operationalDecision":"experimental local retrieval only"},
-    {"modelId":"coco-ssd","license":"Apache-2.0","source":"https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd","operationalDecision":"disabled because artifact integrity gate fails"},
-    {"modelId":"yolov10n-onnx","license":"AGPL-3.0 upstream","source":"https://github.com/THU-MIG/yolov10","operationalDecision":"not deployed"},
+    {"modelId":"coco-ssd","license":"Apache-2.0","source":"https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd","operationalDecision":"experimental selectable baseline; remote graph integrity risk disclosed"},
+    {"modelId":"yolov10n","license":"AGPL-3.0","source":"https://huggingface.co/onnx-community/yolov10n","operationalDecision":"experimental selectable adapter; source-disclosure obligations apply"},
+    {"modelId":"segformer-b0","license":"Apache-2.0","source":"https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512","operationalDecision":"experimental local flood signal"},
+    {"modelId":"yolov8n-pose","license":"AGPL-3.0","source":"https://huggingface.co/Xenova/yolov8n-pose","operationalDecision":"experimental localized fall candidate; not a medical conclusion"},
     {"modelId":"mobileclip-s0","license":"research-only released weights","source":"https://github.com/apple/ml-mobileclip","operationalDecision":"research-only and excluded from normal index"},
     {"modelId":"siglip-base-patch16-224","license":"Apache-2.0","source":"https://huggingface.co/google/siglip-base-patch16-224","operationalDecision":"not selected"}
   ]

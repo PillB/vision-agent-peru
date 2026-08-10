@@ -11,13 +11,16 @@ import { decide } from '@/lib/agent'
 import { agenticResponse, type AgenticResponse } from '@/lib/agentic-response'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from '@/lib/identity'
-import { SubjectReidentifier, type CoOccurrenceNetwork } from '@/lib/subject-reid'
+import { SubjectReidentifier, type ActiveSubjectTrack, type CoOccurrenceNetwork } from '@/lib/subject-reid'
 import { computePixelAnomaly, computeAnomalyBbox, computeFrameDifferenceScore, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
-import { runSpecializedDetectionEnsemble, hasSpecializedModel, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
+import { runSpecializedDetectionEnsemble, hasSpecializedModel, clearSpecializedModelCache } from '@/lib/specialized-models'
+import { layoutAnnotationLabels } from '@/lib/annotation-layout'
+import { mergeEnsembleDetections } from '@/lib/models/detection-ensemble'
 import { addEvidence } from '@/lib/evidence'
 import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
-import type { RealMlHandle } from './real-ml-loader'
+import { OwnerVerification } from './owner-verification'
+import type { RealMlHandle, SelectableObjectDetectorId } from './real-ml-loader'
 
 /**
  * CameraView — Real ML only, no simulation.
@@ -46,11 +49,13 @@ export function CameraView() {
   const rafRef = useRef<number | null>(null)
   const lastDetectRef = useRef<number>(0)
   const lastFpsTickRef = useRef<{ t: number; n: number }>({ t: Date.now(), n: 0 })
-  const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number } | null>(null)
+  const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number; bbox?: [number, number, number, number] } | null>(null)
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
   const appearanceTrackerRef = useRef<AppearanceTracker>(new AppearanceTracker(0.6, 24))
   const subjectReidRef = useRef<SubjectReidentifier>(new SubjectReidentifier(3000))
   const [coOccurrenceNetwork, setCoOccurrenceNetwork] = useState<CoOccurrenceNetwork | null>(null)
+  const [deviceCameraStatus, setDeviceCameraStatus] = useState<'idle' | 'requesting' | 'live' | 'denied'>('idle')
+  const [deviceCameraEnabled, setDeviceCameraEnabled] = useState(false)
   const setCoOccurrenceData = usePrototypeStore((s) => s.setCoOccurrenceData)
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
@@ -356,7 +361,10 @@ export function CameraView() {
           'fire-vit', 'clip-fire', 'clip-zero-shot',
           'coco-ssd', 'yolov10n', 'segformer-b0', 'yolov8n-pose'
         ]
-        const runYolos = userModels.length === 0 || userModels.includes('yolos-tiny')
+        const selectedObjectDetectors: SelectableObjectDetectorId[] = userModels.length === 0
+          ? ['yolos-tiny']
+          : userModels.filter((id): id is SelectableObjectDetectorId => id === 'yolos-tiny' || id === 'yolov10n' || id === 'coco-ssd')
+        const runYolos = selectedObjectDetectors.length > 0
         const runPixelAnomaly = userModels.length === 0 || userModels.includes('pixel-anomaly')
         const runHFModels = userModels.some(id => IMPLEMENTED_HF_MODEL_IDS.includes(id))
 
@@ -364,14 +372,23 @@ export function CameraView() {
         let dets: Detection[] = []
         let latency = 0
         if (runYolos) {
-          const result = await handle.detect()
-          if (!result) {
+          const detectorResults = await Promise.allSettled(selectedObjectDetectors.map(async id => ({ id, result: await handle.detect(id) })))
+          const validResults = detectorResults.flatMap(outcome => {
+            if (outcome.status === 'rejected') {
+              pushTrace(`Object detector unavailable: ${outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason)}`)
+              return []
+            }
+            if (!outcome.value.result) return []
+            pushTrace(`Object detector [${outcome.value.id}]: ${outcome.value.result.dets.length} detections in ${outcome.value.result.latency.toFixed(0)}ms`)
+            return [outcome.value.result]
+          })
+          if (validResults.length === 0) {
             detectInFlight = false
             scheduleNext()
             return
           }
-          dets = result.dets
-          latency = result.latency
+          dets = mergeEnsembleDetections(validResults.flatMap(result => result.dets))
+          latency = validResults.reduce((sum, result) => sum + result.latency, 0)
           // FPS Optimization: Adaptive throttle — if inference took > 400ms,
           // set throttle to 2× inference time to avoid backlog.
           // If inference was fast (< 200ms), restore 300ms throttle.
@@ -443,6 +460,7 @@ export function CameraView() {
                         class: className,
                         score: specResult.confidence,
                         timestamp: Date.now(),
+                        bbox: specResult.bbox,
                       }
                     }
                   }
@@ -466,7 +484,7 @@ export function CameraView() {
             if (Date.now() - hfDet.timestamp < 10_000 && dets.filter(d => d.class === hfDet.class).length === 0) {
               dets.push({
                 // Use full canvas with 5% margin — represents "entire frame classified"
-                bbox: [
+                bbox: hfDet.bbox ?? [
                   canvas.width * 0.05,
                   canvas.height * 0.05,
                   canvas.width * 0.9,
@@ -484,8 +502,6 @@ export function CameraView() {
           // ─── Step 5: Push detections + draw boxes ───
           pushDetections(dets)
           setLatency(latency)
-          drawBoxes(ctx, canvas, dets, videoRef.current ?? undefined, imgRef.current ?? undefined)
-
           // ===== WITHIN-VIDEO TRACKING =====
           // Update within-feed tracker with new detections
           const tracked = trackerRef.current.update(dets)
@@ -498,39 +514,8 @@ export function CameraView() {
             dets, canvas.width, canvas.height
           )
 
-          // Draw re-identification annotations on canvas
-          for (const subject of reidSubjects) {
-            const det = dets.find(d => d.class === subject.lastClass)
-            if (!det) continue
-            const [x, y, w, h] = det.bbox
-
-            // Draw track ID label
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'
-            ctx.fillRect(x, y - 18, 60, 16)
-            ctx.fillStyle = '#fff'
-            ctx.font = '10px monospace'
-            ctx.textAlign = 'left'
-            ctx.fillText(subject.trackId, x + 2, y - 6)
-
-            // Draw reappearance count if > 0
-            if (subject.reappearanceCount > 0) {
-              ctx.fillStyle = '#f59e0b'
-              ctx.fillRect(x + 42, y - 18, 18, 16)
-              ctx.fillStyle = '#fff'
-              ctx.fillText(`×${subject.reappearanceCount + 1}`, x + 44, y - 6)
-            }
-
-            // Draw co-occurrence indicator
-            if (subject.coOccurrences.size > 0) {
-              ctx.fillStyle = '#3b82f6'
-              ctx.fillRect(x, y + h, 40, 14)
-              ctx.fillStyle = '#fff'
-              ctx.font = '8px monospace'
-              ctx.fillText(`🔗${subject.coOccurrences.size}`, x + 2, y + h + 10)
-            }
-          }
-
           // Maintain local appearance tracks within this source only.
+          // Extract from the clean frame before any annotation pixels are drawn.
           // These cues never establish identity or authorize an action.
           for (const track of tracked) {
             const appearance = extractAppearanceFeatures(ctx, track.bbox, canvas.width, canvas.height)
@@ -544,6 +529,8 @@ export function CameraView() {
               track.score
             )
           }
+
+          drawBoxes(ctx, canvas, dets, reidSubjects, videoRef.current ?? undefined, imgRef.current ?? undefined)
 
           // Update store with current local tracks (throttled — every 5 frames)
           const fpsTick = lastFpsTickRef.current
@@ -566,6 +553,7 @@ export function CameraView() {
                 trackId: n.trackId,
                 detectionCount: n.detectionCount,
                 reappearanceCount: n.reappearanceCount,
+                totalDurationMs: n.totalDurationMs,
                 lastClass: n.lastClass,
                 firstSeen: n.firstSeen,
                 lastSeen: n.lastSeen,
@@ -575,7 +563,11 @@ export function CameraView() {
                 source: e.source,
                 target: e.target,
                 sharedFrames: e.sharedFrames,
+                sharedDurationMs: e.sharedDurationMs,
+                encounterCount: e.encounterCount,
                 familiarityScore: e.familiarityScore,
+                proximityScore: e.proximityScore,
+                durationScore: e.durationScore,
               })),
               totalFrames: network.totalFrames,
               totalSubjects: network.totalSubjects,
@@ -625,6 +617,10 @@ export function CameraView() {
         pushTrace(`detect error: ${err instanceof Error ? err.message : 'unknown'}`)
       } finally {
         detectInFlight = false
+        // Throttle from inference completion, not inference start. Slow WASM
+        // calls otherwise become immediately eligible for another call and
+        // can starve pause, screenshot, and accessibility interactions.
+        lastDetectRef.current = Date.now()
       }
 
       if (!cancelled) scheduleNext()
@@ -646,9 +642,19 @@ export function CameraView() {
 
     // Device camera: attach MediaStream via getUserMedia
     if (activeCamera.isDeviceCamera) {
-      if (isRunning) {
-        // Request camera access
-        navigator.mediaDevices?.getUserMedia({
+      let cancelled = false
+      let ownedStream: MediaStream | null = null
+      const stopStream = (stream: MediaStream | null) => stream?.getTracks().forEach(track => track.stop())
+
+      if (isRunning || deviceCameraEnabled) {
+        const getUserMedia = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices)
+        if (!getUserMedia) {
+          setDeviceCameraStatus('denied')
+          pushTrace('Device camera unavailable: this browser does not expose getUserMedia.')
+          return
+        }
+        setDeviceCameraStatus('requesting')
+        getUserMedia({
           video: {
             facingMode: 'environment', // prefer rear camera on mobile
             width: { ideal: 1280 },
@@ -656,24 +662,35 @@ export function CameraView() {
           },
           audio: false,
         }).then((stream) => {
-          if (v) {
-            v.srcObject = stream
-            v.play().catch(() => {})
+          if (cancelled) {
+            stopStream(stream)
+            return
           }
+          ownedStream = stream
+          v.srcObject = stream
+          setDeviceCameraStatus('live')
+          v.play().catch(() => {})
         }).catch((err) => {
+          if (cancelled) return
+          setDeviceCameraStatus('denied')
           console.error('[device-camera] getUserMedia failed:', err)
           pushTrace(`Device camera error: ${err instanceof Error ? err.message : 'permission denied'}. Ensure HTTPS and grant camera permission.`)
         })
       } else {
-        // Stop all tracks when pausing
-        const stream = v.srcObject as MediaStream | null
-        if (stream) {
-          stream.getTracks().forEach(t => t.stop())
-          v.srcObject = null
-        }
+        stopStream(v.srcObject as MediaStream | null)
+        v.srcObject = null
+        setDeviceCameraStatus('idle')
       }
-      return
+      return () => {
+        cancelled = true
+        stopStream(ownedStream)
+        const attached = v.srcObject as MediaStream | null
+        if (attached && attached !== ownedStream) stopStream(attached)
+        v.srcObject = null
+      }
     }
+
+    setDeviceCameraStatus('idle')
 
     // Regular video file
     if (isRunning) {
@@ -694,7 +711,11 @@ export function CameraView() {
     } else {
       v.pause()
     }
-  }, [isRunning, activeCameraId])
+  }, [isRunning, deviceCameraEnabled, activeCameraId, pushTrace])
+
+  useEffect(() => {
+    setDeviceCameraEnabled(false)
+  }, [activeCameraId])
 
   const handleSnapshot = () => {
     if (!canvasRef.current) return
@@ -715,7 +736,7 @@ export function CameraView() {
 
   return (
     <div className="space-y-3">
-      {/* Real ML loader — always loaded */}
+      {/* Lazy runtime adapter — the selected model loads on first analysis. */}
       <RealMlLoader
         videoRef={videoRef}
         imgRef={imgRef}
@@ -771,7 +792,7 @@ export function CameraView() {
           </span>
           {/* Show model count badge */}
           <span className="text-[9px] text-amber-600 font-mono ml-0.5" title="Number of models in ensemble">
-            ×{1 + (hasSpecializedModel(activeUseCaseId) ? getAllModelNames(activeUseCaseId).length : 0) + (getPixelAnomalyType(activeUseCaseId) ? 1 : 0)}
+            ×{Math.max(1, selectedModelIds.length)}
           </span>
         </div>
 
@@ -781,7 +802,7 @@ export function CameraView() {
           className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
           size="sm"
           data-testid="start-pause-button"
-          title={isRunning ? "Pausar el análisis de IA" : "Iniciar detección experimental con YOLOS-tiny fijado por revisión"}
+          title={isRunning ? "Pausar el análisis de IA" : "Iniciar detección con los modelos seleccionados"}
         >
           {isRunning ? <Pause className="h-4 w-4 mr-1.5" /> : <Play className="h-4 w-4 mr-1.5" />}
           {isRunning ? 'Pause' : 'Start analysis'}
@@ -797,11 +818,45 @@ export function CameraView() {
           Reset baseline
         </Button>
 
+        {activeCamera.isDeviceCamera && (
+          <Button
+            onClick={() => {
+              const shouldStop = deviceCameraEnabled
+              setDeviceCameraEnabled(!shouldStop)
+              if (shouldStop && isRunning) setRunning(false)
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9"
+            data-testid="device-camera-toggle"
+          >
+            <CameraIcon className="h-3.5 w-3.5 mr-1.5" />
+            {deviceCameraEnabled ? 'Disable camera' : 'Enable camera'}
+          </Button>
+        )}
+
+        {activeCamera.isDeviceCamera && (
+          <div
+            className={`rounded-md border px-2.5 py-1.5 text-xs font-medium ${
+              deviceCameraStatus === 'live'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                : deviceCameraStatus === 'denied'
+                  ? 'border-rose-200 bg-rose-50 text-rose-700'
+                  : 'border-zinc-200 bg-white text-zinc-600'
+            }`}
+            role="status"
+            aria-live="polite"
+            data-testid="device-camera-status"
+          >
+            Camera: {deviceCameraStatus}
+          </div>
+        )}
+
         <div className="ml-auto flex items-center gap-3 text-xs text-zinc-500">
           {modelStatus === 'loading' && (
             <span className="flex items-center gap-1.5">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>Loading pinned YOLOS-tiny detector…</span>
+              <span>Preparing selected model runtime…</span>
             </span>
           )}
           {modelStatus === 'ready' && (
@@ -810,8 +865,7 @@ export function CameraView() {
               <span className="font-mono">
                 {selectedModelIds.length > 0
                   ? `${selectedModelIds.length} model${selectedModelIds.length > 1 ? 's' : ''} ready`
-                  : 'Detector ready'}
-                {hasSpecializedModel(activeUseCaseId) && ' + HF loading...'}
+                  : 'Runtime ready'}
               </span>
             </span>
           )}
@@ -912,7 +966,7 @@ export function CameraView() {
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <div className="bg-white/95 px-4 py-3 rounded-lg text-sm text-zinc-950 flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
-              Loading pinned YOLOS-tiny model…
+              Loading selected browser model…
             </div>
           </div>
         )}
@@ -921,12 +975,16 @@ export function CameraView() {
             <div className="bg-white/95 px-4 py-3 rounded-lg text-sm text-rose-700 max-w-md">
               <div className="font-semibold mb-1">Model failed to load</div>
               <div className="text-xs text-zinc-600 mb-2">
-                The pinned YOLOS-tiny model could not be loaded. Refresh to retry or use the Evidence Workspace capability check.
+                A selected browser model could not be loaded. Refresh to retry or use the Evidence Workspace capability check.
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {activeCamera.isDeviceCamera && (
+        <OwnerVerification videoRef={videoRef} cameraLive={deviceCameraStatus === 'live'} />
+      )}
 
       {/* Snapshot preview */}
       {snapshotView && (
@@ -952,6 +1010,7 @@ function drawBoxes(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
   dets: Detection[],
+  subjects: ActiveSubjectTrack[],
   video?: HTMLVideoElement,
   img?: HTMLImageElement
 ) {
@@ -985,19 +1044,40 @@ function drawBoxes(
     abandoned_object: '#f59e0b', // amber
   }
 
-  // Draw ALL detections (not just persons) with class-appropriate colors
+  const fontSize = Math.max(8, Math.min(11, canvas.width / 32))
+  ctx.font = `${fontSize}px ui-monospace, monospace`
+  const annotationItems = [
+    ...subjects.map(subject => ({
+      anchor: subject.bbox,
+      text: `${subject.trackId} ${subject.lastClass} ${(subject.score * 100).toFixed(0)}% · ${subject.reappearanceCount + 1}x · ${(subject.totalDurationMs / 1000).toFixed(1)}s`,
+      color: CLASS_COLORS[subject.lastClass] || '#10b981',
+      priority: subject.score + Math.min(0.1, subject.detectionCount / 1000),
+    })),
+  ]
+  const labelHeight = fontSize + 6
+  const placements = layoutAnnotationLabels(annotationItems.map(item => ({
+    anchor: item.anchor,
+    width: ctx.measureText(item.text).width + 8,
+    height: labelHeight,
+    priority: item.priority,
+  })), canvas.width, canvas.height)
+
+  // Draw boxes first, then labels in a collision-aware overlay layer.
   for (const det of dets) {
     const [x, y, w, h] = det.bbox
     const color = CLASS_COLORS[det.class] || '#10b981' // default emerald
-    ctx.lineWidth = 2
+    ctx.lineWidth = Math.max(1, Math.min(2, canvas.width / 240))
     ctx.strokeStyle = color
     ctx.strokeRect(x, y, w, h)
-    const label = `${det.class} ${(det.score * 100).toFixed(0)}%`
-    ctx.font = '11px ui-monospace, monospace'
-    const tw = ctx.measureText(label).width + 8
-    ctx.fillStyle = color
-    ctx.fillRect(x, Math.max(0, y - 16), tw, 16)
+  }
+  for (let index = 0; index < annotationItems.length; index += 1) {
+    const item = annotationItems[index]
+    const placement = placements[index]
+    if (!placement.visible) continue
+    ctx.fillStyle = item.color
+    ctx.fillRect(placement.x, placement.y, placement.width, placement.height)
     ctx.fillStyle = '#ffffff'
-    ctx.fillText(label, x + 4, Math.max(11, y - 4))
+    ctx.textBaseline = 'middle'
+    ctx.fillText(item.text, placement.x + 4, placement.y + placement.height / 2)
   }
 }

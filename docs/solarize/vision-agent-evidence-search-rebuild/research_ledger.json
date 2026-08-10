@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "updated": "2026-08-07",
+  "updated": "2026-08-09",
   "scopeRule": "Public workflow patterns only; no proprietary implementation inference or parity claim.",
   "sources": [
     {"subject":"Flock FreeForm","url":"https://www.flocksafety.com/products/flock-freeform","accessed":"2026-08-07","finding":"Public natural-language search workflow; adopted only the query-to-review pattern."},
@@ -16,6 +16,11 @@
     {"subject":"NVIDIA VSS","url":"https://docs.nvidia.com/vss/latest/","accessed":"2026-08-07","finding":"Video search/summarization reference architecture; not copied as browser internals."},
     {"subject":"OpenVINO MobileCLIP search","url":"https://docs.openvino.ai/2024/notebooks/mobileclip-video-search-with-output.html","accessed":"2026-08-07","finding":"Open reference workflow for video sampling and text-image retrieval."},
     {"subject":"IndexedDB","url":"https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API","accessed":"2026-08-07","finding":"Browser database basis and transactional limitations."},
-    {"subject":"ONNX Runtime WebGPU","url":"https://onnxruntime.ai/docs/tutorials/web/ep-webgpu.html","accessed":"2026-08-07","finding":"WebGPU acceleration is capability-dependent; WASM fallback remains required."}
+    {"subject":"ONNX Runtime WebGPU","url":"https://onnxruntime.ai/docs/tutorials/web/ep-webgpu.html","accessed":"2026-08-07","finding":"WebGPU acceleration is capability-dependent; WASM fallback remains required."},
+    {"subject":"ByteTrack ECCV 2022","url":"https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136820001.pdf","accessed":"2026-08-09","finding":"Low-confidence detections can recover occluded tracklets; adopted as a second-stage association pattern, not an identity claim."},
+    {"subject":"CVAT annotation editor","url":"https://opencv.github.io/cvat/docs/","accessed":"2026-08-09","finding":"Occlusion, visibility, filtering, and z-order are first-class annotation concerns; informed collision-aware label placement and layered rendering."},
+    {"subject":"FiftyOne detection evaluation","url":"https://docs.voxel51.com/tutorials/evaluate_detections.html","accessed":"2026-08-09","finding":"Confidence filtering and object-patch views reduce clutter; informed compact confidence labels and the separate evidence view."},
+    {"subject":"Transformers.js SegFormer","url":"https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512","accessed":"2026-08-09","finding":"Official browser adapter uses image-segmentation; water-class masks are converted to localized regions."},
+    {"subject":"Transformers.js YOLOv8 Pose","url":"https://huggingface.co/Xenova/yolov8n-pose","accessed":"2026-08-09","finding":"Model requires AutoModel and AutoProcessor rather than a pipeline; output exposes 17 keypoints for geometry-based fall candidates."}
   ]
 }

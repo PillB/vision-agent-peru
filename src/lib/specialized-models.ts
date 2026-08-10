@@ -30,6 +30,7 @@
 
 import type { PixelAnomalyResult } from './pixel-anomaly'
 import { ALL_MODELS, getModelById } from './models/registry'
+import { selectPoseGeometry } from './models/pose-geometry'
 
 export interface SpecializedDetection {
   modelId: string
@@ -39,12 +40,13 @@ export interface SpecializedDetection {
   confidence: number
   label: string
   details: string
+  bbox?: [number, number, number, number]
   /** Which model layer produced this detection (for ensemble traceability) */
   source: 'dedicated' | 'clip-zero-shot' | 'pixel-anomaly'
 }
 
 // ─── Model config types ────────────────────────────────────────────────────
-type ModelTask = 'image-classification' | 'zero-shot-image-classification'
+type ModelTask = 'image-classification' | 'zero-shot-image-classification' | 'image-segmentation' | 'pose-estimation'
 
 interface BaseModelConfig {
   modelId: string
@@ -71,7 +73,16 @@ interface ZeroShotConfig extends BaseModelConfig {
   positiveIndices: number[]
 }
 
-type ModelConfig = ImageClassificationConfig | ZeroShotConfig
+interface SegmentationConfig extends BaseModelConfig {
+  task: 'image-segmentation'
+  positiveLabels: string[]
+}
+
+interface PoseConfig extends BaseModelConfig {
+  task: 'pose-estimation'
+}
+
+type ModelConfig = ImageClassificationConfig | ZeroShotConfig | SegmentationConfig | PoseConfig
 
 // ─── Multi-Model Registry ──────────────────────────────────────────────────
 // Each use case maps to an ARRAY of model configs. All run in parallel.
@@ -124,6 +135,14 @@ const MODEL_REGISTRY: Record<string, ModelConfig[]> = {
 
   // ─── Flood: CLIP zero-shot ───
   flood_watch: [
+    {
+      modelId: 'Xenova/segformer-b0-finetuned-ade-512-512',
+      modelName: 'SegFormer-B0 water segmentation',
+      task: 'image-segmentation',
+      source: 'dedicated',
+      positiveLabels: ['water', 'sea', 'river', 'lake', 'swimming pool'],
+      threshold: 0.02,
+    },
     {
       modelId: 'Xenova/clip-vit-base-patch32',
       modelName: 'Flood Detection (CLIP zero-shot)',
@@ -179,6 +198,13 @@ const MODEL_REGISTRY: Record<string, ModelConfig[]> = {
   // ─── Slip/fall hazard: CLIP zero-shot ───
   slip_hazard: [
     {
+      modelId: 'Xenova/yolov8n-pose',
+      modelName: 'YOLOv8n-Pose fall geometry',
+      task: 'pose-estimation',
+      source: 'dedicated',
+      threshold: 0.3,
+    },
+    {
       modelId: 'Xenova/clip-vit-base-patch32',
       modelName: 'Slip Hazard (CLIP zero-shot)',
       task: 'zero-shot-image-classification',
@@ -199,6 +225,7 @@ const MODEL_REGISTRY: Record<string, ModelConfig[]> = {
 // Cache loaded pipeline functions — keyed by modelId (so CLIP is loaded once,
 // shared by all zero-shot use cases).
 const pipelineCache: Map<string, any> = new Map()
+const posePipelineCache: Map<string, { model: any; processor: any }> = new Map()
 
 // Track models that have repeatedly failed to load — avoids retrying every
 // detect cycle (1.5s) when the environment clearly doesn't support them.
@@ -314,6 +341,9 @@ async function runSingleModel(
   }
 
   try {
+    if (entry.task === 'pose-estimation') {
+      return await runPoseEstimation(canvas, entry, useCaseId, revision)
+    }
     const { pipeline, env } = await import('@huggingface/transformers')
 
     let classifier = pipelineCache.get(entry.modelId)
@@ -364,6 +394,8 @@ async function runSingleModel(
     // Run inference based on task type
     if (entry.task === 'zero-shot-image-classification') {
       return await runZeroShotClassification(canvas, entry, useCaseId, classifier)
+    } else if (entry.task === 'image-segmentation') {
+      return await runImageSegmentation(canvas, entry, useCaseId, classifier)
     } else {
       return await runImageClassification(canvas, entry, useCaseId, classifier)
     }
@@ -382,9 +414,137 @@ async function runSingleModel(
   }
 }
 
-/**
- * Run standard image-classification (e.g., fire detection ViT).
- */
+async function runPoseEstimation(
+  canvas: HTMLCanvasElement,
+  entry: PoseConfig,
+  useCaseId: string,
+  revision: string,
+): Promise<SpecializedDetection> {
+  const { AutoModel, AutoProcessor, RawImage, env } = await import('@huggingface/transformers')
+  env.allowLocalModels = false
+  env.useBrowserCache = true
+
+  let adapter = posePipelineCache.get(entry.modelId)
+  if (!adapter) {
+    const options = { revision, device: 'wasm', dtype: 'q8' } as any
+    const [model, processor] = await Promise.all([
+      AutoModel.from_pretrained(entry.modelId, options),
+      AutoProcessor.from_pretrained(entry.modelId, { revision }),
+    ])
+    adapter = { model, processor }
+    posePipelineCache.set(entry.modelId, adapter)
+  }
+
+  const image = RawImage.fromCanvas(canvas)
+  const processed = await adapter.processor(image)
+  const output = await adapter.model({ images: processed.pixel_values })
+  const tensor = output.output0
+  const raw = tensor?.tolist?.()?.[0] as number[][] | undefined
+  if (!raw?.length) {
+    return noPoseDetection(entry, useCaseId, 'model returned no poses')
+  }
+
+  // Export shape is commonly [56, 8400]; accept [8400, 56] as well.
+  const rows = raw.length === 56
+    ? Array.from({ length: raw[0]?.length ?? 0 }, (_, row) => raw.map(column => Number(column[row])))
+    : raw
+  const inputHeight = Number(processed.reshaped_input_sizes?.[0]?.[0] ?? canvas.height)
+  const inputWidth = Number(processed.reshaped_input_sizes?.[0]?.[1] ?? canvas.width)
+  const best = selectPoseGeometry(rows, entry.threshold, inputWidth, inputHeight, canvas.width, canvas.height)
+
+  if (!best) return noPoseDetection(entry, useCaseId, 'no person pose exceeded the confidence threshold')
+  return {
+    modelId: entry.modelId,
+    modelName: entry.modelName,
+    useCaseId,
+    detected: best.horizontal,
+    confidence: best.score,
+    label: best.horizontal ? 'fall_candidate' : 'upright_pose',
+    details: `${entry.modelName}: ${best.horizontal ? 'horizontal fall geometry' : 'upright geometry'} (${(best.score * 100).toFixed(1)}%)`,
+    bbox: best.bbox,
+    source: entry.source,
+  }
+}
+
+function noPoseDetection(entry: PoseConfig, useCaseId: string, reason: string): SpecializedDetection {
+  return {
+    modelId: entry.modelId,
+    modelName: entry.modelName,
+    useCaseId,
+    detected: false,
+    confidence: 0,
+    label: 'none',
+    details: `${entry.modelName}: ${reason}`,
+    source: entry.source,
+  }
+}
+
+async function runImageSegmentation(
+  canvas: HTMLCanvasElement,
+  entry: SegmentationConfig,
+  useCaseId: string,
+  segmenter: any,
+): Promise<SpecializedDetection> {
+  const results = await segmenter(canvas)
+  const positives = Array.isArray(results)
+    ? results.filter(result => entry.positiveLabels.some(label => String(result.label ?? '').toLowerCase().includes(label)))
+    : []
+  let minX = Number.POSITIVE_INFINITY
+  let minY = Number.POSITIVE_INFINITY
+  let maxX = -1
+  let maxY = -1
+  let positivePixels = 0
+  let totalPixels = 0
+  let maskWidth = 0
+  let maskHeight = 0
+
+  for (const result of positives) {
+    const mask = result.mask
+    const width = Number(mask?.width ?? 0)
+    const height = Number(mask?.height ?? 0)
+    const data = mask?.data as ArrayLike<number> | undefined
+    if (!width || !height || !data) continue
+    maskWidth = width
+    maskHeight = height
+    totalPixels = Math.max(totalPixels, width * height)
+    const channels = Math.max(1, Math.floor(data.length / (width * height)))
+    for (let pixel = 0; pixel < width * height; pixel += 1) {
+      if (Number(data[pixel * channels]) <= 0) continue
+      positivePixels += 1
+      const x = pixel % width
+      const y = Math.floor(pixel / width)
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+    }
+  }
+
+  const coverage = totalPixels > 0 ? Math.min(1, positivePixels / totalPixels) : 0
+  const detected = coverage >= entry.threshold
+  const bbox = detected && maxX >= minX && maxY >= minY
+    ? [
+        minX / maskWidth * canvas.width,
+        minY / maskHeight * canvas.height,
+        (maxX - minX + 1) / maskWidth * canvas.width,
+        (maxY - minY + 1) / maskHeight * canvas.height,
+      ] as [number, number, number, number]
+    : undefined
+
+  return {
+    modelId: entry.modelId,
+    modelName: entry.modelName,
+    useCaseId,
+    detected,
+    confidence: coverage,
+    label: positives.map(result => String(result.label)).join(', ') || 'none',
+    details: `${entry.modelName}: ${(coverage * 100).toFixed(1)}% water-class coverage${detected ? ' ⚠ DETECTED' : ''}`,
+    bbox,
+    source: entry.source,
+  }
+}
+
+/** Run standard image-classification (e.g., fire detection ViT). */
 async function runImageClassification(
   canvas: HTMLCanvasElement,
   entry: ImageClassificationConfig,
@@ -490,6 +650,7 @@ async function runZeroShotClassification(
  */
 export function clearSpecializedModelCache() {
   pipelineCache.clear()
+  posePipelineCache.clear()
   failedModels.clear()
 }
 
