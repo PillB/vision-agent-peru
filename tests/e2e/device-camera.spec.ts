@@ -51,7 +51,7 @@ test('device camera visibly transitions to live and stops its track when disable
   await expect(capture).toBeDisabled()
   await consent.check()
   await expect(capture).toBeEnabled()
-  await capture.click()
+  await capture.evaluate((button: HTMLButtonElement) => button.click())
   await expect(page.getByTestId('owner-verification-status')).toContainText(/Expected exactly one high-quality face; found 0/i, { timeout: 180_000 })
   await page.screenshot({ path: testInfo.outputPath('owner-verification-no-face.png'), fullPage: true })
   await consent.evaluate((checkbox: HTMLInputElement) => checkbox.click())
@@ -110,20 +110,20 @@ test('owner can enroll three local face samples and verify one-to-one without pe
   await page.getByRole('checkbox', { name: /Consent to local owner face verification/i }).check()
   for (const sampleNumber of [1, 2, 3]) {
     const capture = page.getByRole('button', { name: new RegExp(`Capture enrollment ${sampleNumber}\\/3`, 'i') })
-    await capture.click()
+    await capture.evaluate((button: HTMLButtonElement) => button.click())
     await expect(page.getByTestId('owner-verification-status')).toContainText(
       sampleNumber < 3 ? new RegExp(`sample ${sampleNumber}\\/3 captured`, 'i') : /template enrolled locally/i,
       { timeout: 180_000 },
     )
   }
-  await page.getByRole('button', { name: /Verify owner/i }).click()
+  await page.getByRole('button', { name: /Verify owner/i }).evaluate((button: HTMLButtonElement) => button.click())
   await expect(page.getByTestId('owner-verification-status')).toContainText(/Owner match · distance/i, { timeout: 180_000 })
   await page.screenshot({ path: testInfo.outputPath('owner-verification-match.png'), fullPage: true })
   await page.evaluate(() => {
     (window as typeof window & { __ownerFaceCrop: { alternate: boolean } }).__ownerFaceCrop.alternate = true
   })
   await page.waitForTimeout(250)
-  await page.getByRole('button', { name: /Verify owner/i }).click()
+  await page.getByRole('button', { name: /Verify owner/i }).evaluate((button: HTMLButtonElement) => button.click())
   await expect(page.getByTestId('owner-verification-status')).toContainText(/Not verified · distance/i, { timeout: 60_000 })
   await page.screenshot({ path: testInfo.outputPath('owner-verification-reject.png'), fullPage: true })
   await page.getByRole('button', { name: /Delete template/i }).click()

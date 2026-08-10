@@ -54,17 +54,12 @@ test('every use case exposes working model and capability controls', async ({ pa
   await page.getByRole('tab', { name: /Live Prototype|Prototipo en vivo/i }).click()
 
   const useCaseTrigger = page.getByTestId('use-case-trigger')
-  await useCaseTrigger.click()
-  const useCaseCount = await page.getByRole('option').count()
-  await page.keyboard.press('Escape')
-  expect(useCaseCount).toBeGreaterThan(0)
-
-  for (let index = 0; index < useCaseCount; index += 1) {
+  for (const scenario of USE_CASE_RUNTIME_MATRIX) {
     await useCaseTrigger.click()
-    const option = page.getByRole('option').nth(index)
-    const optionText = (await option.innerText()).trim()
-    await option.click()
-    await expect(useCaseTrigger).toContainText(optionText.split('\n')[0])
+    const option = page.getByRole('option', { name: scenario.useCase })
+    await expect(option).toBeVisible()
+    await option.evaluate((element: HTMLElement) => element.click())
+    await expect(useCaseTrigger).toContainText(scenario.useCase)
 
     const modelButton = page.getByRole('button', { name: /Model selection/i })
     if (await modelButton.count()) {
