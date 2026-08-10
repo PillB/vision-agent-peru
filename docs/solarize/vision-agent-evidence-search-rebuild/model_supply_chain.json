@@ -1,10 +1,13 @@
 {
   "schemaVersion":"1.0.0",
-  "updated":"2026-08-07",
-  "policy":"Only an implemented adapter with an immutable revision may enter the runtime plan.",
+  "updated":"2026-08-09",
+  "policy":"Remote Hugging Face adapters require immutable revisions. The explicitly selected COCO-SSD compatibility baseline is the documented exception because its npm code is pinned while its graph remains remote and unhashed.",
   "artifacts":[
     {"modelId":"yolos-tiny","origin":"https://huggingface.co/hustvl/yolos-tiny","revision":"e2f9c7673f0fa61849efe2b56a0d7774779ebb9d","contentHash":null,"fetch":"Transformers.js from_pretrained revision parameter","risk":"Individual downloaded files are not independently hashed in this repository","status":"experimental"},
     {"modelId":"clip-vit-base-patch32","origin":"https://huggingface.co/Xenova/clip-vit-base-patch32","revision":"91f7a4bfa256ca85b019500008a355e2da0fe641","contentHash":null,"fetch":"Transformers.js from_pretrained revision parameter","risk":"Individual downloaded files are not independently hashed in this repository","status":"experimental"},
-    {"modelId":"coco-ssd","origin":"https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd","revision":"npm@2.2.3","contentHash":null,"fetch":null,"risk":"Remote graph is mutable/unpinned","status":"deprecated"}
+    {"modelId":"coco-ssd","origin":"https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd","revision":"npm@2.2.3","contentHash":null,"fetch":"TF.js graph loader","risk":"Remote graph is mutable/unpinned; experimental compatibility baseline only","status":"experimental"},
+    {"modelId":"yolov10n","origin":"https://huggingface.co/onnx-community/yolov10n","revision":"57657320425ee34056408a57ad9d29c4d4815bd8","contentHash":null,"fetch":"Transformers.js pipeline revision parameter","risk":"AGPL-3.0 obligations and browser thresholds require review","status":"experimental"},
+    {"modelId":"segformer-b0","origin":"https://huggingface.co/Xenova/segformer-b0-finetuned-ade-512-512","revision":"d3e5499fa8701ff0453ca940a8dfeae39b2f1504","contentHash":null,"fetch":"Transformers.js pipeline revision parameter","risk":"ADE20K water classes are not flood-specific","status":"experimental"},
+    {"modelId":"yolov8n-pose","origin":"https://huggingface.co/Xenova/yolov8n-pose","revision":"da4224085e2f6ce4c9ff9b670e28765194619db2","contentHash":null,"fetch":"Transformers.js AutoModel/AutoProcessor revision parameter","risk":"AGPL-3.0 and uncalibrated fall geometry","status":"experimental"}
   ]
 }

@@ -25,7 +25,7 @@ test('restored prototype serializes action batches and revalidates use-case acti
 test('restored production path uses the pinned detector and exposes no model globals', async () => {
   const loader = await read('src/components/prototype/real-ml-loader.tsx')
   const detector = await read('src/lib/yolos-detector.ts')
-  assert.match(loader, /loadYolosDetector/)
+  assert.match(loader, /loadObjectDetector/)
   assert.doesNotMatch(loader, /__cocoModel|__tf|window as any/)
   assert.match(detector, /e2f9c7673f0fa61849efe2b56a0d7774779ebb9d/)
 })

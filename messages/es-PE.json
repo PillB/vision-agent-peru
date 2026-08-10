@@ -12,7 +12,7 @@
     "evidence": "Espacio de evidencia"
   },
   "Footer": {
-    "source": "Fuente: adaptadores fijados YOLOS-tiny y CLIP; fixtures locales etiquetados y videos autorizados por el usuario.",
+    "source": "Adaptadores de modelo seleccionados en el navegador; fixtures locales etiquetados y videos autorizados por el usuario.",
     "date": "14/07/2026 · Cusco, Perú"
   },
   "LocaleSwitcher": {
@@ -222,7 +222,7 @@
     }
   },
   "Tab2": {
-    "banner": "YOLOS-tiny fijado, adaptadores locales seleccionados y telemetría z-score/EMA alimentan política determinista. Email y escalada externos no están disponibles sin aprobación y servicio autenticado. Las pistas de apariencia nunca establecen identidad.",
+    "banner": "Los adaptadores experimentales seleccionados y la telemetría z-score/EMA alimentan política determinista. Email y escalada externos no están disponibles sin aprobación y servicio autenticado. Las pistas de apariencia nunca establecen identidad.",
     "camera": {
       "selectPlaceholder": "Seleccionar cámara",
       "start": "Iniciar análisis",
@@ -307,7 +307,7 @@
     "help": {
       "title": "Cómo usar el prototipo",
       "step1": "Elija una cámara (tráfico urbano con personas y vehículos reales).",
-      "step2": "Haga clic en Iniciar análisis después de que cargue YOLOS-tiny fijado. Rendimiento y calidad varían por navegador, dispositivo y fuente.",
+      "step2": "Haga clic en Iniciar análisis para cargar y ejecutar los adaptadores seleccionados. Rendimiento y calidad varían por navegador, dispositivo, modelo y fuente.",
       "step3": "Observe el gráfico. Después de ~10 segundos el sistema aprende el patrón normal; actividad inusual activará alertas (Tier 1=vigilancia, 2=anomalía, 3=crítico).",
       "step4": "Use los controles en Razonamiento del agente para ajustar sensibilidad. Active el juez LLM para filtrar falsos positivos. Cambie de nivel de capacidad para ver cómo cambia el comportamiento.",
       "step5": "Haga clic en Reconocer en alertas que ya vio, o Silenciar 5m para un descanso. Revise el panel de Identidades para ver personas/vehículos rastreados con IDs únicos."
@@ -418,7 +418,7 @@
       "body": "La mayoría de los sistemas de cámaras cívicas son Etapa 2: cuentan personas y activan una alerta de umbral estático. Vision Agent cierra el ciclo. El diagrama siguiente mapea el ciclo autónomo canónico sobre los componentes reales del prototipo. El sistema maneja detección de avalanchas de multitud, alertas de grafiti y vandalismo, detección temprana de fuego y humo, detección de objetos abandonados, y evaluación de daño estructural post-sismo — todo a través del mismo ciclo percibir-razonar-actuar-reflexionar con retroalimentación humana para gobernanza.",
       "mappingTitle": "Qué significa esto en la práctica",
       "analyticsLayer": "Capa de analítica (Etapa 2)",
-      "analyticsBody": "YOLOS-tiny fijado produce detecciones experimentales. Un z-score + EMA de ventana deslizante calcula telemetría; la política determinista toma decisiones.",
+      "analyticsBody": "Los adaptadores seleccionados producen detecciones experimentales. Un z-score + EMA de ventana deslizante calcula telemetría; la política determinista toma decisiones.",
       "agenticLayer": "Capa autónoma (Etapa 4)",
       "agenticBody": "El motor de reglas decide el nivel. El LLM como juez filtra falsos positivos. El registro de herramientas ejecuta acciones. El disyuntor (máx 5 escaladas/hora) previene descontrol. El ciclo se ejecuta a 1 Hz, de forma autónoma.",
       "proofTitle": "La prueba:",

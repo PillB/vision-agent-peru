@@ -115,9 +115,9 @@ export function UseCaseSelector() {
           <span>·</span>
           <span>Nivel: {LEVEL_LABELS[activeUseCase.level].es}</span>
           <span>·</span>
-          {/* Multi-model ensemble badge — shows ALL models running for this use case */}
+          {/* The exact active models are controlled by the adjacent selector. */}
           <Badge className="text-[9px] h-4 px-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-            🤖 YOLOS-tiny
+            🤖 Selectable ensemble
           </Badge>
           {hasSpecializedModel(activeUseCase.id) && getAllModelNames(activeUseCase.id).map((name, i) => (
             <Badge key={i} className="text-[9px] h-4 px-1 bg-purple-100 text-purple-800 hover:bg-purple-100">

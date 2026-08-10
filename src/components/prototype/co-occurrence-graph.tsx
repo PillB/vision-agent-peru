@@ -167,12 +167,14 @@ export function CoOccurrenceGraph({ network, width = 400, height = 300 }: Props)
         ctx.textAlign = 'center'
         ctx.fillText(node.trackId, pos.x, pos.y - radius - 4)
 
-        // Reappearance count if > 0
-        if (node.reappearanceCount > 0) {
-          ctx.fillStyle = '#f59e0b'
-          ctx.font = '8px monospace'
-          ctx.fillText(`×${node.reappearanceCount + 1}`, pos.x, pos.y + radius + 10)
-        }
+        // Appearance sessions and observed duration.
+        ctx.fillStyle = node.reappearanceCount > 0 ? '#b45309' : '#64748b'
+        ctx.font = '8px monospace'
+        ctx.fillText(
+          `×${node.reappearanceCount + 1} · ${(node.totalDurationMs / 1000).toFixed(1)}s`,
+          pos.x,
+          pos.y + radius + 10,
+        )
       }
 
       animRef.current = requestAnimationFrame(animate)
@@ -204,6 +206,32 @@ export function CoOccurrenceGraph({ network, width = 400, height = 300 }: Props)
         <span>{network.totalSubjects} subjects · {network.edges.length} links</span>
         <span>{network.totalFrames} frames analyzed</span>
       </div>
+      {network.edges.length > 0 && (
+        <div className="overflow-x-auto rounded border border-zinc-200 bg-white">
+          <table className="w-full text-[9px] text-zinc-600">
+            <thead className="bg-zinc-50 text-zinc-500">
+              <tr>
+                <th className="px-1.5 py-1 text-left">Pair</th>
+                <th className="px-1.5 py-1 text-right">Together</th>
+                <th className="px-1.5 py-1 text-right">Duration</th>
+                <th className="px-1.5 py-1 text-right">Proximity</th>
+                <th className="px-1.5 py-1 text-right">Weight</th>
+              </tr>
+            </thead>
+            <tbody>
+              {network.edges.slice(0, 5).map(edge => (
+                <tr key={`${edge.source}-${edge.target}`} className="border-t border-zinc-100">
+                  <td className="px-1.5 py-1 font-mono">{edge.source}–{edge.target}</td>
+                  <td className="px-1.5 py-1 text-right">{edge.sharedFrames} frames</td>
+                  <td className="px-1.5 py-1 text-right">{(edge.sharedDurationMs / 1000).toFixed(1)}s</td>
+                  <td className="px-1.5 py-1 text-right">{edge.proximityScore.toFixed(2)}</td>
+                  <td className="px-1.5 py-1 text-right font-semibold text-zinc-800">{edge.familiarityScore.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

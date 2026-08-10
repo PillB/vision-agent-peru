@@ -366,8 +366,8 @@ interface PrototypeState {
 
   // Co-occurrence network (JSON-serializable for store)
   coOccurrenceData: {
-    nodes: Array<{ trackId: string; detectionCount: number; reappearanceCount: number; lastClass: string; firstSeen: number; lastSeen: number; coSubjects: number }>
-    edges: Array<{ source: string; target: string; sharedFrames: number; familiarityScore: number }>
+    nodes: Array<{ trackId: string; detectionCount: number; reappearanceCount: number; totalDurationMs: number; lastClass: string; firstSeen: number; lastSeen: number; coSubjects: number }>
+    edges: Array<{ source: string; target: string; sharedFrames: number; sharedDurationMs: number; familiarityScore: number; proximityScore: number }>
     totalFrames: number
     totalSubjects: number
   } | null

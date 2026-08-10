@@ -68,17 +68,15 @@ export function ModelSelector() {
       console.warn(`[model-selector] Cannot select "${candidate.label}": ${reason}`)
       return
     }
-    setSelectionState(prev => {
-      const next = new Set(prev.modelIds)
-      if (next.has(modelId)) {
-        if (next.size > 1) next.delete(modelId)
-      } else {
-        next.add(modelId)
-      }
-      // Push to store so detection pipeline can read it
-      setSelectedModelIds(Array.from(next))
-      return { useCaseId: activeUseCaseId, modelIds: next }
-    })
+    const next = new Set(effectiveSelection)
+    if (next.has(modelId)) {
+      if (next.size > 1) next.delete(modelId)
+    } else {
+      next.add(modelId)
+    }
+    setSelectionState({ useCaseId: activeUseCaseId, modelIds: next })
+    // Keep the external store update outside React's state-updater callback.
+    setSelectedModelIds(Array.from(next))
   }
 
   const speedIcon = (speed: string) => {

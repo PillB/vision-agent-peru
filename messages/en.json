@@ -12,7 +12,7 @@
     "evidence": "Evidence Workspace"
   },
   "Footer": {
-    "source": "Source: pinned YOLOS-tiny and CLIP browser adapters; local labeled fixtures and authorized user-provided videos.",
+    "source": "Selected browser model adapters; local labeled fixtures and authorized user-provided videos.",
     "date": "2026-07-14 · Cusco, Peru"
   },
   "LocaleSwitcher": {
@@ -222,7 +222,7 @@
     }
   },
   "Tab2": {
-    "banner": "Experimental pinned YOLOS-tiny, selected local adapters, and z-score/EMA telemetry feed deterministic policy. External email and escalation are unavailable without approval and an authenticated service. Appearance tracks never establish identity.",
+    "banner": "Selected experimental browser adapters and z-score/EMA telemetry feed deterministic policy. External email and escalation are unavailable without approval and an authenticated service. Appearance tracks never establish identity.",
     "camera": {
       "selectPlaceholder": "Select camera",
       "start": "Start analysis",
@@ -307,7 +307,7 @@
     "help": {
       "title": "How to use the prototype",
       "step1": "Pick a camera feed (urban traffic with real people and vehicles).",
-      "step2": "Click Start analysis after the pinned YOLOS-tiny adapter loads. Throughput and detection quality vary by browser, device, and source.",
+      "step2": "Click Start analysis to load and run the selected adapters. Throughput and detection quality vary by browser, device, model, and source.",
       "step3": "Watch the chart fill in. After ~10 seconds the system learns the normal pattern; unusual activity will trigger alerts (Tier 1=watch, 2=anomaly, 3=critical).",
       "step4": "Use the sliders in Agent reasoning to adjust sensitivity. Toggle the LLM judge to filter false positives. Switch capability levels to see how the system behavior changes.",
       "step5": "Review alerts and local tracks. Track IDs reset with the source and never establish identity."
@@ -418,7 +418,7 @@
       "body": "Most civic-camera systems are Stage 2: they count people and trigger a static threshold alert. Vision Agent closes the loop. The diagram below maps the canonical agentic loop onto the actual prototype components. The system handles crowd surge detection, graffiti and vandalism alerts, fire and smoke early warning, abandoned object detection, and post-earthquake structural damage assessment — all through the same perceive-reason-act-reflect pipeline with human feedback for governance.",
       "mappingTitle": "What this means in practice",
       "analyticsLayer": "Analytics layer (Stage 2)",
-      "analyticsBody": "Pinned YOLOS-tiny produces experimental detections. A sliding-window z-score + EMA computes telemetry; deterministic policy owns decisions.",
+      "analyticsBody": "Selected browser adapters produce experimental detections. A sliding-window z-score + EMA computes telemetry; deterministic policy owns decisions.",
       "agenticLayer": "Agentic layer (Stage 4)",
       "agenticBody": "Rule engine decides tier. LLM-as-judge filters false positives. Tool registry executes actions. Circuit breaker (max 5 escalations/hour) prevents runaway. The loop runs at 1 Hz, autonomously.",
       "proofTitle": "The proof:",

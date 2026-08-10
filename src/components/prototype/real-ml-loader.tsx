@@ -2,10 +2,12 @@
 
 import { useEffect, useRef } from 'react'
 import type { Detection } from '@/lib/store'
-import { loadYolosDetector, YOLOS_TINY } from '@/lib/yolos-detector'
+import { loadObjectDetector, type ObjectDetectorId } from '@/lib/yolos-detector'
+
+export type SelectableObjectDetectorId = ObjectDetectorId | 'coco-ssd'
 
 export interface RealMlHandle {
-  detect: () => Promise<{ dets: Detection[]; latency: number } | null>
+  detect: (modelId?: SelectableObjectDetectorId) => Promise<{ dets: Detection[]; latency: number } | null>
 }
 
 interface Props {
@@ -28,6 +30,25 @@ async function getRawImage() {
 }
 
 const DETECTION_WIDTH = 256
+let cocoModelPromise: Promise<Awaited<ReturnType<typeof import('@tensorflow-models/coco-ssd').load>>> | null = null
+
+async function loadCocoSsd() {
+  if (!cocoModelPromise) {
+    cocoModelPromise = Promise.all([
+      import('@tensorflow/tfjs'),
+      import('@tensorflow-models/coco-ssd'),
+    ])
+      .then(async ([tf, { load }]) => {
+        await tf.ready()
+        return load({ base: 'lite_mobilenet_v2' })
+      })
+      .catch(error => {
+        cocoModelPromise = null
+        throw error
+      })
+  }
+  return cocoModelPromise
+}
 
 /**
  * Pinned browser detector for the restored live prototype.
@@ -46,7 +67,6 @@ const DETECTION_WIDTH = 256
  *   pragmatic compromise — the UI paints between detections.
  */
 export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelStatus, onModelReady }: Props) {
-  const modelRef = useRef<Awaited<ReturnType<typeof loadYolosDetector>> | null>(null)
   const isStaticRef = useRef(isStatic)
 
   useEffect(() => {
@@ -54,20 +74,11 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
   }, [isStatic])
 
   useEffect(() => {
-    let mounted = true
-
-    async function load() {
-      try {
-        onModelStatus('loading')
-        const model = await loadYolosDetector()
-        if (!mounted) return
-        modelRef.current = model
-        onModelStatus('ready')
-        onModelReady({
-          detect: async () => {
+    onModelStatus('ready')
+    onModelReady({
+          detect: async (modelId = 'yolos-tiny') => {
             const canvas = canvasRef.current
-            const model = modelRef.current
-            if (!canvas || !model) return null
+            if (!canvas) return null
 
             const video = videoRef.current
             const image = imgRef.current
@@ -101,6 +112,20 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
             context.drawImage(source, 0, 0, canvas.width, canvas.height)
 
             const startedAt = performance.now()
+            if (modelId === 'coco-ssd') {
+              const model = await loadCocoSsd()
+              const results = await model.detect(canvas, 20, 0.35)
+              return {
+                latency: performance.now() - startedAt,
+                dets: results.map(result => ({
+                  class: result.class,
+                  score: result.score,
+                  bbox: result.bbox as [number, number, number, number],
+                })),
+              }
+            }
+
+            const model = await loadObjectDetector(modelId)
             const RawImage = await getRawImage()
             const results = await model(RawImage.fromCanvas(canvas), {
               threshold: 0.35,
@@ -114,16 +139,8 @@ export function RealMlLoader({ videoRef, imgRef, canvasRef, isStatic, onModelSta
             }))
             return { dets, latency }
           },
-        })
-      } catch (error) {
-        if (!mounted) return
-        onModelReady(null)
-        onModelStatus('error', `${YOLOS_TINY.id}@${YOLOS_TINY.revision}: ${error instanceof Error ? error.message : 'model load failed'}`)
-      }
-    }
-    load()
+    })
     return () => {
-      mounted = false
       onModelReady(null)
     }
   }, [])

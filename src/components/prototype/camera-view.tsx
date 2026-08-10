@@ -14,10 +14,12 @@ import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from 
 import { SubjectReidentifier, type CoOccurrenceNetwork } from '@/lib/subject-reid'
 import { computePixelAnomaly, computeAnomalyBbox, computeFrameDifferenceScore, getPixelAnomalyType, resetPixelAnomalyBuffer, type PixelAnomalyResult } from '@/lib/pixel-anomaly'
 import { runSpecializedDetectionEnsemble, hasSpecializedModel, getAllModelNames, clearSpecializedModelCache } from '@/lib/specialized-models'
+import { layoutAnnotationLabels } from '@/lib/annotation-layout'
+import { mergeEnsembleDetections } from '@/lib/models/detection-ensemble'
 import { addEvidence } from '@/lib/evidence'
 import { prefixPath } from '@/lib/path-utils'
 import { useAgentActions } from './use-agent-actions'
-import type { RealMlHandle } from './real-ml-loader'
+import type { RealMlHandle, SelectableObjectDetectorId } from './real-ml-loader'
 
 /**
  * CameraView — Real ML only, no simulation.
@@ -46,7 +48,7 @@ export function CameraView() {
   const rafRef = useRef<number | null>(null)
   const lastDetectRef = useRef<number>(0)
   const lastFpsTickRef = useRef<{ t: number; n: number }>({ t: Date.now(), n: 0 })
-  const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number } | null>(null)
+  const hfDetectionRef = useRef<{ class: string; score: number; timestamp: number; bbox?: [number, number, number, number] } | null>(null)
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
   const appearanceTrackerRef = useRef<AppearanceTracker>(new AppearanceTracker(0.6, 24))
   const subjectReidRef = useRef<SubjectReidentifier>(new SubjectReidentifier(3000))
@@ -356,7 +358,10 @@ export function CameraView() {
           'fire-vit', 'clip-fire', 'clip-zero-shot',
           'coco-ssd', 'yolov10n', 'segformer-b0', 'yolov8n-pose'
         ]
-        const runYolos = userModels.length === 0 || userModels.includes('yolos-tiny')
+        const selectedObjectDetectors: SelectableObjectDetectorId[] = userModels.length === 0
+          ? ['yolos-tiny']
+          : userModels.filter((id): id is SelectableObjectDetectorId => id === 'yolos-tiny' || id === 'yolov10n' || id === 'coco-ssd')
+        const runYolos = selectedObjectDetectors.length > 0
         const runPixelAnomaly = userModels.length === 0 || userModels.includes('pixel-anomaly')
         const runHFModels = userModels.some(id => IMPLEMENTED_HF_MODEL_IDS.includes(id))
 
@@ -364,14 +369,23 @@ export function CameraView() {
         let dets: Detection[] = []
         let latency = 0
         if (runYolos) {
-          const result = await handle.detect()
-          if (!result) {
+          const detectorResults = await Promise.allSettled(selectedObjectDetectors.map(async id => ({ id, result: await handle.detect(id) })))
+          const validResults = detectorResults.flatMap(outcome => {
+            if (outcome.status === 'rejected') {
+              pushTrace(`Object detector unavailable: ${outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason)}`)
+              return []
+            }
+            if (!outcome.value.result) return []
+            pushTrace(`Object detector [${outcome.value.id}]: ${outcome.value.result.dets.length} detections in ${outcome.value.result.latency.toFixed(0)}ms`)
+            return [outcome.value.result]
+          })
+          if (validResults.length === 0) {
             detectInFlight = false
             scheduleNext()
             return
           }
-          dets = result.dets
-          latency = result.latency
+          dets = mergeEnsembleDetections(validResults.flatMap(result => result.dets))
+          latency = validResults.reduce((sum, result) => sum + result.latency, 0)
           // FPS Optimization: Adaptive throttle — if inference took > 400ms,
           // set throttle to 2× inference time to avoid backlog.
           // If inference was fast (< 200ms), restore 300ms throttle.
@@ -443,6 +457,7 @@ export function CameraView() {
                         class: className,
                         score: specResult.confidence,
                         timestamp: Date.now(),
+                        bbox: specResult.bbox,
                       }
                     }
                   }
@@ -466,7 +481,7 @@ export function CameraView() {
             if (Date.now() - hfDet.timestamp < 10_000 && dets.filter(d => d.class === hfDet.class).length === 0) {
               dets.push({
                 // Use full canvas with 5% margin — represents "entire frame classified"
-                bbox: [
+                bbox: hfDet.bbox ?? [
                   canvas.width * 0.05,
                   canvas.height * 0.05,
                   canvas.width * 0.9,
@@ -566,6 +581,7 @@ export function CameraView() {
                 trackId: n.trackId,
                 detectionCount: n.detectionCount,
                 reappearanceCount: n.reappearanceCount,
+                totalDurationMs: n.totalDurationMs,
                 lastClass: n.lastClass,
                 firstSeen: n.firstSeen,
                 lastSeen: n.lastSeen,
@@ -575,7 +591,9 @@ export function CameraView() {
                 source: e.source,
                 target: e.target,
                 sharedFrames: e.sharedFrames,
+                sharedDurationMs: e.sharedDurationMs,
                 familiarityScore: e.familiarityScore,
+                proximityScore: e.proximityScore,
               })),
               totalFrames: network.totalFrames,
               totalSubjects: network.totalSubjects,
@@ -715,7 +733,7 @@ export function CameraView() {
 
   return (
     <div className="space-y-3">
-      {/* Real ML loader — always loaded */}
+      {/* Lazy runtime adapter — the selected model loads on first analysis. */}
       <RealMlLoader
         videoRef={videoRef}
         imgRef={imgRef}
@@ -781,7 +799,7 @@ export function CameraView() {
           className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
           size="sm"
           data-testid="start-pause-button"
-          title={isRunning ? "Pausar el análisis de IA" : "Iniciar detección experimental con YOLOS-tiny fijado por revisión"}
+          title={isRunning ? "Pausar el análisis de IA" : "Iniciar detección con los modelos seleccionados"}
         >
           {isRunning ? <Pause className="h-4 w-4 mr-1.5" /> : <Play className="h-4 w-4 mr-1.5" />}
           {isRunning ? 'Pause' : 'Start analysis'}
@@ -801,7 +819,7 @@ export function CameraView() {
           {modelStatus === 'loading' && (
             <span className="flex items-center gap-1.5">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>Loading pinned YOLOS-tiny detector…</span>
+              <span>Preparing selected model runtime…</span>
             </span>
           )}
           {modelStatus === 'ready' && (
@@ -810,8 +828,7 @@ export function CameraView() {
               <span className="font-mono">
                 {selectedModelIds.length > 0
                   ? `${selectedModelIds.length} model${selectedModelIds.length > 1 ? 's' : ''} ready`
-                  : 'Detector ready'}
-                {hasSpecializedModel(activeUseCaseId) && ' + HF loading...'}
+                  : 'Runtime ready'}
               </span>
             </span>
           )}
@@ -912,7 +929,7 @@ export function CameraView() {
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <div className="bg-white/95 px-4 py-3 rounded-lg text-sm text-zinc-950 flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
-              Loading pinned YOLOS-tiny model…
+              Loading selected browser model…
             </div>
           </div>
         )}
@@ -921,7 +938,7 @@ export function CameraView() {
             <div className="bg-white/95 px-4 py-3 rounded-lg text-sm text-rose-700 max-w-md">
               <div className="font-semibold mb-1">Model failed to load</div>
               <div className="text-xs text-zinc-600 mb-2">
-                The pinned YOLOS-tiny model could not be loaded. Refresh to retry or use the Evidence Workspace capability check.
+                A selected browser model could not be loaded. Refresh to retry or use the Evidence Workspace capability check.
               </div>
             </div>
           </div>
@@ -985,19 +1002,30 @@ function drawBoxes(
     abandoned_object: '#f59e0b', // amber
   }
 
-  // Draw ALL detections (not just persons) with class-appropriate colors
+  const labels = dets.map(det => `${det.class} ${(det.score * 100).toFixed(0)}%`)
+  ctx.font = '10px ui-monospace, monospace'
+  const placements = layoutAnnotationLabels(dets.map((det, index) => ({
+    anchor: det.bbox,
+    width: ctx.measureText(labels[index]).width + 8,
+    height: 14,
+  })), canvas.width, canvas.height)
+
+  // Draw boxes first, then labels in a collision-aware overlay layer.
   for (const det of dets) {
     const [x, y, w, h] = det.bbox
     const color = CLASS_COLORS[det.class] || '#10b981' // default emerald
-    ctx.lineWidth = 2
+    ctx.lineWidth = Math.max(1, Math.min(2, canvas.width / 240))
     ctx.strokeStyle = color
     ctx.strokeRect(x, y, w, h)
-    const label = `${det.class} ${(det.score * 100).toFixed(0)}%`
-    ctx.font = '11px ui-monospace, monospace'
-    const tw = ctx.measureText(label).width + 8
+  }
+  for (let index = 0; index < dets.length; index += 1) {
+    const det = dets[index]
+    const placement = placements[index]
+    const color = CLASS_COLORS[det.class] || '#10b981'
     ctx.fillStyle = color
-    ctx.fillRect(x, Math.max(0, y - 16), tw, 16)
+    ctx.fillRect(placement.x, placement.y, placement.width, placement.height)
     ctx.fillStyle = '#ffffff'
-    ctx.fillText(label, x + 4, Math.max(11, y - 4))
+    ctx.textBaseline = 'middle'
+    ctx.fillText(labels[index], placement.x + 4, placement.y + placement.height / 2)
   }
 }

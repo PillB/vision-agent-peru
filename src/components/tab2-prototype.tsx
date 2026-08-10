@@ -29,7 +29,7 @@ export function Tab2Prototype() {
       trackId: n.trackId,
       firstSeen: n.firstSeen,
       lastSeen: n.lastSeen,
-      totalDurationMs: 0,
+      totalDurationMs: n.totalDurationMs,
       reappearanceCount: n.reappearanceCount,
       detectionCount: n.detectionCount,
       lastClass: n.lastClass,
@@ -39,9 +39,9 @@ export function Tab2Prototype() {
       source: e.source,
       target: e.target,
       sharedFrames: e.sharedFrames,
-      sharedDurationMs: e.sharedFrames * 100,
+      sharedDurationMs: e.sharedDurationMs,
       familiarityScore: e.familiarityScore,
-      proximityScore: 0.5,
+      proximityScore: e.proximityScore,
     })),
     totalFrames: coOccurrenceData.totalFrames,
     totalSubjects: coOccurrenceData.totalSubjects,
@@ -72,11 +72,13 @@ export function Tab2Prototype() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
           <IdentityPanel />
           <ActionsPanel />
           <ReportsPanel />
-          <EvidencePanel />
+          <div className="lg:col-span-3">
+            <EvidencePanel />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">

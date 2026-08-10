@@ -13,7 +13,7 @@ test('deployed surface exposes no production hook and makes no removed API reque
   expect(response?.ok()).toBeTruthy()
   await expect(page.getByRole('heading').first()).toBeVisible()
   await page.getByRole('tab', { name: /Evidence Workspace|Espacio de evidencia/i }).click()
-  await expect(page.getByText(/local-only|solo local/i).first()).toBeVisible()
+  await expect(page.getByText(/local-first analysis|análisis local primero/i).first()).toBeVisible()
   const webGpuRow = page.getByText('WebGPU', { exact: true }).locator('..')
   const webGpu = await webGpuRow.evaluate(element => ({
     text: element.textContent ?? '',

@@ -13,7 +13,7 @@ export const YOLOS_TINY = {
 
 export const YOLOV10N = {
   id: 'onnx-community/yolov10n',
-  revision: '57657320425e7e8ac2d3d4a6e6e9a2d3f4a5b6c7',
+  revision: '57657320425ee34056408a57ad9d29c4d4815bd8',
   license: 'AGPL-3.0',
   status: 'experimental' as const,
   limitation: 'AGPL-3.0 license requires source disclosure. 2.5MB quantized.',
@@ -28,7 +28,39 @@ type DetectionPipeline = (
   box: { xmin: number; ymin: number; xmax: number; ymax: number }
 }>>
 
-let detectorPromise: Promise<DetectionPipeline> | null = null
+const detectorPromises = new Map<string, Promise<DetectionPipeline>>()
+
+export type ObjectDetectorId = 'yolos-tiny' | 'yolov10n'
+
+const DETECTORS: Record<ObjectDetectorId, typeof YOLOS_TINY> = {
+  'yolos-tiny': YOLOS_TINY,
+  'yolov10n': YOLOV10N,
+}
+
+/** Load exactly the object detector selected by the user. */
+export async function loadObjectDetector(modelId: ObjectDetectorId): Promise<DetectionPipeline> {
+  const candidate = DETECTORS[modelId]
+  const cached = detectorPromises.get(modelId)
+  if (cached) return cached
+
+  const promise = (async () => {
+    const { env, pipeline } = await import('@huggingface/transformers')
+    env.allowLocalModels = false
+    env.useBrowserCache = true
+    env.logLevel = 4
+    console.log(`[object-detector] Loading ${candidate.id}@${candidate.revision} on wasm...`)
+    return await pipeline('object-detection', candidate.id, {
+      revision: candidate.revision,
+      device: 'wasm',
+      dtype: 'q8',
+    } as any) as unknown as DetectionPipeline
+  })().catch(error => {
+    detectorPromises.delete(modelId)
+    throw error
+  })
+  detectorPromises.set(modelId, promise)
+  return promise
+}
 
 /**
  * Load the detector with WASM backend and retry.
@@ -40,8 +72,9 @@ let detectorPromise: Promise<DetectionPipeline> | null = null
  * Always uses WASM — WebGPU is broken in onnxruntime-web 1.26.0-dev.
  */
 export async function loadYolosDetector(): Promise<DetectionPipeline> {
-  if (detectorPromise) return detectorPromise
-  detectorPromise = (async () => {
+  const cached = detectorPromises.get('yolos-tiny')
+  if (cached) return cached
+  const detectorPromise = (async () => {
     const { env, pipeline } = await import('@huggingface/transformers')
     env.allowLocalModels = false
     env.useBrowserCache = true
@@ -54,6 +87,9 @@ export async function loadYolosDetector(): Promise<DetectionPipeline> {
       const origError = console.error.bind(console)
       const onnxFilters = [
         /attention_fusion/i,
+        /reshape_fusion/i,
+        /session_state\.cc/i,
+        /session_state_utils\.cc/i,
         /GraphTransformer/i,
         /inference_session/i,
         /allocation_planner/i,
@@ -123,9 +159,10 @@ export async function loadYolosDetector(): Promise<DetectionPipeline> {
       ? new Error(`Detector failed: ${lastError.message}`)
       : new Error('Detector failed to load after all attempts')
   })().catch(error => {
-    detectorPromise = null
+    detectorPromises.delete('yolos-tiny')
     throw error
   })
+  detectorPromises.set('yolos-tiny', detectorPromise)
   return detectorPromise
 }
 
@@ -150,5 +187,5 @@ export function createYolosAdapter(waitForResume: () => Promise<void>, signal: A
 }
 
 export function resetYolosDetector(): void {
-  detectorPromise = null
+  detectorPromises.clear()
 }
