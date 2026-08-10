@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 test('device camera visibly transitions to live and stops its track when disabled', async ({ page }, testInfo) => {
   test.setTimeout(240_000)
   await page.addInitScript(() => {
-    const state = { requests: 0, stops: 0 }
+    const state: { requests: number; track: MediaStreamTrack | null } = { requests: 0, track: null }
     Object.defineProperty(window, '__cameraTestState', { value: state })
     Object.defineProperty(navigator, 'mediaDevices', {
       configurable: true,
@@ -22,13 +22,7 @@ test('device camera visibly transitions to live and stops its track when disable
             context.fillRect(0, 0, canvas.width, canvas.height)
           }, 100)
           const stream = canvas.captureStream(5)
-          for (const track of stream.getTracks()) {
-            const originalStop = track.stop.bind(track)
-            track.stop = () => {
-              state.stops += 1
-              originalStop()
-            }
-          }
+          state.track = stream.getVideoTracks()[0] ?? null
           return stream
         },
       },
@@ -65,7 +59,9 @@ test('device camera visibly transitions to live and stops its track when disable
 
   await cameraToggle.click()
   await expect(page.getByTestId('device-camera-status')).toHaveText(/Camera: idle/i)
-  await expect.poll(() => page.evaluate(() => (window as typeof window & { __cameraTestState: { stops: number } }).__cameraTestState.stops)).toBeGreaterThan(0)
+  await expect.poll(() => page.evaluate(() => (
+    window as typeof window & { __cameraTestState: { track: MediaStreamTrack | null } }
+  ).__cameraTestState.track?.readyState)).toBe('ended')
   await page.screenshot({ path: testInfo.outputPath('device-camera-paused.png'), fullPage: true })
 })
 

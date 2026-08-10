@@ -20,6 +20,28 @@ async function loadFaceApi(): Promise<FaceApiModule> {
   if (faceApiPromise) return faceApiPromise
   faceApiPromise = (async () => {
     const faceapi = await import('@vladmandic/face-api')
+    const backend = faceapi.tf as unknown as {
+      setBackend(name: 'webgl' | 'cpu'): Promise<boolean>
+      ready(): Promise<void>
+    }
+    const isWebKit = typeof navigator !== 'undefined'
+      && /AppleWebKit/i.test(navigator.userAgent)
+      && !/(Chrome|Chromium|CriOS)/i.test(navigator.userAgent)
+    if (isWebKit) {
+      const cpuReady = await backend.setBackend('cpu')
+      if (!cpuReady) throw new Error('CPU face backend could not be initialized')
+      await backend.ready()
+    } else {
+      try {
+        const webglReady = await backend.setBackend('webgl')
+        if (!webglReady) throw new Error('WebGL backend was not initialized')
+        await backend.ready()
+      } catch {
+        const cpuReady = await backend.setBackend('cpu')
+        if (!cpuReady) throw new Error('Neither WebGL nor CPU face backend could be initialized')
+        await backend.ready()
+      }
+    }
     const modelUri = prefixPath('/models/face-api')
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(modelUri),
@@ -51,6 +73,7 @@ export function OwnerVerification({ videoRef, cameraLive }: {
       return null
     }
     setLoading(true)
+    setResult({ kind: 'idle', message: 'Preparing the local face model…' })
     try {
       const faceapi = await loadFaceApi()
       const detections = await faceapi
