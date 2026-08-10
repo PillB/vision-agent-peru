@@ -1,4 +1,4 @@
-import { getModelById } from './registry'
+import { getModelById, USE_CASE_MODELS } from './registry'
 
 export interface RuntimeAdapterPlan {
   id: string
@@ -14,10 +14,11 @@ export function resolveRuntimePlan(selectedIds: string[], useCaseId: string): {
 } {
   const adapters: RuntimeAdapterPlan[] = []
   const unavailable: string[] = []
+  const compatibleIds = new Set(USE_CASE_MODELS[useCaseId] ?? [])
 
   selectedIds.forEach((id, rank) => {
     const model = getModelById(id)
-    if (!model || !model.adapterImplemented || !model.browserReady) {
+    if (!compatibleIds.has(id) || !model || !model.adapterImplemented || !model.browserReady) {
       unavailable.push(id)
       return
     }

@@ -31,8 +31,10 @@ export interface CoOccurrenceEdge {
   target: string
   sharedFrames: number
   sharedDurationMs: number
+  encounterCount: number
   familiarityScore: number  // 0..1, Jaccard-normalized
   proximityScore: number    // 0..1, average pixel distance when co-occurring
+  durationScore: number     // 0..1, shared duration / shorter observed duration
 }
 
 export interface CoOccurrenceNetwork {
@@ -40,6 +42,11 @@ export interface CoOccurrenceNetwork {
   edges: CoOccurrenceEdge[]
   totalFrames: number
   totalSubjects: number
+}
+
+export type ActiveSubjectTrack = SubjectTrack & {
+  bbox: [number, number, number, number]
+  score: number
 }
 
 /**
@@ -66,7 +73,7 @@ export class SubjectReidentifier {
   private nextTrackId = 1
   private disappearanceThresholdMs: number
   private lastFrameTimestamp: number | null = null
-  private edgeStats: Map<string, { sharedFrames: number; sharedDurationMs: number; proximitySum: number }> = new Map()
+  private edgeStats: Map<string, { sharedFrames: number; sharedDurationMs: number; proximitySum: number; encounterCount: number }> = new Map()
   private lastBboxes: Map<string, [number, number, number, number]> = new Map()
 
   constructor(disappearanceThresholdMs = 3000) {
@@ -82,7 +89,7 @@ export class SubjectReidentifier {
     canvasW: number,
     canvasH: number,
     timestamp: number = Date.now(),
-  ): SubjectTrack[] {
+  ): ActiveSubjectTrack[] {
     this.frameCount++
     const frameDurationMs = this.lastFrameTimestamp === null
       ? 0
@@ -91,7 +98,7 @@ export class SubjectReidentifier {
 
     // Match detections to existing tracks via IoU
     const matchedIds = new Set<string>()
-    const currentActiveTracks = new Map<string, { bbox: [number, number, number, number]; class: string }>()
+    const currentActiveTracks = new Map<string, { bbox: [number, number, number, number]; class: string; score: number }>()
 
     for (const det of detections) {
       // Try to match with an active track
@@ -132,7 +139,7 @@ export class SubjectReidentifier {
         track.detectionCount++
         track.lastClass = det.class
         matchedIds.add(bestMatch)
-        currentActiveTracks.set(bestMatch, { bbox: det.bbox, class: det.class })
+        currentActiveTracks.set(bestMatch, { bbox: det.bbox, class: det.class, score: det.score })
         this.lastBboxes.set(bestMatch, det.bbox)
         this.activeTracks.add(bestMatch)
       } else {
@@ -150,7 +157,7 @@ export class SubjectReidentifier {
         }
         this.tracks.set(trackId, track)
         matchedIds.add(trackId)
-        currentActiveTracks.set(trackId, { bbox: det.bbox, class: det.class })
+        currentActiveTracks.set(trackId, { bbox: det.bbox, class: det.class, score: det.score })
         this.lastBboxes.set(trackId, det.bbox)
         this.activeTracks.add(trackId)
       }
@@ -182,7 +189,8 @@ export class SubjectReidentifier {
         const centerB = [boxB[0] + boxB[2] / 2, boxB[1] + boxB[3] / 2]
         const normalizedDistance = Math.hypot(centerA[0] - centerB[0], centerA[1] - centerB[1]) / Math.max(1, Math.hypot(canvasW, canvasH))
         const proximity = Math.max(0, 1 - normalizedDistance)
-        const stats = this.edgeStats.get(edgeKey) ?? { sharedFrames: 0, sharedDurationMs: 0, proximitySum: 0 }
+        const stats = this.edgeStats.get(edgeKey) ?? { sharedFrames: 0, sharedDurationMs: 0, proximitySum: 0, encounterCount: 0 }
+        if (!this.lastFrameTracks.has(idA) || !this.lastFrameTracks.has(idB)) stats.encounterCount += 1
         stats.sharedFrames += 1
         stats.sharedDurationMs += frameDurationMs
         stats.proximitySum += proximity
@@ -198,6 +206,8 @@ export class SubjectReidentifier {
       return {
         ...track,
         lastClass: info.class,
+        bbox: info.bbox,
+        score: info.score,
       }
     })
   }
@@ -227,16 +237,22 @@ export class SubjectReidentifier {
           : 0
         const stats = this.edgeStats.get(edgeKey)
         const proximity = stats?.sharedFrames ? stats.proximitySum / stats.sharedFrames : 0
-        const recurrence = Math.min(1, (track.reappearanceCount + other.reappearanceCount) / 4)
-        const familiarity = 0.55 * jaccard + 0.3 * proximity + 0.15 * recurrence
+        const shorterObservedDuration = Math.min(track.totalDurationMs, other.totalDurationMs)
+        const duration = shorterObservedDuration > 0
+          ? Math.min(1, (stats?.sharedDurationMs ?? 0) / shorterObservedDuration)
+          : 0
+        const recurrence = Math.min(1, (stats?.encounterCount ?? 0) / 3)
+        const familiarity = 0.35 * jaccard + 0.25 * duration + 0.25 * proximity + 0.15 * recurrence
 
         edges.push({
           source: trackId,
           target: otherId,
           sharedFrames,
           sharedDurationMs: stats?.sharedDurationMs ?? 0,
+          encounterCount: stats?.encounterCount ?? 0,
           familiarityScore: Math.min(1, familiarity),
           proximityScore: proximity,
+          durationScore: duration,
         })
       }
     }

@@ -17,5 +17,27 @@ test('co-occurrence edges use measured proximity and elapsed shared duration', (
 
   assert.ok(closeEdge.proximityScore > farEdge.proximityScore)
   assert.equal(closeEdge.sharedDurationMs, 250)
+  assert.equal(closeEdge.encounterCount, 1)
+  assert.ok(closeEdge.durationScore > 0)
   assert.ok(closeEdge.familiarityScore > farEdge.familiarityScore)
+})
+
+test('separate periods together increment edge encounter count', () => {
+  const tracker = new SubjectReidentifier()
+  tracker.processFrame([detection(10), detection(25)], 100, 100, 1_000)
+  tracker.processFrame([], 100, 100, 5_000)
+  tracker.processFrame([detection(10), detection(25)], 100, 100, 9_000)
+
+  const edge = tracker.getCoOccurrenceNetwork().edges[0]
+  assert.equal(edge.encounterCount, 2)
+})
+
+test('active subjects retain their own bbox when several share a class', () => {
+  const tracker = new SubjectReidentifier()
+  const subjects = tracker.processFrame([detection(10), detection(70)], 100, 100, 1_000)
+
+  assert.equal(subjects.length, 2)
+  assert.deepEqual(subjects.map(subject => subject.bbox), [detection(10).bbox, detection(70).bbox])
+  assert.deepEqual(subjects.map(subject => subject.score), [0.9, 0.9])
+  assert.notEqual(subjects[0].trackId, subjects[1].trackId)
 })

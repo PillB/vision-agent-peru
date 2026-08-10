@@ -40,8 +40,10 @@ export function Tab2Prototype() {
       target: e.target,
       sharedFrames: e.sharedFrames,
       sharedDurationMs: e.sharedDurationMs,
+      encounterCount: e.encounterCount,
       familiarityScore: e.familiarityScore,
       proximityScore: e.proximityScore,
+      durationScore: e.durationScore,
     })),
     totalFrames: coOccurrenceData.totalFrames,
     totalSubjects: coOccurrenceData.totalSubjects,
@@ -94,7 +96,7 @@ export function Tab2Prototype() {
           </div>
           <p className="text-[10px] text-zinc-500 mb-2">
             Force-directed graph of subjects sharing the screen. Node size = detection count.
-            Edge thickness = familiarity score (Jaccard-normalized co-occurrence).
+            Edge thickness = composite weight (shared frames 35%, duration 25%, proximity 25%, repeat encounters 15%).
             Track IDs are NOT identity — appearance similarity does not establish identity.
           </p>
           <div className="flex justify-center">

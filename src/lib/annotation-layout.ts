@@ -3,15 +3,20 @@ export interface AnnotationRect {
   y: number
   width: number
   height: number
+  visible: boolean
 }
 
 export interface AnnotationRequest {
   anchor: [number, number, number, number]
   width: number
   height: number
+  /** Higher-priority labels reserve space first in dense scenes. */
+  priority?: number
 }
 
-const overlaps = (a: AnnotationRect, b: AnnotationRect, padding = 2) => !(
+type RectGeometry = Omit<AnnotationRect, 'visible'>
+
+const overlaps = (a: RectGeometry, b: RectGeometry, padding = 2) => !(
   a.x + a.width + padding <= b.x ||
   b.x + b.width + padding <= a.x ||
   a.y + a.height + padding <= b.y ||
@@ -28,9 +33,14 @@ export function layoutAnnotationLabels(
   canvasWidth: number,
   canvasHeight: number,
 ): AnnotationRect[] {
-  const placed: AnnotationRect[] = []
+  const visibleRects: AnnotationRect[] = []
+  const result: AnnotationRect[] = new Array(requests.length)
+  const orderedIndexes = requests
+    .map((_, index) => index)
+    .sort((a, b) => (requests[b].priority ?? 0) - (requests[a].priority ?? 0) || a - b)
 
-  for (const request of requests) {
+  for (const requestIndex of orderedIndexes) {
+    const request = requests[requestIndex]
     const [x, y, boxWidth, boxHeight] = request.anchor
     const width = Math.min(request.width, canvasWidth)
     const height = Math.min(request.height, canvasHeight)
@@ -42,7 +52,7 @@ export function layoutAnnotationLabels(
       { x: x + boxWidth + 2, y },
     ]
 
-    let best: AnnotationRect | null = null
+    let best: RectGeometry | null = null
     let bestCollisions = Number.POSITIVE_INFINITY
     for (const candidate of candidates) {
       const rect = {
@@ -51,15 +61,17 @@ export function layoutAnnotationLabels(
         width,
         height,
       }
-      const collisions = placed.reduce((count, prior) => count + Number(overlaps(rect, prior)), 0)
+      const collisions = visibleRects.reduce((count, prior) => count + Number(overlaps(rect, prior)), 0)
       if (collisions < bestCollisions) {
         best = rect
         bestCollisions = collisions
       }
       if (collisions === 0) break
     }
-    placed.push(best!)
+    const placement = { ...best!, visible: bestCollisions === 0 }
+    result[requestIndex] = placement
+    if (placement.visible) visibleRects.push(placement)
   }
 
-  return placed
+  return result
 }

@@ -232,7 +232,7 @@ export const CAMERA_SOURCES: CameraSource[] = [
     label: '[Static] Inundación',
     location: 'Calle inundada, Perú (frame)',
     src: '/sim/frames/uc-flood.jpg',
-    useCases: ['flood_watch'],
+    useCases: ['flood_watch', 'slip_hazard'],
     category: 'usecase',
     isStatic: true,
   },
@@ -277,7 +277,7 @@ export const CAMERA_SOURCES: CameraSource[] = [
     label: '[Static] Estacionamiento',
     location: 'Parqueo, Perú (frame)',
     src: '/sim/frames/uc-parking.jpg',
-    useCases: ['parking'],
+    useCases: ['parking', 'after_hours', 'intrusion'],
     category: 'usecase',
     isStatic: true,
   },
@@ -286,7 +286,7 @@ export const CAMERA_SOURCES: CameraSource[] = [
     label: '[Static] Cola',
     location: 'Cajero, Perú (frame)',
     src: '/sim/frames/uc-queue.jpg',
-    useCases: ['queue_anomaly'],
+    useCases: ['queue_anomaly', 'crowd_surge'],
     category: 'usecase',
     isStatic: true,
   },
@@ -367,7 +367,7 @@ interface PrototypeState {
   // Co-occurrence network (JSON-serializable for store)
   coOccurrenceData: {
     nodes: Array<{ trackId: string; detectionCount: number; reappearanceCount: number; totalDurationMs: number; lastClass: string; firstSeen: number; lastSeen: number; coSubjects: number }>
-    edges: Array<{ source: string; target: string; sharedFrames: number; sharedDurationMs: number; familiarityScore: number; proximityScore: number }>
+    edges: Array<{ source: string; target: string; sharedFrames: number; sharedDurationMs: number; encounterCount: number; familiarityScore: number; proximityScore: number; durationScore: number }>
     totalFrames: number
     totalSubjects: number
   } | null

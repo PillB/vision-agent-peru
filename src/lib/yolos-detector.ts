@@ -48,7 +48,9 @@ export async function loadObjectDetector(modelId: ObjectDetectorId): Promise<Det
     env.allowLocalModels = false
     env.useBrowserCache = true
     env.logLevel = 4
+    installOnnxConsoleFilter()
     console.log(`[object-detector] Loading ${candidate.id}@${candidate.revision} on wasm...`)
+    if (modelId === 'yolov10n') return await loadYolov10Detector()
     return await pipeline('object-detection', candidate.id, {
       revision: candidate.revision,
       device: 'wasm',
@@ -60,6 +62,61 @@ export async function loadObjectDetector(modelId: ObjectDetectorId): Promise<Det
   })
   detectorPromises.set(modelId, promise)
   return promise
+}
+
+function installOnnxConsoleFilter(): void {
+  if (typeof console === 'undefined' || (console as any).__onnxFiltered) return
+  const originalError = console.error.bind(console)
+  const noise = /attention_fusion|reshape_fusion|session_state|graph_transformer|inference_session|allocation_planner|graph_partitioner|memcpytransformer|castfloat|fusefp16|removeduplicate|device_discovery|flush-to-zero|global\/env threadpool|initializing session|adding default cpu|cleanunusedinitializer|constant_sharing|inlinefunctionsaot|session options|tracesessionoptions|discovered orthardwaredevice|graph optimizations|session successfully initialized|graph\.cc/i
+  console.error = (...args: unknown[]) => {
+    const message = args.map(value => typeof value === 'string' ? value : '').join(' ')
+    if (noise.test(message)) return
+    originalError(...args)
+  }
+  ;(console as any).__onnxFiltered = true
+}
+
+/**
+ * YOLOv10 uses an end-to-end [xmin, ymin, xmax, ymax, score, class] output
+ * and is not registered with the generic v4 object-detection pipeline.
+ * Follow the model card's AutoModel + AutoProcessor execution contract and
+ * adapt its output to the same DetectionPipeline shape as YOLOS.
+ */
+async function loadYolov10Detector(): Promise<DetectionPipeline> {
+  const { AutoModel, AutoProcessor } = await import('@huggingface/transformers')
+  const options = { revision: YOLOV10N.revision, device: 'wasm', dtype: 'q8' } as any
+  const [model, processor] = await Promise.all([
+    AutoModel.from_pretrained(YOLOV10N.id, options),
+    AutoProcessor.from_pretrained(YOLOV10N.id, { revision: YOLOV10N.revision }),
+  ])
+
+  return async (image, inferenceOptions) => {
+    const input = image as { width: number; height: number }
+    const processed = await processor(image as any)
+    const output = await model({ images: processed.pixel_values })
+    const predictions = output.output0?.tolist?.()?.[0] as number[][] | undefined
+    if (!predictions) throw new Error('YOLOv10 output0 tensor is missing')
+    const newHeight = Number(processed.reshaped_input_sizes?.[0]?.[0] ?? input.height)
+    const newWidth = Number(processed.reshaped_input_sizes?.[0]?.[1] ?? input.width)
+    const scaleX = input.width / Math.max(1, newWidth)
+    const scaleY = input.height / Math.max(1, newHeight)
+    const id2label = (model.config as any).id2label ?? {}
+
+    return predictions.flatMap(row => {
+      const [xmin, ymin, xmax, ymax, score, classId] = row.map(Number)
+      if (!Number.isFinite(score) || score < inferenceOptions.threshold) return []
+      return [{
+        label: String(id2label[classId] ?? classId),
+        score,
+        box: {
+          xmin: xmin * scaleX,
+          ymin: ymin * scaleY,
+          xmax: xmax * scaleX,
+          ymax: ymax * scaleY,
+        },
+      }]
+    })
+  }
 }
 
 /**
@@ -143,11 +200,7 @@ export async function loadYolosDetector(): Promise<DetectionPipeline> {
     // Fall back to YOLOv10n (smaller, faster to download)
     console.log('[yolos-detector] Falling back to YOLOv10n (2.5MB)...')
     try {
-      const pipe = await pipeline('object-detection', YOLOV10N.id, {
-        revision: YOLOV10N.revision,
-        device: 'wasm',
-        dtype: 'q8',
-      } as any) as unknown as DetectionPipeline
+      const pipe = await loadYolov10Detector()
       console.log('[yolos-detector] YOLOv10n loaded on wasm')
       return pipe
     } catch (err) {

@@ -44,7 +44,7 @@ export function AgentTrace() {
         <div className="text-[10px] uppercase tracking-wide text-zinc-500 mb-1">Current cycle</div>
         <div className="text-xs text-zinc-950 font-mono leading-snug break-words">{agentReasoning}</div>
         <div className="mt-2 flex items-center gap-3 text-[10px] text-zinc-500">
-          <span>Cycle #{agentCycleCount}</span>
+          <span data-testid="agent-cycle-count">Cycle #{agentCycleCount}</span>
           <span className="flex items-center gap-1">
             <RotateCw className="h-3 w-3" />
             1 Hz
@@ -58,11 +58,17 @@ export function AgentTrace() {
           <div className="text-xs font-medium text-zinc-950">LLM-as-judge</div>
           <div className="text-[10px] text-zinc-500">Filter false positives at Tier 3</div>
         </div>
-        <Switch
-          aria-label="Enable optional LLM judge"
-          checked={llmJudgeEnabled}
-          onCheckedChange={setLlmJudgeEnabled}
-        />
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-medium text-zinc-500" data-testid="llm-judge-state">
+            {llmJudgeEnabled ? 'Enabled' : 'Disabled'}
+          </span>
+          <Switch
+            aria-label="Enable optional LLM judge"
+            checked={llmJudgeEnabled}
+            onCheckedChange={setLlmJudgeEnabled}
+            className="data-[state=unchecked]:bg-zinc-300 data-[state=checked]:bg-emerald-600"
+          />
+        </div>
       </div>
 
       {/* Tier 2 threshold slider */}
