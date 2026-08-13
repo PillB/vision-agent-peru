@@ -551,3 +551,71 @@ Task: QA + add live ticker → correlation feed + `0` keyboard shortcut to reset
   3. **Mini-map node labels** — show abbreviated stage labels on the mini-map dots for better orientation.
   4. **Live entities styled distinctly** — the ⚡ live entities currently use the same node style as base entities; add a pulsing border or different ring to distinguish them.
   5. **Network graph "live" badge** — show a live indicator on the correlation network tab when live entities are present.
+
+---
+Task ID: 14
+Agent: Z.ai (exhaustive comparison + animation validation)
+Task: Compare local site vs reference GitHub Pages site, verify all features persist, validate the agent flow animation is REAL (not fake) via periodic screenshots, prepare for deployment.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–13) is LIVE and stable. QA pass: dev server HTTP 200, `bun run lint` clean, 0 console errors, overflow=0.
+- Reference site (https://pillb.github.io/vision-agent-peru/) fetched + analyzed via page_reader + agent-browser exhaustive screenshots (16 screenshots across 4 tabs).
+
+## Reference site feature catalog (https://pillb.github.io/vision-agent-peru/)
+The reference site is a **light-theme** (white bg, emerald-green accent, serif headlines) editorial/presentation site with **4 tabs**:
+1. **Solution Overview** — hero, executive summary, 5-stage system architecture pipeline (Perceive→Count→Reason→Act→Evidence), capability pillars, traditional-vs-agentic comparison, value chain, use cases, roadmap, security.
+2. **Strategic Brief** — situation/complication/resolution narrative, measured status.
+3. **Live Prototype** — camera feed view with real ML detections (COCO-SSD/YOLOS/HF transformers.js), agent reasoning trace (9-stage loop), person-count chart, co-occurrence graph, alerts/incident panel, action audit trail, appearance tracks, model selector, use-case selector.
+4. **Evidence Workspace** — video upload, evidence search, NL search, report export.
+
+## Local site feature catalog (http://localhost:3000/)
+My dashboard is a **dark-theme** command-center dashboard with **3 tabs** + extensive interactive features:
+1. **Agent Flow** — n8n-style 9-stage DAG with active-node glow, traveling token, branching by tier/judge/approval/outcome, 15 use cases, playback controls, reasoning side panel, stage trace timeline, history (localStorage), live detection stream, SVG/PNG export, drag-to-pan/zoom, mini-map, collapse/monitoring view.
+2. **Correlation Network** — force-directed SVG graph of entity co-occurrence + correlation across 4 feeds, hover tooltips, pulsing hazards, per-feed matrix heatmap, time-windowed analytics, ranked correlations, live feeds roster, live ticker → correlation feed.
+3. **Compare** — side-by-side agent runs with decision diff panel.
+- **Cross-cutting**: command palette (⌘K), settings panel (localStorage + presentation mode), onboarding tour, keyboard shortcut help (?), 10 keyboard shortcuts, heartbeat ECG, history replay, CSV export.
+
+## Animation validation (REAL, not fake) — verified via periodic screenshots
+**Methodology:** Reset trace → step through all 9 stages → screenshot each + DOM-inspect active glow/token state. Also played at 1× speed with 0.3s + 0.5s screenshot intervals.
+
+**Results (DOM-verified):**
+- Step 0 (idle): 0 glow rects, no token. ✅ correct (idle)
+- Step 1: 2 glow rects (active node ring), no token (transition complete). ✅
+- Step 2: 2 glow rects + token visible mid-flight (cx=358, cy=155, r=6). ✅
+- Steps 3–9: 2 glow rects each (active node ring persists for the step duration). ✅
+- Token is transient (0.72s bezier animation during transitions, then disappears) — correct behavior.
+
+**VLM-confirmed (framed screenshot at step 2):** "Validate Evidence node has a thick bright yellow glowing rectangular border. A small bright yellow glowing dot is positioned on the curved green edge connecting Observe to Validate Evidence, roughly in the middle of the connection." — REAL animation, not fake.
+
+**Use-case adaptation verified:** Fire & Smoke Detection (ML/DL, sustain_verify) → stages 4 (JUDGE) + 5 (VALIDATE_JUDGE) are SKIPPED (status=skip) because the judge only runs for cognitive/agentic use cases. Shoplifting (agentic) → all 9 stages visited. This mirrors the reference repo's `agenticResponse()` logic exactly — the animation follows the actual decision path, not a hardcoded one.
+
+## Feature comparison (what persists vs what's different)
+**Persists from reference (faithful to the agentic system):**
+- ✅ 9-stage agentic loop (OBSERVE→VALIDATE_EVIDENCE→POLICY→JUDGE→VALIDATE_JUDGE→PROPOSE_ACTION→APPROVAL→EXECUTE→VERIFY_OUTCOME)
+- ✅ 3-tier escalation (Tier 0 nominal → Tier 3 critical) with TIER_META colors
+- ✅ 15 use cases (commercial + disaster) with detection classes, rule types, actions, INDECI reports
+- ✅ LLM-as-judge (skipped for traditional/ML-DL, invoked for cognitive/agentic)
+- ✅ Co-occurrence network (nodes=subjects, edges=correlation with familiarityScore/proximityScore/encounterCount)
+- ✅ Action audit trail (log_tick, badge, snapshot, send_email, escalate, generate_report)
+- ✅ Z-score anomaly detection + EMA baseline logic
+- ✅ Use-case-aware rule engine (roi_breach, time_gate, density_anomaly, sustain_verify, frame_diff, count_threshold)
+
+**Different (intentional reorganization per user request):**
+- 🔄 Theme: dark command-center (vs light editorial) — better for VP "mission control" demos
+- 🔄 Tabs: 3 focused tabs (Agent Flow / Correlation Network / Compare) vs 4 editorial tabs — the user's original request was specifically about the network graph + n8n-style decision flow, so these are the focus
+- 🔄 No real camera feed / real ML — uses deterministic seeded simulation (the reference uses real COCO-SSD/YOLOS/HF transformers.js in-browser). This is a presentation/dashboard layer, not a runtime ML engine.
+- ➕ New: command palette, settings panel, presentation mode, onboarding tour, drag-to-pan/zoom, mini-map, history replay, live-mode-drives-flow, live ticker → correlation feed, compare view, CSV/PNG/SVG export, 10 keyboard shortcuts
+
+**Not present from reference (could be added in a future round):**
+- ❌ Camera feed view with real video + bounding boxes
+- ❌ Solution Overview / Strategic Brief / Evidence Workspace editorial tabs
+- ❌ Real in-browser ML (COCO-SSD, YOLOS, HF transformers.js)
+- ❌ Person-count vs 2-min average chart
+- ❌ Evidence search / NL search / report export (PPTX)
+- ❌ Appearance tracks / identity panel
+
+## Verification
+- `bun run lint` → 0 errors.
+- Animation: DOM-verified (glow rects + token visible on each step) + VLM-confirmed (yellow glow + traveling token on curved edge).
+- Use-case adaptation: Fire & Smoke (ML/DL) skips JUDGE stages; Shoplifting (agentic) visits all 9 — matches reference `agenticResponse()` logic.
+- All 3 tabs functional, 0 console errors, overflow=0.
