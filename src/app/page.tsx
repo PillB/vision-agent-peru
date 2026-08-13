@@ -8,6 +8,7 @@ import {
   Mountain, Building, TrafficCone, UserCheck, List, Car, ShoppingBag,
   Radar, Target, TrendingUp, AlertTriangle, Cpu, Gauge, Layers,
   Download, MousePointerClick, Info, FileImage, Command, GitCompare, Keyboard,
+  Minimize2, Maximize2, ChevronRight, Compass,
   type LucideIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ import { CommandPalette } from '@/components/vision/command-palette'
 import { TimeWindowAnalytics } from '@/components/vision/time-window-analytics'
 import { LiveTicker } from '@/components/vision/live-ticker'
 import { ShortcutHelp } from '@/components/vision/shortcut-help'
+import { OnboardingTour } from '@/components/vision/onboarding-tour'
 import { useLocalStorage } from '@/lib/vision/use-local-storage'
 import { useLiveData } from '@/lib/vision/use-live-data'
 import type { LiveTick } from '@/lib/vision/use-live-data'
@@ -60,6 +62,9 @@ export default function Home() {
   const [liveMode, setLiveMode] = useState(false)
   const { ticks: liveTicks, clear: clearLiveTicks } = useLiveData(liveMode)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [tourSeen, setTourSeen] = useLocalStorage('vap:tour-seen', false)
+  const [tourOpen, setTourOpen] = useState(false)
+  const closeTour = useCallback(() => { setTourOpen(false); setTourSeen(true) }, [setTourSeen])
 
   // Network graph controls
   const [minCorrelation, setMinCorrelation] = useState(0.25)
@@ -301,6 +306,15 @@ export default function Home() {
             >
               <Keyboard className="h-3.5 w-3.5" />
             </button>
+            <button
+              onClick={() => setTourOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-[11px] text-slate-400 hover:bg-slate-800 hover:text-violet-300 transition"
+              aria-label="Start guided tour"
+              title="Guided tour"
+            >
+              <Compass className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Tour</span>
+            </button>
           </div>
           {/* mobile buttons */}
           <button
@@ -433,6 +447,9 @@ export default function Home() {
       {/* ─── Keyboard shortcut help (?) ───────────────────────────── */}
       <ShortcutHelp open={helpOpen} onOpenChange={setHelpOpen} />
 
+      {/* ─── Onboarding tour ──────────────────────────────────────── */}
+      {tourOpen && <OnboardingTour key="tour" open={tourOpen} onOpenChange={(o) => { if (o) setTourOpen(true); else closeTour() }} onSwitchTab={setTab} />}
+
       {/* ─── Footer (sticky) ─────────────────────────────────────── */}
       <footer className="mt-auto border-t border-slate-800 bg-slate-950">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
@@ -521,9 +538,10 @@ function AgentFlowPanel(props: {
 }) {
   const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, onReplay, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive } = props
   const activeTrace = activeStep >= 0 && activeStep < run.trace.length ? run.trace[activeStep] : null
+  const [flowCollapsed, setFlowCollapsed] = useState(false)
 
   return (
-    <div className="grid grid-cols-1 min-[1960px]:grid-cols-[1fr_340px] gap-4">
+    <div className={`grid grid-cols-1 gap-4 ${flowCollapsed ? 'min-[1960px]:grid-cols-[1fr_440px]' : 'min-[1960px]:grid-cols-[1fr_340px]'}`}>
       {/* Flow canvas + controls */}
       <div className="space-y-3 min-w-0">
         {/* use case selector strip */}
@@ -534,7 +552,17 @@ function AgentFlowPanel(props: {
               <h2 className="text-sm font-semibold">Active Use Case</h2>
               <Badge variant="outline" className="text-[10px] border-slate-700 text-slate-300 font-mono">{useCase.ruleType}</Badge>
             </div>
-            <span className="text-[10px] text-slate-500 font-mono">cycle #{cycle}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-500 font-mono">cycle #{cycle}</span>
+              <button
+                onClick={() => setFlowCollapsed((c) => !c)}
+                className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800/60 px-2 py-1 text-[10px] font-mono text-slate-400 hover:text-amber-300 hover:border-amber-500/40 transition"
+                aria-label={flowCollapsed ? 'Expand flow canvas' : 'Collapse flow canvas'}
+                title={flowCollapsed ? 'Expand flow canvas' : 'Collapse to monitoring view'}
+              >
+                {flowCollapsed ? <><Maximize2 className="h-3 w-3" /> Expand</> : <><Minimize2 className="h-3 w-3" /> Collapse</>}
+              </button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
             {useCases.map((uc) => {
@@ -560,6 +588,30 @@ function AgentFlowPanel(props: {
           </div>
         </div>
 
+        {/* Compact playback bar (collapsed monitoring mode) */}
+        {flowCollapsed && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-2.5 flex items-center gap-2 flex-wrap">
+            <Button size="sm" className="h-7 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold" onClick={onPlayPause}>
+              {playing ? <><Pause className="h-3 w-3 mr-1" />Pause</> : <><Play className="h-3 w-3 mr-1" />Play</>}
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 w-7 p-0 border-slate-700 bg-slate-800" onClick={onStepBack} disabled={activeStep < 0}>
+              <SkipBack className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 w-7 p-0 border-slate-700 bg-slate-800" onClick={onStepForward} disabled={activeStep >= run.trace.length - 1}>
+              <SkipForward className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 border-slate-700 bg-slate-800 text-xs gap-1" onClick={onNextCycle}>
+              <Zap className="h-3 w-3 text-amber-400" /> Next
+            </Button>
+            <span className="text-[10px] font-mono text-slate-500 ml-auto">
+              step {Math.max(0, activeStep + 1)}/{run.trace.length} · T{run.finalTier} · {run.finalOutcome}
+            </span>
+          </div>
+        )}
+
+        {/* Flow viz + playback (hidden in collapsed monitoring mode) */}
+        {!flowCollapsed && (
+        <>
         {/* Flow viz */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden relative">
           {/* floating hint + export */}
@@ -643,6 +695,8 @@ function AgentFlowPanel(props: {
             </div>
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* Reasoning side panel */}
