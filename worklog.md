@@ -182,3 +182,65 @@ Verification:
   4. **A/B use-case picker autocomplete** — the Compare `<select>` works but a searchable combobox would be nicer with 15 use cases.
   5. **Live data simulation** — currently the network + time-window data is seeded/static; a "live" mode that streams new detections every second would make the dashboard feel alive for a VP demo.
   6. **Accessibility audit** — ensure all interactive elements have proper ARIA labels and keyboard focus rings (the flow nodes are SVG `<g>` which need role/label for screen readers).
+
+---
+Task ID: 6
+Agent: Z.ai (cron webDevReview — round 3)
+Task: QA the dashboard, then add 4 new features (localStorage persistence, live data simulation, palette-to-scroll, accessibility) + styling polish.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–5) is LIVE and stable on `/`. All previous features (9 components, 3 tabs, 6 keyboard shortcuts, 2 export formats) verified intact.
+- QA pass this round: dev server returns HTTP 200, `bun run lint` passes clean (0 errors). All tabs and interactions work.
+- **Bug found + fixed during this round:** the first `useLocalStorage` implementation (useState + effect) triggered `react-hooks/set-state-in-effect` and `react-hooks/refs` lint errors. Rewrote it 3 times before landing on the correct React primitive: `useSyncExternalStore` with a **cached snapshot reference** (critical — `useSyncExternalStore` calls getSnapshot every render and compares references; JSON.parse returns a new object each call, causing an infinite re-render loop → "client-side exception"). The cache keeps the parsed value referentially stable until the serialized string actually changes.
+
+## Current goals / completed modifications / verification results
+This round implemented 4 new features + styling polish, all verified with agent-browser:
+
+1. **localStorage persistence for cycle history** (`use-local-storage.ts`)
+   - Completed agent cycles now persist across reloads via `useLocalStorage<AgentFlowRun[]>('vap:cycle-history', [])`.
+   - Built on `useSyncExternalStore` (SSR-safe, cross-tab sync via the native `storage` event, in-tab updates via a custom event).
+   - "Recent cycles" panel header now shows "{n} logged · saved locally" + a "clear" button to wipe history.
+   - Verified: ran 2 traces to completion → reloaded → history still showed "2 logged · saved locally".
+
+2. **Live data simulation mode** (`use-live-data.ts` + `live-ticker.tsx`)
+   - New `useLiveData(enabled)` hook streams ~1 simulated detection/second (1 Hz, matching the agent loop) across the 4 feeds. Each tick has feedId, className, z-score, and assigned tier (with ~18% chance of anomaly spikes).
+   - `LiveTicker` component: compact real-time stream with slide-in animations (framer-motion AnimatePresence), feed label, class, z-score, tier badge, "Xs ago" timestamp. "Start live / Stop" toggle + clear button + "N anomaly+ / M" summary.
+   - Placed in the Agent Flow tab side panel (between Final outcome and Recent cycles).
+   - Heartbeat now reflects `playing || liveMode` — pulses green when live mode is on.
+   - Verified: started live mode → 5 ticks streamed after 5s (1 Hz); heartbeat showed "1 Hz"; zero errors.
+
+3. **⌘K palette → scroll flow to selected node**
+   - Selecting a flow node from the command palette now (a) opens the inspector drawer AND (b) smooth-scrolls the flow container to horizontally center the node.
+   - Uses `requestAnimationFrame` + `getBoundingClientRect` to compute the target scrollLeft.
+   - Clicking a flow node directly also uses this handler (unified `handleSelectFlowNode`).
+   - Verified: opened palette, typed "verify", navigated to "Verify Outcome", pressed Enter → inspector opened showing "Stage 9 of 9 · Verify Outcome".
+
+4. **Accessibility improvements** (`agent-decision-flow.tsx` + `globals.css`)
+   - Flow SVG now has `role="group"` + descriptive `aria-label`.
+   - Each of the 13 flow nodes is now `role="button"` with `tabindex={0}`, keyboard handler (Enter/Space → select), `aria-label` ("{Label} stage. {description}. Status: {status}"), and `aria-current="step"` when active.
+   - Added `:focus-visible` CSS rule (amber outline ring) for keyboard-navigated flow nodes.
+   - Added custom dark-theme scrollbar styling for the ScrollArea panels.
+   - Verified via DOM: 13 `g[role=button]` nodes with aria-labels + tabindex.
+
+5. **Styling polish**
+   - "Recent cycles" panel: "saved locally" suffix + clear button with rose hover.
+   - LiveTicker: red "live" pulse indicator, tier-colored dots with glow, animated slide-in entries.
+   - Custom scrollbars for all ScrollArea panels (6px, slate-500 thumb, hover → slate-400).
+
+Verification:
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: page loads (HTTP 200), 0 console errors throughout (live mode, palette nav, tab switches, inspector open/close, history clear).
+- localStorage: history survived reload (2 cycles → 2 cycles).
+- Accessibility: 13 flow nodes have role/aria-label/tabindex; focus-visible ring styled.
+- VLM: confirmed dashboard top (header + KPIs + tabs) renders cleanly with no errors.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable and more capable (10 components, live simulation, persistence, a11y).
+- **Known UX limitation:** at narrow viewports (<1280px), the Agent Flow tab's 2-column grid (flow + 340px side panel) causes the side panel to render off-screen to the right (page scrollWidth > clientWidth). The live ticker + history panels are in that side column. The flow SVG itself is 1594px wide. Recommended fix for a future round: collapse to a single column below `xl` breakpoint, or make the side panel a sticky bottom sheet on narrow screens.
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Responsive single-column layout** — below `xl`, stack the flow canvas above the side panel (currently the side panel overflows off-screen).
+  2. **Live mode drives the agent flow** — when live mode is on, auto-generate agent runs for each detected anomaly (tier ≥ 2) so the flow animates in response to live detections.
+  3. **History replay** — click a logged cycle in the history panel to reload that exact run + replay its trace.
+  4. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear in real time.
+  5. **Keyboard shortcut help modal** (`?` to open) listing all 7 shortcuts.
+  6. **Snapshot/export of the live stream** as CSV for VP handoff.

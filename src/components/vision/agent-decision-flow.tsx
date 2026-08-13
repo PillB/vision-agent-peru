@@ -152,6 +152,8 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
         preserveAspectRatio="xMidYMid meet"
         className="block"
         data-testid="agent-flow-svg"
+        role="group"
+        aria-label="Agent decision flow graph — 9 stages from Observe to Verify Outcome. Use Tab to focus and Enter to inspect a stage."
         style={{ minWidth: width, background: 'radial-gradient(circle at 30% 20%, #0f172a 0%, #020617 75%)' }}
       >
         <defs>
@@ -265,6 +267,11 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
                 style={{ transformOrigin: `${pos.x + NODE_W / 2}px ${pos.y + NODE_H / 2}px`, cursor: onNodeClick ? 'pointer' : 'default' }}
                 transition={{ duration: 0.25 }}
                 onClick={() => onNodeClick?.(n.id)}
+                onKeyDown={(e: any) => { if ((e.key === 'Enter' || e.key === ' ') && onNodeClick) { e.preventDefault(); onNodeClick(n.id) } }}
+                tabIndex={0}
+                role="button"
+                aria-label={`${n.label} stage. ${n.description}${stageTrace ? `. Status: ${stageTrace.status}` : ''}`}
+                aria-current={isActive ? 'step' : undefined}
               >
                 {/* glow ring when active */}
                 {isActive && (

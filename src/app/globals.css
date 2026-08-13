@@ -119,4 +119,34 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Keyboard focus ring for SVG flow nodes (role=button). */
+  g[role="button"]:focus-visible {
+    outline: 2px solid #fbbf24;
+    outline-offset: 4px;
+    border-radius: 12px;
+  }
+  /* Scrollbar styling for the dark theme panels. */
+  .max-h-\[260px\]::-webkit-scrollbar,
+  .max-h-\[180px\]::-webkit-scrollbar,
+  .max-h-\[300px\]::-webkit-scrollbar,
+  .max-h-\[320px\]::-webkit-scrollbar,
+  .max-h-\[52vh\]::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .max-h-\[260px\]::-webkit-scrollbar-thumb,
+  .max-h-\[180px\]::-webkit-scrollbar-thumb,
+  .max-h-\[300px\]::-webkit-scrollbar-thumb,
+  .max-h-\[320px\]::-webkit-scrollbar-thumb,
+  .max-h-\[52vh\]::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.4);
+    border-radius: 3px;
+  }
+  .max-h-\[260px\]::-webkit-scrollbar-thumb:hover,
+  .max-h-\[180px\]::-webkit-scrollbar-thumb:hover,
+  .max-h-\[300px\]::-webkit-scrollbar-thumb:hover,
+  .max-h-\[320px\]::-webkit-scrollbar-thumb:hover,
+  .max-h-\[52vh\]::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.6);
+  }
 }

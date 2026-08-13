@@ -26,6 +26,10 @@ import { NodeInspector, stageIdFor } from '@/components/vision/node-inspector'
 import { CompareView } from '@/components/vision/compare-view'
 import { CommandPalette } from '@/components/vision/command-palette'
 import { TimeWindowAnalytics } from '@/components/vision/time-window-analytics'
+import { LiveTicker } from '@/components/vision/live-ticker'
+import { useLocalStorage } from '@/lib/vision/use-local-storage'
+import { useLiveData } from '@/lib/vision/use-live-data'
+import type { LiveTick } from '@/lib/vision/use-live-data'
 import { USE_CASES, LEVEL_META, USE_CASE_BY_ID } from '@/lib/vision/use-cases'
 import { getEntityNetwork, KIND_META } from '@/lib/vision/entity-network'
 import { generateAgentRun, NODE_BY_ID } from '@/lib/vision/agent-flow'
@@ -49,9 +53,11 @@ export default function Home() {
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const [history, setHistory] = useState<AgentFlowRun[]>([])
+  const [history, setHistory] = useLocalStorage<AgentFlowRun[]>('vap:cycle-history', [])
   const [tab, setTab] = useState('flow')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  const [liveMode, setLiveMode] = useState(false)
+  const { ticks: liveTicks, clear: clearLiveTicks } = useLiveData(liveMode)
 
   // Network graph controls
   const [minCorrelation, setMinCorrelation] = useState(0.25)
@@ -103,6 +109,26 @@ export default function Home() {
     setPlaying(false)
   }, [])
   const togglePlay = useCallback(() => setPlaying((p) => !p), [])
+
+  // Select a flow node (from the graph OR the command palette) + scroll the
+  // flow container to center the node horizontally.
+  const handleSelectFlowNode = useCallback((id: string) => {
+    setSelectedNodeId((prev) => (prev === id ? null : id))
+    // Defer the scroll so the SVG renders with the new selection first.
+    requestAnimationFrame(() => {
+      const svg = document.querySelector('[data-testid="agent-flow-svg"]') as SVGSVGElement | null
+      if (!svg) return
+      const nodeText = Array.from(svg.querySelectorAll('text')).find((t) => t.textContent === NODE_BY_ID[id]?.label)
+      if (!nodeText) return
+      const g = nodeText.closest('g')
+      if (!g) return
+      const r = (g as SVGGElement).getBoundingClientRect()
+      const container = svg.parentElement // the overflow-x-auto div
+      if (!container) return
+      const targetLeft = container.scrollLeft + (r.left - container.getBoundingClientRect().left) - container.clientWidth / 2 + r.width / 2
+      container.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' })
+    })
+  }, [])
 
   // Export the agent decision flow SVG as a downloadable .svg file
   const exportFlowSvg = useCallback(() => {
@@ -234,7 +260,7 @@ export default function Home() {
           </div>
           <div className="ml-auto hidden md:flex items-center gap-2">
             <div className="hidden lg:flex items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/5 px-2.5 py-1">
-              <Heartbeat active={playing} width={150} height={28} />
+              <Heartbeat active={playing || liveMode} width={150} height={28} />
             </div>
             <StatusPill icon={Cpu} label="Models" value="4 feeds · 6 detectors" tone="sky" />
             <StatusPill icon={Gauge} label="Avg correlation" value={stats.avgCorrelation.toFixed(2)} tone="emerald" />
@@ -316,9 +342,13 @@ export default function Home() {
               onNextCycle={nextCycle}
               history={history}
               selectedNodeId={selectedNodeId}
-              onNodeClick={(id) => setSelectedNodeId((prev) => (prev === id ? null : id))}
+              onNodeClick={handleSelectFlowNode}
               onExport={exportFlowSvg}
               onExportPng={exportFlowPng}
+              liveTicks={liveTicks}
+              liveMode={liveMode}
+              onToggleLive={() => setLiveMode((v) => !v)}
+              onClearLive={clearLiveTicks}
             />
           </TabsContent>
 
@@ -362,7 +392,7 @@ export default function Home() {
         open={paletteOpen}
         onOpenChange={setPaletteOpen}
         onSelectUseCase={selectUseCase}
-        onSelectFlowNode={setSelectedNodeId}
+        onSelectFlowNode={handleSelectFlowNode}
         onSwitchTab={setTab}
       />
 
@@ -446,8 +476,12 @@ function AgentFlowPanel(props: {
   onNodeClick: (id: string) => void
   onExport: () => void
   onExportPng: () => void
+  liveTicks: LiveTick[]
+  liveMode: boolean
+  onToggleLive: () => void
+  onClearLive: () => void
 }) {
-  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, selectedNodeId, onNodeClick, onExport, onExportPng } = props
+  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive } = props
   const activeTrace = activeStep >= 0 && activeStep < run.trace.length ? run.trace[activeStep] : null
 
   return (
@@ -685,11 +719,23 @@ function AgentFlowPanel(props: {
           </div>
         </div>
 
+        {/* Live detection stream */}
+        <LiveTicker ticks={liveTicks} enabled={liveMode} onToggle={onToggleLive} onClear={onClearLive} />
+
         {/* Cycle history */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
           <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
             <Activity className="h-4 w-4 text-amber-400" /> Recent cycles
-            <span className="ml-auto text-[9px] font-mono text-slate-500">{history.length} logged</span>
+            <span className="ml-auto text-[9px] font-mono text-slate-500">{history.length} logged · saved locally</span>
+            {history.length > 0 && (
+              <button
+                onClick={() => setHistory([])}
+                className="rounded border border-slate-700 bg-slate-800/60 px-1.5 py-0.5 text-[9px] font-mono text-slate-400 hover:text-rose-300 hover:border-rose-500/40 transition"
+                aria-label="Clear cycle history"
+              >
+                clear
+              </button>
+            )}
           </h3>
           {history.length === 0 ? (
             <p className="text-[11px] text-slate-500 leading-relaxed">
