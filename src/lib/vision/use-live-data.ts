@@ -9,6 +9,10 @@ export interface LiveTick {
   tier: number
   z: number
   ts: number
+  /** Use case id that the agent would invoke for this detection class.
+   *  Populated so the dashboard can auto-animate the agent flow when an
+   *  anomaly (tier >= 2) is detected. */
+  useCaseId?: string
 }
 
 interface FeedDef {
@@ -70,15 +74,48 @@ function tierForZ(z: number): number {
   return 0
 }
 
+/** Map a detector class → the use case the agent would invoke for it. */
+function classToUseCase(className: string): string {
+  switch (className) {
+    case 'person':
+      return 'crowd_surge'
+    case 'car':
+    case 'truck':
+    case 'bus':
+    case 'motorcycle':
+      return 'after_hours'
+    case 'backpack':
+    case 'suitcase':
+    case 'handbag':
+      return 'abandoned_object'
+    case 'fire':
+    case 'smoke':
+      return 'fire_smoke'
+    case 'water':
+      return 'flood_watch'
+    case 'debris':
+      return 'landslide'
+    default:
+      return 'intrusion'
+  }
+}
+
 /**
  * useLiveData — when `enabled`, emits ~1 detection event per second (1 Hz,
  * matching the agent loop). Each tick is a simulated detection with a
  * z-score that occasionally spikes into anomaly/critical territory. The
  * dashboard surfaces these as a live ticker + drives the heartbeat.
+ *
+ * `onAnomaly` (optional) is called for each new anomaly+ tick (tier >= 2)
+ * with the tick's useCaseId — this lets the page react to live detections
+ * by animating the matching agent flow, without a setState-in-effect.
  */
-export function useLiveData(enabled: boolean): { ticks: LiveTick[]; clear: () => void } {
+export function useLiveData(enabled: boolean, onAnomaly?: (useCaseId: string) => void): { ticks: LiveTick[]; clear: () => void } {
   const [ticks, setTicks] = useState<LiveTick[]>([])
   const idRef = useRef(0)
+  // Keep the latest onAnomaly in a ref so the interval doesn't restart when it changes.
+  const onAnomalyRef = useRef(onAnomaly)
+  useEffect(() => { onAnomalyRef.current = onAnomaly }, [onAnomaly])
 
   useEffect(() => {
     if (!enabled) return
@@ -97,8 +134,13 @@ export function useLiveData(enabled: boolean): { ticks: LiveTick[]; clear: () =>
         tier,
         z,
         ts: Date.now(),
+        useCaseId: classToUseCase(className),
       }
       setTicks((prev) => [tick, ...prev].slice(0, 24))
+      // Fire the anomaly callback outside the setTicks update (side-effect-free).
+      if (tier >= 2 && tick.useCaseId) {
+        onAnomalyRef.current?.(tick.useCaseId)
+      }
     }, 1000)
     return () => clearInterval(interval)
   }, [enabled])

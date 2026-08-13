@@ -60,7 +60,16 @@ export default function Home() {
   const [tab, setTab] = useState('flow')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [liveMode, setLiveMode] = useState(false)
-  const { ticks: liveTicks, clear: clearLiveTicks } = useLiveData(liveMode)
+  // Live mode drives the agent flow: when an anomaly+ tick arrives, load the
+  // matching use case + auto-animate the trace so the VP sees the agent respond.
+  const handleLiveAnomaly = useCallback((useCaseId: string) => {
+    setTab('flow')
+    setSelectedUseCaseId(useCaseId)
+    setCycle((c) => c + 1)
+    setActiveStep(-1)
+    requestAnimationFrame(() => setPlaying(true))
+  }, [])
+  const { ticks: liveTicks, clear: clearLiveTicks } = useLiveData(liveMode, handleLiveAnomaly)
   const [helpOpen, setHelpOpen] = useState(false)
   const [tourSeen, setTourSeen] = useLocalStorage('vap:tour-seen', false)
   const [tourOpen, setTourOpen] = useState(false)

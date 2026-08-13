@@ -305,3 +305,48 @@ Verification:
   4. **Drag-to-pan / pinch-zoom on the flow SVG** — for touch/mobile, add pointer-based pan + zoom instead of horizontal scrollbar.
   5. **Theme toggle** (light/dark) — currently dark-only; a light theme would help VP presentations in bright rooms.
   6. **Onboarding tour** — a 4-step guided tour (flow → network → compare → live) for first-time viewers.
+
+---
+Task ID: 8
+Agent: Z.ai (cron webDevReview — round 5)
+Task: QA + add collapsible flow canvas (monitoring view) + onboarding tour. (Worklog recorded retroactively — round was interrupted by an infra outage before the worklog could be written.)
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–7) was LIVE and stable. QA pass: dev server HTTP 200, `bun run lint` clean, 0 console errors, overflow=0.
+- Round 5 implemented 2 new features (collapsible flow + onboarding tour) but the worklog update was blocked by a temporary tooling outage. This record documents that work retroactively (verified working in round 6).
+
+## Current goals / completed modifications / verification results
+
+### 1. Collapsible Flow Canvas (Monitoring View)
+- `flowCollapsed` state in AgentFlowPanel with a Collapse/Expand toggle button (Minimize2/Maximize2 icons) in the use case selector header.
+- **Collapsed:** flow SVG + full playback controls hidden; replaced by a compact amber-tinted playback bar (Play/Pause, Step Back/Forward, Next cycle, step/tier/outcome summary). Side panel widens to 440px for monitoring room.
+- **Expanded:** full flow visualization + controls restored.
+- Verified in round 6: clicking Collapse hides the flow SVG (flowSvgHidden=true), shows the compact bar (compactBar=true with "step 0/9 · T3 · resolved"), 0 errors. VLM-confirmed the monitoring layout.
+
+### 2. Onboarding Tour (`onboarding-tour.tsx`)
+- 4-step guided tour: Agent Decision Flow → Correlation Network → Compare Use Cases → Live Detection Stream.
+- Bottom-right floating card with animated progress bar, step indicator, colored icon, title, description, progress dots, Back/Next buttons.
+- Auto-switches tabs as the user advances through steps.
+- Keyboard nav (←/→, Esc). "Tour" button in header (Compass icon, desktop + mobile).
+- Tour completion saved to localStorage (`vap:tour-seen`); uses remount `key` to reset step on open (avoids setState-in-effect).
+- Verified in round 6: opened tour → step 1/4 → Next → step 2/4 (auto-switched to Correlation Network) → Next → step 3/4 (Compare) → Next → step 4/4 (Live) → Done (tour closed). 0 errors throughout.
+
+### Styling polish
+- Added Minimize2, Maximize2, ChevronRight, Compass icons.
+- Collapsed mode: amber-tinted compact playback bar with tier/outcome summary.
+- Tour card: per-step accent colors, animated progress bar, smooth framer-motion transitions.
+- Header: "Tour" button with violet hover (desktop + mobile).
+
+Verification (round 6):
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: page loads HTTP 200, 0 console errors throughout (collapse/expand, tour open/navigate/complete, tab switches).
+- DOM-confirmed: collapse hides flow SVG + shows compact bar; tour advances through all 4 steps with auto tab-switching.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable (13 components, 3 tabs, 8 keyboard shortcuts, 3 export formats, history replay, responsive layout, monitoring view, guided tour).
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Live mode drives the agent flow** — when live mode detects anomalies (tier ≥ 2), auto-generate + animate agent runs so the flow responds to live detections in real time.
+  2. **Drag-to-pan / pinch-zoom on the flow SVG** — pointer-based pan + zoom instead of horizontal scrollbar.
+  3. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear dynamically.
+  4. **Theme toggle** (light/dark) — for VP presentations in bright rooms (note: heavy refactor due to inline SVG colors across 13 components).
+  5. **Settings panel** — persist user prefs (speed, collapsed state, live mode) to localStorage.
