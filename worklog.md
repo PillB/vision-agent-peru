@@ -432,3 +432,47 @@ Verification:
   3. **Keyboard shortcut for settings** — e.g. `,` to open settings.
   4. **Settings reset confirmation** — confirm before resetting (currently instant).
   5. **Per-setting tooltips** — hover help on each setting row explaining the trade-off.
+
+---
+Task ID: 11
+Agent: Z.ai (cron webDevReview — round 8)
+Task: QA + fix settings Escape gap + add drag-to-pan/zoom on the flow SVG + comma shortcut for settings.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–10) was LIVE and stable. QA pass: dev server HTTP 200, `bun run lint` clean, 0 console errors, overflow=0.
+- **Small UX gap found:** the Settings panel didn't close on Escape (only via the X button or backdrop click). Fixed this round.
+
+## Current goals / completed modifications / verification results
+
+### 1. Drag-to-pan / zoom on the flow SVG (`agent-decision-flow.tsx`)
+- Added pan (translate) + zoom (scale) state with pointer-event handlers on the flow container.
+  - **Drag-to-pan:** pointerdown on the background (not on nodes — `closest('g[role=button]')` is skipped) starts a drag; pointermove updates the translate transform. Cursor switches grab↔grabbing.
+  - **Zoom:** ctrl/cmd + scroll wheel zooms in/out (clamped 0.4×–2.5×). Doesn't hijack normal page scroll.
+  - **Zoom controls:** a compact bar in the top-left with − / percent / + / 1:1 buttons. `stopPropagation` on pointerdown so clicks reach the buttons (not the pan handler).
+  - **Reset view** restores zoom=1 + pan={0,0}.
+- The SVG now uses `transform: translate() scale()` with `transformOrigin: 0 0`.
+- Verified: zoom in ×2 → scale 1.4; reset → scale 1; drag +80,+40 → translate went from (50,30) to (130,70) exactly. VLM-confirmed zoom control bar renders.
+
+### 2. Settings Escape-to-close (`settings-panel.tsx`)
+- Added a `useEffect` keydown listener that closes the panel on Escape. Matches the pattern used by the NodeInspector and CommandPalette.
+
+### 3. Comma shortcut for settings (`page.tsx` + `shortcut-help.tsx`)
+- New `,` keyboard shortcut toggles the Settings panel.
+- Escape now also closes the settings panel (added to the Escape handler).
+- Updated the ShortcutHelp modal: added `,` → "Toggle settings panel" and updated the Esc description to include "settings".
+
+Verification:
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: page loads HTTP 200, 0 console errors throughout (zoom in/out/reset, drag-pan, settings open via comma / close via escape, tab switches).
+- DOM-confirmed: zoom scale changes (1→1.4→1), pan translate changes exactly by drag delta.
+- Overflow: 0px on all 3 tabs.
+- VLM: confirmed zoom control bar (−/100%/+/1:1) renders in the flow top-left.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable (14 components, 3 tabs, 9 keyboard shortcuts, 3 export formats, history replay, responsive layout, monitoring view, guided tour, live-mode-drives-flow, settings panel + presentation mode, drag-to-pan/zoom).
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear dynamically.
+  2. **Settings reset confirmation** — confirm before resetting (currently instant).
+  3. **Per-setting tooltips** — hover help on each setting row explaining the trade-off.
+  4. **Pinch-to-zoom on touch devices** — the current wheel-zoom requires ctrl; add touch gesture support for tablets.
+  5. **Mini-map** — a small overview of the full flow in the corner showing the current viewport when zoomed/panned.

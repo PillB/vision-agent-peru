@@ -66,6 +66,39 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
     [run],
   )
 
+  // Pan / zoom state for the flow canvas (drag-to-pan + wheel/button zoom).
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null)
+
+  const clampZoom = (z: number) => Math.max(0.4, Math.min(2.5, z))
+  const zoomIn = () => setZoom((z) => clampZoom(z + 0.2))
+  const zoomOut = () => setZoom((z) => clampZoom(z - 0.2))
+  const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }) }
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    // Only pan on the background (not on nodes, which are clickable).
+    if ((e.target as Element).closest('g[role="button"]')) return
+    dragRef.current = { startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y }
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current) return
+    const dx = e.clientX - dragRef.current.startX
+    const dy = e.clientY - dragRef.current.startY
+    setPan({ x: dragRef.current.panX + dx, y: dragRef.current.panY + dy })
+  }
+  const onPointerUp = (e: React.PointerEvent) => {
+    dragRef.current = null
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch { /* ignore */ }
+  }
+  const onWheel = (e: React.WheelEvent) => {
+    if (!e.ctrlKey && !e.metaKey) return // only zoom on ctrl/cmd+wheel (avoid hijacking page scroll)
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -0.1 : 0.1
+    setZoom((z) => clampZoom(z + delta))
+  }
+
   // Compute canvas dimensions from node positions (auto-fit)
   const { width, height } = useMemo(() => {
     let maxX = 0
@@ -144,7 +177,40 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
   }, [activeStep, run])
 
   return (
-    <div className="relative overflow-x-auto">
+    <div
+      className="relative overflow-hidden select-none"
+      style={{ cursor: dragRef.current ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerLeave={onPointerUp}
+      onWheel={onWheel}
+    >
+      {/* Zoom controls */}
+      <div
+        className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-950/80 p-1 backdrop-blur"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={zoomOut}
+          className="grid place-items-center h-6 w-6 rounded text-slate-400 hover:text-sky-300 hover:bg-slate-800 transition text-sm font-bold"
+          aria-label="Zoom out"
+          title="Zoom out"
+        >−</button>
+        <span className="text-[9px] font-mono text-slate-400 w-8 text-center">{Math.round(zoom * 100)}%</span>
+        <button
+          onClick={zoomIn}
+          className="grid place-items-center h-6 w-6 rounded text-slate-400 hover:text-sky-300 hover:bg-slate-800 transition text-sm font-bold"
+          aria-label="Zoom in"
+          title="Zoom in"
+        >+</button>
+        <button
+          onClick={resetView}
+          className="grid place-items-center h-6 w-6 rounded text-slate-400 hover:text-amber-300 hover:bg-slate-800 transition text-[9px] font-mono"
+          aria-label="Reset view"
+          title="Reset view"
+        >1:1</button>
+      </div>
       <svg
         width={width}
         height={height}
@@ -153,8 +219,14 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
         className="block"
         data-testid="agent-flow-svg"
         role="group"
-        aria-label="Agent decision flow graph — 9 stages from Observe to Verify Outcome. Use Tab to focus and Enter to inspect a stage."
-        style={{ minWidth: width, background: 'radial-gradient(circle at 30% 20%, #0f172a 0%, #020617 75%)' }}
+        aria-label="Agent decision flow graph — 9 stages from Observe to Verify Outcome. Use Tab to focus and Enter to inspect a stage. Drag to pan, ctrl+scroll to zoom."
+        style={{
+          minWidth: width,
+          background: 'radial-gradient(circle at 30% 20%, #0f172a 0%, #020617 75%)',
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transformOrigin: '0 0',
+          transition: dragRef.current ? 'none' : 'transform 0.05s linear',
+        }}
       >
         <defs>
           <linearGradient id="edgeFlow" x1="0" y1="0" x2="1" y2="0">

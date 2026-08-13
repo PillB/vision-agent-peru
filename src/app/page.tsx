@@ -241,8 +241,9 @@ export default function Home() {
       else if (e.code === 'ArrowLeft') { e.preventDefault(); stepBack() }
       else if (e.code === 'KeyR') { reset() }
       else if (e.code === 'KeyN') { nextCycle() }
-      else if (e.code === 'Escape') { setSelectedNodeId(null); setPaletteOpen(false); setHelpOpen(false) }
+      else if (e.code === 'Escape') { setSelectedNodeId(null); setPaletteOpen(false); setHelpOpen(false); setSettingsOpen(false) }
       else if (e.key === '?' || (e.shiftKey && e.code === 'Slash')) { e.preventDefault(); setHelpOpen((o) => !o) }
+      else if (e.key === ',' || e.code === 'Comma') { e.preventDefault(); setSettingsOpen((o) => !o) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)

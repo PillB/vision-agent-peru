@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings, X, Zap, Gauge, Radio, Maximize2, Type } from 'lucide-react'
 import { useLocalStorage } from '@/lib/vision/use-local-storage'
@@ -34,6 +35,17 @@ export function SettingsPanel({ open, onOpenChange, settings, onChange }: Props)
   const update = <K extends keyof DashboardSettings>(key: K, value: DashboardSettings[K]) => {
     onChange({ ...settings, [key]: value })
   }
+
+  // Close on Escape — the motion backdrop catches clicks, but keyboard users
+  // need a way out without reaching for the X button.
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); onOpenChange(false) }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open, onOpenChange])
 
   return (
     <AnimatePresence>
