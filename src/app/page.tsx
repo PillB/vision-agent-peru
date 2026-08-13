@@ -8,7 +8,7 @@ import {
   Mountain, Building, TrafficCone, UserCheck, List, Car, ShoppingBag,
   Radar, Target, TrendingUp, AlertTriangle, Cpu, Gauge, Layers,
   Download, MousePointerClick, Info, FileImage, Command, GitCompare, Keyboard,
-  Minimize2, Maximize2, ChevronRight, Compass,
+  Minimize2, Maximize2, ChevronRight, Compass, Settings,
   type LucideIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,8 @@ import { TimeWindowAnalytics } from '@/components/vision/time-window-analytics'
 import { LiveTicker } from '@/components/vision/live-ticker'
 import { ShortcutHelp } from '@/components/vision/shortcut-help'
 import { OnboardingTour } from '@/components/vision/onboarding-tour'
+import { SettingsPanel, DEFAULT_SETTINGS } from '@/components/vision/settings-panel'
+import type { DashboardSettings } from '@/components/vision/settings-panel'
 import { useLocalStorage } from '@/lib/vision/use-local-storage'
 import { useLiveData } from '@/lib/vision/use-live-data'
 import type { LiveTick } from '@/lib/vision/use-live-data'
@@ -54,12 +56,14 @@ export default function Home() {
   const run = useMemo(() => generateAgentRun(selectedUseCase, cycle), [selectedUseCase, cycle])
   const [activeStep, setActiveStep] = useState(-1)
   const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState(1)
+  const [settings, setSettings] = useLocalStorage<DashboardSettings>('vap:settings', DEFAULT_SETTINGS)
+  const [speed, setSpeed] = useState(settings.defaultSpeed)
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [history, setHistory] = useLocalStorage<AgentFlowRun[]>('vap:cycle-history', [])
   const [tab, setTab] = useState('flow')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
-  const [liveMode, setLiveMode] = useState(false)
+  const [liveMode, setLiveMode] = useState(settings.startWithLiveMode)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   // Live mode drives the agent flow: when an anomaly+ tick arrives, load the
   // matching use case + auto-animate the trace so the VP sees the agent respond.
   const handleLiveAnomaly = useCallback((useCaseId: string) => {
@@ -268,7 +272,7 @@ export default function Home() {
   const nodeById = useMemo(() => new Map(network.nodes.map((n) => [n.id, n])), [network])
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className={`min-h-screen flex flex-col bg-slate-950 text-slate-100 ${settings.presentationMode ? 'presentation-mode' : ''}`}>
       {/* ─── Header ───────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/85 backdrop-blur-xl">
         <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-3 flex items-center gap-4">
@@ -323,6 +327,14 @@ export default function Home() {
             >
               <Compass className="h-3.5 w-3.5" />
               <span className="hidden xl:inline">Tour</span>
+            </button>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="grid place-items-center h-8 w-8 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-sky-300 transition"
+              aria-label="Open settings"
+              title="Settings"
+            >
+              <Settings className="h-3.5 w-3.5" />
             </button>
           </div>
           {/* mobile buttons */}
@@ -406,6 +418,7 @@ export default function Home() {
               liveMode={liveMode}
               onToggleLive={() => setLiveMode((v) => !v)}
               onClearLive={clearLiveTicks}
+              initialCollapsed={settings.flowCollapsed}
             />
           </TabsContent>
 
@@ -458,6 +471,9 @@ export default function Home() {
 
       {/* ─── Onboarding tour ──────────────────────────────────────── */}
       {tourOpen && <OnboardingTour key="tour" open={tourOpen} onOpenChange={(o) => { if (o) setTourOpen(true); else closeTour() }} onSwitchTab={setTab} />}
+
+      {/* ─── Settings panel ───────────────────────────────────────── */}
+      <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} settings={settings} onChange={setSettings} />
 
       {/* ─── Footer (sticky) ─────────────────────────────────────── */}
       <footer className="mt-auto border-t border-slate-800 bg-slate-950">
@@ -544,10 +560,11 @@ function AgentFlowPanel(props: {
   liveMode: boolean
   onToggleLive: () => void
   onClearLive: () => void
+  initialCollapsed?: boolean
 }) {
-  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, onReplay, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive } = props
+  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, onReplay, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive, initialCollapsed } = props
   const activeTrace = activeStep >= 0 && activeStep < run.trace.length ? run.trace[activeStep] : null
-  const [flowCollapsed, setFlowCollapsed] = useState(false)
+  const [flowCollapsed, setFlowCollapsed] = useState(initialCollapsed ?? false)
 
   return (
     <div className={`grid grid-cols-1 gap-4 ${flowCollapsed ? 'min-[1960px]:grid-cols-[1fr_440px]' : 'min-[1960px]:grid-cols-[1fr_340px]'}`}>

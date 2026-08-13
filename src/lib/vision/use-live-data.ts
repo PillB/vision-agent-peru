@@ -122,10 +122,17 @@ export function useLiveData(enabled: boolean, onAnomaly?: (useCaseId: string) =>
     const interval = setInterval(() => {
       const feed = LIVE_FEEDS[Math.floor(Math.random() * LIVE_FEEDS.length)]
       const className = pickClass(feed)
-      // z-score: mostly nominal, sometimes anomalous
-      const base = Math.random() * 1.4
-      const spike = Math.random() < 0.18 ? Math.random() * 2.8 : 0
-      const z = Math.round((base + spike) * 100) / 100
+      // z-score: ~80% nominal, ~20% anomaly (demo-friendly rate so the
+      // live-mode-drives-flow feature visibly fires within ~5-10s).
+      let z: number
+      if (Math.random() < 0.2) {
+        // anomaly: z in 2.0–4.2 → tier 1 (watch) / 2 (anomaly) / 3 (critical)
+        z = 2.0 + Math.random() * 2.2
+      } else {
+        // nominal: z in 0–1.3 → tier 0
+        z = Math.random() * 1.3
+      }
+      z = Math.round(z * 100) / 100
       const tier = tierForZ(z)
       const tick: LiveTick = {
         id: idRef.current++,

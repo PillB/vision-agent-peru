@@ -149,4 +149,21 @@
   .max-h-\[52vh\]::-webkit-scrollbar-thumb:hover {
     background: rgba(148, 163, 184, 0.6);
   }
+
+  /* Presentation mode: larger fonts + boosted contrast for projectors. */
+  .presentation-mode {
+    font-size: 16px;
+  }
+  .presentation-mode h1 { font-size: 1.25rem; }
+  .presentation-mode h2 { font-size: 1.05rem; }
+  .presentation-mode h3 { font-size: 0.95rem; }
+  .presentation-mode .text-sm { font-size: 0.9rem; }
+  .presentation-mode .text-xs { font-size: 0.8rem; }
+  .presentation-mode .text-\[11px\] { font-size: 0.75rem; }
+  .presentation-mode .text-\[10px\] { font-size: 0.7rem; }
+  .presentation-mode .text-\[9px\] { font-size: 0.65rem; }
+  .presentation-mode .text-2xl { font-size: 1.6rem; }
+  .presentation-mode .text-lg { font-size: 1.1rem; }
+  .presentation-mode .rounded-xl { box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.15); }
+  .presentation-mode button { min-height: 32px; }
 }

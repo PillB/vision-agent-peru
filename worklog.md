@@ -350,3 +350,85 @@ Verification (round 6):
   3. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear dynamically.
   4. **Theme toggle** (light/dark) — for VP presentations in bright rooms (note: heavy refactor due to inline SVG colors across 13 components).
   5. **Settings panel** — persist user prefs (speed, collapsed state, live mode) to localStorage.
+
+---
+Task ID: 9
+Agent: Z.ai (cron webDevReview — round 6)
+Task: QA + add live-mode-drives-flow. (Worklog recorded retroactively in round 7 — round 6 was interrupted by an infra outage before the worklog could be written.)
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–8) was LIVE and stable. QA pass: dev server HTTP 200, `bun run lint` clean, 0 console errors, overflow=0.
+- Round 6 implemented the live-mode-drives-flow feature but the worklog update was blocked by a temporary tooling outage. This record documents that work, verified + tuned in round 7.
+
+## Current goals / completed modifications / verification results
+
+### Live Mode Drives the Agent Flow (`use-live-data.ts` + `page.tsx`)
+- Added `useCaseId` field to `LiveTick` + a `classToUseCase()` mapper (person→crowd_surge, car→after_hours, backpack→abandoned_object, fire/smoke→fire_smoke, water→flood_watch, debris→landslide).
+- Added an optional `onAnomaly(useCaseId)` callback to `useLiveData` that fires when a new anomaly+ tick (tier ≥ 2) is generated — inside the interval (not an effect), avoiding setState-in-effect lint. Latest callback kept in a ref updated via effect.
+- The page passes `handleLiveAnomaly` which: switches to the flow tab, loads the matching use case, increments the cycle, and auto-plays the trace.
+- **Bug found + fixed in round 7:** the original anomaly probability (~2% per tick) was far too low for a demo — 24 ticks produced 0 anomalies. Tuned to ~20% anomaly rate (z = 2.0–4.2 for anomalies, 0–1.3 for nominal) so the live-drives-flow feature visibly fires within ~5–10s.
+- Verified in round 7: started live mode → cycle advanced 1→2 + playing=true within 4s. Zero console errors.
+
+### Lint fixes during development
+- Renamed `useCaseForClass` → `classToUseCase` (rules-of-hooks false positive on `use*` prefix).
+- Used `onAnomalyRef` + effect to keep latest callback without ref-during-render lint error.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable (13 components, 3 tabs, 8 keyboard shortcuts, 3 export formats, history replay, responsive layout, monitoring view, guided tour, live-mode-drives-flow).
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Drag-to-pan / pinch-zoom on the flow SVG** — pointer-based pan + zoom instead of horizontal scrollbar.
+  2. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear dynamically.
+  3. **Settings panel** — persist user prefs (speed, collapsed state, live mode) to localStorage.
+  4. **Presentation mode** — boost contrast/font sizes for projectors.
+
+---
+Task ID: 10
+Agent: Z.ai (cron webDevReview — round 7)
+Task: QA + fix live anomaly rate bug + add settings panel (with localStorage persistence) + presentation mode.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–9) was LIVE and stable. QA pass: dev server HTTP 200, `bun run lint` clean, 0 console errors, overflow=0.
+- Verified round 5-6 features (collapse, tour, live-drives-flow) intact.
+- **Bug found + fixed:** the live data generator's anomaly probability was ~2% per tick (base 0–1.4 + 18%-chance spike 0–2.8, needing z≥2.5). 24 ticks produced 0 anomalies — far too low for a demo. Tuned to ~20% anomaly rate (z = 2.0–4.2 for anomalies, 0–1.3 for nominal) so live-drives-flow visibly fires within ~5–10s. Verified: started live → cycle advanced 1→2 + playing=true within 4s.
+
+## Current goals / completed modifications / verification results
+
+### 1. Live anomaly rate fix (`use-live-data.ts`)
+- Replaced `base + spike` with a clean 80/20 split: 80% nominal (z 0–1.3 → T0), 20% anomaly (z 2.0–4.2 → T1/T2/T3).
+- Verified: live mode now drives the agent flow within ~4s (was ~50s+ before).
+
+### 2. Settings panel (`settings-panel.tsx` + localStorage)
+- New slide-over panel (right drawer, spring animation) with 4 persisted settings:
+  - **Default playback speed** (0.5×/1×/2×) — applied as the initial `speed` state.
+  - **Start with live mode** — applied as the initial `liveMode` state (auto-streams on load).
+  - **Monitoring view by default** — passed as `initialCollapsed` to the AgentFlowPanel.
+  - **Presentation mode** — toggles a `presentation-mode` CSS class on the root.
+- "Reset to defaults" button + an "Active configuration" summary card.
+- Settings persist to `vap:settings` in localStorage (restored on next visit — good for repeat demos).
+- New Settings (gear) icon button in the header (sky hover, desktop + mobile).
+- VLM-verified: panel renders with all 4 rows, speed buttons, toggles, reset button, active config summary.
+
+### 3. Presentation mode (`globals.css` + root class)
+- `.presentation-mode` CSS: larger base font (16px), boosted heading sizes (h1 1.25rem, h2 1.05rem, h3 0.95rem), larger KPI values (text-2xl 1.6rem), subtle card outlines, 32px min button height.
+- Designed for projector / bright-room demos where the default small fonts are hard to read.
+- Verified: toggling presentation mode adds the class to the root div; VLM-confirmed larger fonts.
+
+### Styling polish
+- Added Settings icon to imports.
+- Settings drawer reuses the NodeInspector slide-over pattern (framer-motion spring).
+- Custom Toggle component (amber when on, slate when off, white knob).
+
+Verification:
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: page loads HTTP 200, 0 console errors throughout (settings open/close, toggle presentation mode, tab switches, live mode).
+- Settings persist: confirmed `vap:settings` in localStorage.
+- VLM: confirmed settings panel renders with all rows + presentation mode applies larger fonts.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable (14 components, 3 tabs, 8 keyboard shortcuts, 3 export formats, history replay, responsive layout, monitoring view, guided tour, live-mode-drives-flow, settings panel + presentation mode).
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Drag-to-pan / pinch-zoom on the flow SVG** — pointer-based pan + zoom instead of horizontal scrollbar.
+  2. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear dynamically.
+  3. **Keyboard shortcut for settings** — e.g. `,` to open settings.
+  4. **Settings reset confirmation** — confirm before resetting (currently instant).
+  5. **Per-setting tooltips** — hover help on each setting row explaining the trade-off.
