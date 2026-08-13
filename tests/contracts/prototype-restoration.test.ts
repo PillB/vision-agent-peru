@@ -20,6 +20,20 @@ test('restored prototype serializes action batches and revalidates use-case acti
   assert.match(camera, /allowedActions: useCase\.actions/)
   assert.match(actions, /current use-case allowlist/)
   assert.match(actions, /Suppressed after judge verdict/)
+  assert.match(camera, /buildAgentCycleSnapshot/)
+  assert.doesNotMatch(camera, /agenticResponse\(/)
+  assert.match(actions, /cycleId: ctx\.cycleId/)
+})
+
+test('agent flow and measured temporal correlation views remain wired to runtime state', async () => {
+  const tab = await read('src/components/tab2-prototype.tsx')
+  const camera = await read('src/components/prototype/camera-view.tsx')
+  const flow = await read('src/components/prototype/agent-decision-flow.tsx')
+  assert.match(tab, /<AgentDecisionFlow \/>/)
+  assert.match(tab, /windowedNetworks=/)
+  assert.match(camera, /getCoOccurrenceNetwork\(30_000, measuredAt\)/)
+  assert.match(flow, /entry\.cycleId === snapshot\.cycleId/)
+  assert.match(flow, /data-active=/)
 })
 
 test('restored production path uses the pinned detector and exposes no model globals', async () => {

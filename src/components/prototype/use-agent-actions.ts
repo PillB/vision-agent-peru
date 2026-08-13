@@ -11,6 +11,7 @@ import { prefixPath } from '@/lib/path-utils'
 import { usePrototypeStore, type ActionLogEntry, type Detection, type IncidentReport } from '@/lib/store'
 
 interface ExecuteCtx {
+  cycleId: string
   cameraId: string
   cameraLabel: string
   stats: AnomalyStats
@@ -84,6 +85,7 @@ export function useAgentActions() {
       timestamp: action.timestamp,
       action,
       status: 'pending',
+      cycleId: ctx.cycleId,
     }
     pushAction(entry)
 
@@ -224,6 +226,7 @@ export function useAgentActions() {
           const entry: ActionLogEntry = {
             id: uuid(), timestamp: action.timestamp, action, status: 'skipped',
             message: `Suppressed after judge verdict: ${judgeVerdict}`,
+            cycleId: ctx.cycleId,
           }
           pushAction(entry)
           continue

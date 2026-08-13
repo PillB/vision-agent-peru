@@ -14,40 +14,43 @@ import { IncidentPanel } from './prototype/incident-panel'
 import { CoOccurrenceGraph } from './prototype/co-occurrence-graph'
 import { UseCaseSelector } from './prototype/use-case-selector'
 import { IdentityPanel } from './prototype/identity-panel'
+import { AgentDecisionFlow } from './prototype/agent-decision-flow'
 import { usePrototypeStore } from '@/lib/store'
 import { Badge } from '@/components/ui/badge'
 import { Info } from 'lucide-react'
+import type { CoOccurrenceNetwork } from '@/lib/subject-reid'
+import type { StoredCoOccurrenceSlice } from '@/lib/store'
+
+function toGraphNetwork(data: StoredCoOccurrenceSlice): CoOccurrenceNetwork {
+  return {
+    nodes: data.nodes.map(node => ({
+      trackId: node.trackId,
+      firstSeen: node.firstSeen,
+      lastSeen: node.lastSeen,
+      totalDurationMs: node.totalDurationMs,
+      reappearanceCount: node.reappearanceCount,
+      detectionCount: node.detectionCount,
+      lastClass: node.lastClass,
+      coOccurrences: new Map<string, number>(),
+    })),
+    edges: data.edges.map(edge => ({ ...edge })),
+    totalFrames: data.totalFrames,
+    totalSubjects: data.totalSubjects,
+  }
+}
 
 export function Tab2Prototype() {
   const t = useTranslations('Tab2')
   const isRunning = usePrototypeStore((state) => state.isRunning)
   const coOccurrenceData = usePrototypeStore((s) => s.coOccurrenceData)
+  const coOccurrenceByFeed = usePrototypeStore((s) => s.coOccurrenceByFeed)
 
-  // Convert store data to CoOccurrenceNetwork format for the graph
-  const network = coOccurrenceData ? {
-    nodes: coOccurrenceData.nodes.map(n => ({
-      trackId: n.trackId,
-      firstSeen: n.firstSeen,
-      lastSeen: n.lastSeen,
-      totalDurationMs: n.totalDurationMs,
-      reappearanceCount: n.reappearanceCount,
-      detectionCount: n.detectionCount,
-      lastClass: n.lastClass,
-      coOccurrences: new Map<string, number>(),
-    })),
-    edges: coOccurrenceData.edges.map(e => ({
-      source: e.source,
-      target: e.target,
-      sharedFrames: e.sharedFrames,
-      sharedDurationMs: e.sharedDurationMs,
-      encounterCount: e.encounterCount,
-      familiarityScore: e.familiarityScore,
-      proximityScore: e.proximityScore,
-      durationScore: e.durationScore,
-    })),
-    totalFrames: coOccurrenceData.totalFrames,
-    totalSubjects: coOccurrenceData.totalSubjects,
-  } : null
+  const network = coOccurrenceData ? toGraphNetwork(coOccurrenceData) : null
+  const windowedNetworks = coOccurrenceData ? {
+    30000: toGraphNetwork(coOccurrenceData.windows['30000']),
+    120000: toGraphNetwork(coOccurrenceData.windows['120000']),
+    600000: toGraphNetwork(coOccurrenceData.windows['600000']),
+  } : undefined
 
   return (
     <main aria-label="Live prototype" className="bg-zinc-50 min-h-[calc(100vh-3.5rem-3rem)]">
@@ -62,6 +65,7 @@ export function Tab2Prototype() {
 
         <UseCaseSelector />
         <MetricsRow />
+        <AgentDecisionFlow />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4">
           <div className="lg:col-span-8 space-y-3 md:space-y-4">
@@ -88,19 +92,38 @@ export function Tab2Prototype() {
           <IncidentPanel />
         </div>
 
-        {/* Subject re-identification + co-occurrence network */}
-        <div className="rounded-lg border border-zinc-200 bg-white p-3">
+        {/* Local-track entity concurrence + correlation network */}
+        <div className="rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-serif text-sm text-zinc-950">Subject Co-occurrence Network</h3>
-            <Badge variant="outline" className="text-[9px]">Flock-style re-ID</Badge>
+            <h3 className="font-serif text-base text-zinc-950">Entity concurrence &amp; correlation</h3>
+            <Badge variant="outline" className="text-[9px]">Measured local tracks</Badge>
           </div>
           <p className="text-[10px] text-zinc-500 mb-2">
-            Force-directed graph of subjects sharing the screen. Node size = detection count.
-            Edge thickness = composite weight (shared frames 35%, duration 25%, proximity 25%, repeat encounters 15%).
-            Track IDs are NOT identity — appearance similarity does not establish identity.
+            Local tracks sharing the same feed and time window. Node size = observation count; edge thickness = an explainable composite of shared frames (35%), duration (25%), proximity (25%) and repeat encounters (15%). The weight is not a calibrated probability. Track IDs reset by source and never establish identity.
           </p>
-          <div className="flex justify-center">
-            <CoOccurrenceGraph network={network} width={500} height={350} />
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <CoOccurrenceGraph network={network} windowedNetworks={windowedNetworks} width={640} height={360} />
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3" data-testid="per-feed-correlation-matrix">
+              <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Per-feed analytics matrix</div>
+              <p className="mt-1 text-[9px] leading-relaxed text-zinc-500">Each row is an independent source session. No cross-feed identity merge is performed.</p>
+              <div className="mt-2 overflow-x-auto">
+                <table className="w-full text-[9px]">
+                  <thead className="text-zinc-500"><tr><th className="py-1 text-left">Feed</th><th className="py-1 text-right">Tracks</th><th className="py-1 text-right">Links</th><th className="py-1 text-right">Top weight</th></tr></thead>
+                  <tbody>
+                    {Object.values(coOccurrenceByFeed).length === 0 ? (
+                      <tr><td colSpan={4} className="border-t border-zinc-200 py-4 text-center text-zinc-400">Start analysis on one or more feeds.</td></tr>
+                    ) : Object.values(coOccurrenceByFeed).map(feed => (
+                      <tr key={feed.cameraId} className="border-t border-zinc-200 text-zinc-700">
+                        <td className="max-w-[130px] truncate py-1.5 pr-2" title={feed.cameraLabel}>{feed.cameraLabel}</td>
+                        <td className="py-1.5 text-right font-mono">{feed.totalSubjects}</td>
+                        <td className="py-1.5 text-right font-mono">{feed.edges.length}</td>
+                        <td className="py-1.5 text-right font-mono">{feed.edges[0]?.familiarityScore.toFixed(2) ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 

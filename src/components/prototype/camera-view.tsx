@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Play, Pause, Camera as CameraIcon, Loader2, AlertCircle, RefreshCw, Cpu } from 'lucide-react'
-import { usePrototypeStore, CAMERA_SOURCES, type Detection } from '@/lib/store'
+import { usePrototypeStore, CAMERA_SOURCES, type Detection, type StoredCoOccurrenceSlice } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { decide } from '@/lib/agent'
-import { agenticResponse, type AgenticResponse } from '@/lib/agentic-response'
+import { buildAgentCycleSnapshot } from '@/lib/decision-flow'
 import { USE_CASES } from '@/lib/use-cases'
 import { WithinFeedTracker, AppearanceTracker, extractAppearanceFeatures } from '@/lib/identity'
 import { SubjectReidentifier, type ActiveSubjectTrack, type CoOccurrenceNetwork } from '@/lib/subject-reid'
@@ -53,10 +53,10 @@ export function CameraView() {
   const trackerRef = useRef<WithinFeedTracker>(new WithinFeedTracker(60, 0.3))
   const appearanceTrackerRef = useRef<AppearanceTracker>(new AppearanceTracker(0.6, 24))
   const subjectReidRef = useRef<SubjectReidentifier>(new SubjectReidentifier(3000))
-  const [coOccurrenceNetwork, setCoOccurrenceNetwork] = useState<CoOccurrenceNetwork | null>(null)
   const [deviceCameraStatus, setDeviceCameraStatus] = useState<'idle' | 'requesting' | 'live' | 'denied'>('idle')
   const [deviceCameraEnabled, setDeviceCameraEnabled] = useState(false)
   const setCoOccurrenceData = usePrototypeStore((s) => s.setCoOccurrenceData)
+  const setAgentCycleSnapshot = usePrototypeStore((s) => s.setAgentCycleSnapshot)
 
   const [snapshotView, setSnapshotView] = useState<string | null>(null)
 
@@ -128,43 +128,36 @@ export function CameraView() {
       state.agentConfig
     )
 
-    // ─── AGENTIC RESPONSE (9-stage loop) ───
-    // Run the new 9-stage agentic response alongside decide() for the audit
-    // trail. The trace is pushed to the agent trace so operators can see
-    // WHY each action was proposed. decide() still drives action dispatch
-    // for backward compatibility — agenticResponse() will replace it fully
-    // once the React layer is migrated to consume its trace + outcome.
-    const agentic = agenticResponse(
-      {
-        cameraId: activeCamera.id,
-        cameraLabel: activeCamera.label,
-        useCase,
-        capabilityLevel: state.capabilityLevel,
-        stats: state.stats,
-        detections: dets,
-        canvasW: canvas?.width ?? 480,
-        canvasH: canvas?.height ?? 270,
+    // Build the visual trace from the SAME authoritative AgentDecision passed
+    // to the serialized executor. This prevents a convincing but divergent
+    // parallel trace from being shown to the operator.
+    const cycleNumber = state.agentCycleCount + 1
+    const cycleSnapshot = buildAgentCycleSnapshot({
+      cycleNumber,
+      startedAt: Date.now(),
+      cameraId: activeCamera.id,
+      cameraLabel: activeCamera.label,
+      capabilityLevel: state.capabilityLevel,
+      useCase,
+      decision,
+      evidence: {
+        detectionCount: dets.length,
         sustainCount: newSustainCount,
-        escalationHistory: state.escalationHistory,
-        acknowledgedUntil: state.acknowledgedUntil,
-        llmJudgeEnabled: state.llmJudgeEnabled,
+        peakZ: state.stats.peakZ,
       },
-      state.agentConfig
-    )
-    // Push the agentic trace stages (compact — one line per stage)
-    const agenticTraceLines = agentic.trace
-      .filter(t => t.status === 'fail' || t.status === 'pass' || t.detail.includes('fired'))
-      .slice(0, 3)  // keep trace concise — top 3 stages
-      .map(t => `[${t.stage}] ${t.detail}`)
-    if (agenticTraceLines.length > 0) {
-      pushTrace(agenticTraceLines.join(' | '))
-    }
+    })
+    setAgentCycleSnapshot(cycleSnapshot)
+    const conciseTrace = cycleSnapshot.trace
+      .filter(stage => stage.status === 'pass' || stage.status === 'fail')
+      .slice(0, 3)
+      .map(stage => `[${stage.stage}] ${stage.detail}`)
+    if (conciseTrace.length > 0) pushTrace(conciseTrace.join(' | '))
 
     setAgentState({
       sustainCount: newSustainCount,
       currentTier: decision.tier,
       agentReasoning: decision.reasoning,
-      agentCycleCount: state.agentCycleCount + 1,
+      agentCycleCount: cycleNumber,
     })
     pushTrace(decision.reasoning)
 
@@ -176,6 +169,7 @@ export function CameraView() {
       reasoning: decision.reasoning,
       canvas: canvas ?? ({} as HTMLCanvasElement),
       allowedActions: useCase.actions,
+      cycleId: cycleSnapshot.cycleId,
     }).catch((error) => console.error('[agent] action error:', error))
 
     if (decision.tier >= 2 && canvas && typeof canvas.toDataURL === 'function') {
@@ -546,10 +540,10 @@ export function CameraView() {
             }))
             setAppearanceTracks(localTracks.slice(0, 50))
             // Update co-occurrence network and push to store for the graph component
-            const network = subjectReidRef.current.getCoOccurrenceNetwork()
-            setCoOccurrenceNetwork(network)
-            setCoOccurrenceData({
-              nodes: network.nodes.map(n => ({
+            const measuredAt = Date.now()
+            const network = subjectReidRef.current.getCoOccurrenceNetwork(undefined, measuredAt)
+            const serializeNetwork = (value: CoOccurrenceNetwork): StoredCoOccurrenceSlice => ({
+              nodes: value.nodes.map(n => ({
                 trackId: n.trackId,
                 detectionCount: n.detectionCount,
                 reappearanceCount: n.reappearanceCount,
@@ -559,18 +553,20 @@ export function CameraView() {
                 lastSeen: n.lastSeen,
                 coSubjects: n.coOccurrences.size,
               })),
-              edges: network.edges.map(e => ({
-                source: e.source,
-                target: e.target,
-                sharedFrames: e.sharedFrames,
-                sharedDurationMs: e.sharedDurationMs,
-                encounterCount: e.encounterCount,
-                familiarityScore: e.familiarityScore,
-                proximityScore: e.proximityScore,
-                durationScore: e.durationScore,
-              })),
-              totalFrames: network.totalFrames,
-              totalSubjects: network.totalSubjects,
+              edges: value.edges.map(e => ({ ...e })),
+              totalFrames: value.totalFrames,
+              totalSubjects: value.totalSubjects,
+            })
+            setCoOccurrenceData({
+              cameraId: activeCamera.id,
+              cameraLabel: activeCamera.label,
+              updatedAt: measuredAt,
+              ...serializeNetwork(network),
+              windows: {
+                '30000': serializeNetwork(subjectReidRef.current.getCoOccurrenceNetwork(30_000, measuredAt)),
+                '120000': serializeNetwork(subjectReidRef.current.getCoOccurrenceNetwork(120_000, measuredAt)),
+                '600000': serializeNetwork(subjectReidRef.current.getCoOccurrenceNetwork(600_000, measuredAt)),
+              },
             })
           }
         }
