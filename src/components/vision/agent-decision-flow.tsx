@@ -49,6 +49,8 @@ interface Props {
   height?: number
   selectedNodeId?: string | null
   onNodeClick?: (nodeId: string) => void
+  /** Increment to imperatively reset the pan/zoom view (e.g. via `0` hotkey). */
+  resetSignal?: number
 }
 
 const NODE_TYPE_STYLE: Record<FlowNode['type'], { fill: string; stroke: string; accent: string }> = {
@@ -61,7 +63,7 @@ const NODE_TYPE_STYLE: Record<FlowNode['type'], { fill: string; stroke: string; 
   terminal: { fill: '#0b1220', stroke: '#334155', accent: '#94a3b8' },
 }
 
-export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick }: Props) {
+export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick, resetSignal }: Props) {
   const { nodes: activeNodes, edges: activeEdges } = useMemo(
     () => computeActivePath(run),
     [run],
@@ -88,6 +90,15 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
   const zoomIn = () => setZoom((z) => clampZoom(z + 0.2))
   const zoomOut = () => setZoom((z) => clampZoom(z - 0.2))
   const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }) }
+
+  // Imperative reset via the `resetSignal` prop (e.g. triggered by the `0` hotkey).
+  const lastResetRef = useRef(resetSignal ?? 0)
+  if (resetSignal !== undefined && resetSignal !== lastResetRef.current) {
+    lastResetRef.current = resetSignal
+    // reset during render is fine for state derived from props
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }
 
   const onPointerDown = (e: React.PointerEvent) => {
     // Only pan on the background (not on nodes, which are clickable).

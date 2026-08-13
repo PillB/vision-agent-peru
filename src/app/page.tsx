@@ -36,7 +36,7 @@ import { useLocalStorage } from '@/lib/vision/use-local-storage'
 import { useLiveData } from '@/lib/vision/use-live-data'
 import type { LiveTick } from '@/lib/vision/use-live-data'
 import { USE_CASES, LEVEL_META, USE_CASE_BY_ID } from '@/lib/vision/use-cases'
-import { getEntityNetwork, KIND_META } from '@/lib/vision/entity-network'
+import { getEntityNetwork, KIND_META, mergeLiveTicks } from '@/lib/vision/entity-network'
 import { generateAgentRun, NODE_BY_ID } from '@/lib/vision/agent-flow'
 import { TIER_META } from '@/lib/vision/types'
 import type { UseCase, AgentFlowRun, EntityKind, Tier } from '@/lib/vision/types'
@@ -48,7 +48,7 @@ const UC_ICONS: Record<string, LucideIcon> = {
 }
 
 export default function Home() {
-  const network = useMemo(() => getEntityNetwork(), [])
+  const baseNetwork = useMemo(() => getEntityNetwork(), [])
   const [selectedUseCaseId, setSelectedUseCaseId] = useState<string>('shoplifting')
   const [cycle, setCycle] = useState(1)
   // Run is derived from the selected use case + cycle (no setState-in-effect needed)
@@ -64,6 +64,8 @@ export default function Home() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [liveMode, setLiveMode] = useState(settings.startWithLiveMode)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // Increment to imperatively reset the flow pan/zoom (triggered by `0` hotkey).
+  const [flowResetSignal, setFlowResetSignal] = useState(0)
   // Live mode drives the agent flow: when an anomaly+ tick arrives, load the
   // matching use case + auto-animate the trace so the VP sees the agent respond.
   const handleLiveAnomaly = useCallback((useCaseId: string) => {
@@ -74,6 +76,30 @@ export default function Home() {
     requestAnimationFrame(() => setPlaying(true))
   }, [])
   const { ticks: liveTicks, clear: clearLiveTicks } = useLiveData(liveMode, handleLiveAnomaly)
+  // Live ticker → correlation feed: anomaly+ live ticks become entity nodes
+  // in the network so the graph visibly grows when live mode is on.
+  const network = useMemo(() => {
+    if (!liveMode || liveTicks.length === 0) return baseNetwork
+    const liveEntities = liveTicks
+      .filter((t) => t.tier >= 2 && t.useCaseId)
+      .map((t) => ({
+        id: String(t.id),
+        label: `⚡${t.className}`,
+        feedId: t.feedId,
+        className: t.className,
+        kind: ((): EntityKind => {
+          if (t.className === 'person') return 'person'
+          if (['car', 'truck', 'bus', 'motorcycle', 'forklift'].includes(t.className)) return 'vehicle'
+          if (['fire', 'smoke', 'debris'].includes(t.className)) return 'hazard'
+          if (['water'].includes(t.className)) return 'environment'
+          return 'object'
+        })(),
+        z: t.z,
+        tier: t.tier,
+        ts: t.ts,
+      }))
+    return mergeLiveTicks(baseNetwork, liveEntities)
+  }, [baseNetwork, liveMode, liveTicks])
   const [helpOpen, setHelpOpen] = useState(false)
   const [tourSeen, setTourSeen] = useLocalStorage('vap:tour-seen', false)
   const [tourOpen, setTourOpen] = useState(false)
@@ -244,6 +270,7 @@ export default function Home() {
       else if (e.code === 'Escape') { setSelectedNodeId(null); setPaletteOpen(false); setHelpOpen(false); setSettingsOpen(false) }
       else if (e.key === '?' || (e.shiftKey && e.code === 'Slash')) { e.preventDefault(); setHelpOpen((o) => !o) }
       else if (e.key === ',' || e.code === 'Comma') { e.preventDefault(); setSettingsOpen((o) => !o) }
+      else if (e.key === '0' || e.code === 'Digit0') { e.preventDefault(); setFlowResetSignal((s) => s + 1) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -420,6 +447,7 @@ export default function Home() {
               onToggleLive={() => setLiveMode((v) => !v)}
               onClearLive={clearLiveTicks}
               initialCollapsed={settings.flowCollapsed}
+              flowResetSignal={flowResetSignal}
             />
           </TabsContent>
 
@@ -562,8 +590,9 @@ function AgentFlowPanel(props: {
   onToggleLive: () => void
   onClearLive: () => void
   initialCollapsed?: boolean
+  flowResetSignal?: number
 }) {
-  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, onReplay, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive, initialCollapsed } = props
+  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, onReplay, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive, initialCollapsed, flowResetSignal } = props
   const activeTrace = activeStep >= 0 && activeStep < run.trace.length ? run.trace[activeStep] : null
   const [flowCollapsed, setFlowCollapsed] = useState(initialCollapsed ?? false)
 
@@ -674,7 +703,7 @@ function AgentFlowPanel(props: {
               </Tooltip>
             </TooltipProvider>
           </div>
-          <AgentDecisionFlow run={run} activeStep={activeStep} selectedNodeId={selectedNodeId} onNodeClick={onNodeClick} />
+          <AgentDecisionFlow run={run} activeStep={activeStep} selectedNodeId={selectedNodeId} onNodeClick={onNodeClick} resetSignal={flowResetSignal} />
         </div>
 
         {/* Playback controls */}

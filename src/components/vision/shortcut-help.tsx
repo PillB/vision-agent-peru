@@ -15,6 +15,7 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ['→'], label: 'Step forward one stage', group: 'Playback' },
   { keys: ['R'], label: 'Reset trace to start', group: 'Playback' },
   { keys: ['N'], label: 'Generate next agent cycle', group: 'Playback' },
+  { keys: ['0'], label: 'Reset flow pan/zoom to 1:1', group: 'Flow graph' },
   { keys: ['⌘', 'K'], label: 'Open command palette (jump to use case / flow node / tab)', group: 'Navigation' },
   { keys: [','], label: 'Toggle settings panel', group: 'Navigation' },
   { keys: ['Esc'], label: 'Close inspector / palette / help / settings', group: 'Navigation' },

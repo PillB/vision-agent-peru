@@ -266,3 +266,105 @@ export const KIND_META: Record<EntityKind, { label: string; color: string; icon:
   hazard: { label: 'Hazard', color: '#ef4444', icon: 'alert-triangle' },
   environment: { label: 'Environment', color: '#0ea5e9', icon: 'waves' },
 }
+
+// ─── Live tick → entity mapping ─────────────────────────────────────────────
+const CLASS_TO_KIND: Record<string, EntityKind> = {
+  person: 'person',
+  car: 'vehicle', truck: 'vehicle', bus: 'vehicle', motorcycle: 'vehicle', forklift: 'vehicle',
+  backpack: 'object', handbag: 'object', 'shopping cart': 'object', suitcase: 'object',
+  fire: 'hazard', smoke: 'hazard', debris: 'hazard',
+  water: 'environment',
+}
+
+export interface LiveEntity {
+  id: string
+  label: string
+  feedId: string
+  className: string
+  kind: EntityKind
+  z: number
+  tier: number
+  ts: number
+}
+
+/**
+ * Merge live detection ticks into the base entity network. Anomaly+ ticks
+ * (tier >= 2) become "live" entity nodes appended to the network with a
+ * "live" prefix so the dashboard's correlation graph visibly grows when
+ * live mode is on. Each live entity correlates (weakly) with the most
+ * recent base entity in the same feed.
+ */
+export function mergeLiveTicks(base: EntityNetwork, live: LiveEntity[]): EntityNetwork {
+  if (live.length === 0) return base
+  const liveNodes: EntityNode[] = live.slice(0, 12).map((l, i) => {
+    const kind = CLASS_TO_KIND[l.className] ?? 'object'
+    return {
+      id: `live::${l.id}`,
+      label: `⚡${l.className}`,
+      kind,
+      className: l.className,
+      feedId: l.feedId,
+      detectionCount: 1 + (l.tier >= 2 ? 2 : 0),
+      reappearanceCount: 0,
+      totalDurationMs: 1000,
+      confidence: 0.85,
+      anomalyZ: l.z,
+      tier: l.tier as Tier,
+      firstSeenMs: l.ts,
+      lastSeenMs: l.ts,
+    }
+  })
+  // Edges: each live node correlates with the most recent base entity in the same feed.
+  const liveEdges: CorrelationEdge[] = []
+  liveNodes.forEach((ln) => {
+    const baseInFeed = base.nodes.filter((n) => n.feedId === ln.feedId)
+    if (baseInFeed.length === 0) return
+    // pick the most-recent base node by lastSeenMs
+    const target = baseInFeed.reduce((a, b) => (b.lastSeenMs > a.lastSeenMs ? b : a))
+    const corr = Math.min(0.95, 0.4 + ln.anomalyZ * 0.12)
+    liveEdges.push({
+      source: ln.id,
+      target: target.id,
+      encounterCount: 1,
+      sharedFrames: Math.round(corr * 15),
+      sharedDurationMs: Math.round(corr * 8000),
+      proximityScore: Math.round(corr * 100) / 100,
+      temporalOverlap: 0.9,
+      familiarityScore: Math.round(corr * 100) / 100,
+      correlationScore: Math.round(corr * 100) / 100,
+      crossFeed: false,
+    })
+  })
+  // Also correlate consecutive live nodes with each other.
+  for (let i = 1; i < liveNodes.length; i++) {
+    const a = liveNodes[i - 1]
+    const b = liveNodes[i]
+    if (a.feedId !== b.feedId) continue
+    const corr = 0.35 + Math.random() * 0.2
+    liveEdges.push({
+      source: a.id,
+      target: b.id,
+      encounterCount: 1,
+      sharedFrames: 5,
+      sharedDurationMs: 3000,
+      proximityScore: Math.round(corr * 100) / 100,
+      temporalOverlap: 0.8,
+      familiarityScore: Math.round(corr * 100) / 100,
+      correlationScore: Math.round(corr * 100) / 100,
+      crossFeed: false,
+    })
+  }
+  return {
+    ...base,
+    nodes: [...base.nodes, ...liveNodes],
+    edges: [...base.edges, ...liveEdges],
+    feeds: base.feeds.map((f) => {
+      const liveInFeed = liveNodes.filter((n) => n.feedId === f.feedId)
+      return liveInFeed.length === 0 ? f : {
+        ...f,
+        entityIds: [...f.entityIds, ...liveInFeed.map((n) => n.id)],
+        totalSubjects: f.totalSubjects + liveInFeed.length,
+      }
+    }),
+  }
+}

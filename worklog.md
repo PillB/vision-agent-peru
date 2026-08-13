@@ -515,3 +515,39 @@ Verification:
   3. **Pinch-to-zoom on touch devices** — the current wheel-zoom requires ctrl; add touch gesture support for tablets.
   4. **Mini-map node labels** — show abbreviated stage labels on the mini-map dots for better orientation.
   5. **Keyboard shortcut: 0 to reset view** — add a `0` shortcut to reset the flow pan/zoom.
+
+---
+Task ID: 13
+Agent: Z.ai (cron webDevReview — round 10)
+Task: QA + add live ticker → correlation feed + `0` keyboard shortcut to reset flow view.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–12) was LIVE and stable. QA pass: dev server HTTP 200, `bun run lint` clean, 0 console errors, overflow=0.
+- Verified round 9 features intact: mini-map appears at zoom 1.4, reset view, all 3 tabs.
+
+## Current goals / completed modifications / verification results
+
+### 1. Live ticker → correlation feed (`entity-network.ts` mergeLiveTicks + `page.tsx`)
+- New `mergeLiveTicks(base, live)` function in `entity-network.ts` that appends live anomaly+ ticks as "⚡className" entity nodes to the base network, with:
+  - `CLASS_TO_KIND` mapper (person/car/backpack/fire/water → kind).
+  - Each live node correlates with the most-recent base entity in the same feed (correlation ∝ z-score).
+  - Consecutive live nodes in the same feed also correlate with each other.
+  - Feed rosters (`entityIds`, `totalSubjects`) updated to include live entities.
+- The page's `network` is now `useMemo`-derived from `baseNetwork` + live anomaly ticks, so the correlation graph visibly grows when live mode detects anomalies.
+- **Bug found + fixed:** the first attempt put `flowResetSignal` in the `Home` component but referenced it inside `AgentFlowPanel` (a separate function) → ReferenceError. Fixed by adding `flowResetSignal` to the AgentFlowPanel props and passing it through.
+- Verified: base 34 entities → started live mode → after ~8s an anomaly tick grew it to 39 entities (5 live entities added) → stopped live → back to 34. Zero errors.
+
+### 2. `0` keyboard shortcut to reset flow pan/zoom (`page.tsx` + `agent-decision-flow.tsx` + `shortcut-help.tsx`)
+- New `resetSignal` prop on `AgentDecisionFlow` — uses the "adjust state during render" pattern (allowed by the lint rules) to imperatively reset zoom/pan when the signal increments.
+- `0` / `Digit0` keyboard shortcut increments `flowResetSignal`, triggering the reset.
+- Added to the ShortcutHelp modal under "Flow graph": `0` → "Reset flow pan/zoom to 1:1".
+- Verified: zoomed to 1.4 → pressed `0` → zoom reset to 1. Zero errors.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable (15 components, 3 tabs, 10 keyboard shortcuts, 3 export formats, history replay, responsive layout, monitoring view, guided tour, live-mode-drives-flow, settings panel + presentation mode, drag-to-pan/zoom, mini-map, reset confirmation, live ticker → correlation feed).
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Per-setting tooltips** — hover help on each setting row explaining the trade-off.
+  2. **Pinch-to-zoom on touch devices** — the current wheel-zoom requires ctrl; add touch gesture support for tablets.
+  3. **Mini-map node labels** — show abbreviated stage labels on the mini-map dots for better orientation.
+  4. **Live entities styled distinctly** — the ⚡ live entities currently use the same node style as base entities; add a pulsing border or different ring to distinguish them.
+  5. **Network graph "live" badge** — show a live indicator on the correlation network tab when live entities are present.
