@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Radio, Trash2 } from 'lucide-react'
+import { Radio, Trash2, Download } from 'lucide-react'
 import type { LiveTick } from '@/lib/vision/use-live-data'
 import { TIER_META } from '@/lib/vision/types'
 
@@ -17,6 +17,30 @@ const FEED_LABELS: Record<string, string> = {
   'feed-mall': 'Mall Jockey',
   'feed-warehouse': 'Almacén Callao',
   'feed-river': 'Río Rímac',
+}
+
+function exportCsv(ticks: LiveTick[]) {
+  const header = 'id,timestamp,iso_time,feed_id,feed_label,class,z_score,tier,tier_label\n'
+  const rows = ticks
+    .slice()
+    .reverse() // oldest first
+    .map((t) => {
+      const iso = new Date(t.ts).toISOString()
+      const feedLabel = FEED_LABELS[t.feedId] ?? t.feedId
+      const tierLabel = TIER_META[t.tier as 0 | 1 | 2 | 3].label
+      return `${t.id},${t.ts},${iso},${t.feedId},${feedLabel},${t.className},${t.z},${t.tier},${tierLabel}`
+    })
+    .join('\n')
+  const csv = header + rows
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `vision-agent-live-detections-${Date.now()}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 /**
@@ -47,9 +71,18 @@ export function LiveTicker({ ticks, enabled, onToggle, onClear }: Props) {
             <span className="text-[9px] font-mono text-slate-500 mr-1">{criticalCount} anomaly+ / {ticks.length}</span>
           )}
           <button
+            onClick={() => exportCsv(ticks)}
+            disabled={ticks.length === 0}
+            className="grid place-items-center h-7 w-7 rounded-md border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-emerald-300 hover:border-emerald-500/40 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            aria-label="Export live stream as CSV"
+            title="Export as CSV"
+          >
+            <Download className="h-3.5 w-3.5" />
+          </button>
+          <button
             onClick={onClear}
             disabled={ticks.length === 0}
-            className="grid place-items-center h-7 w-7 rounded-md border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            className="grid place-items-center h-7 w-7 rounded-md border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-rose-300 hover:border-rose-500/40 disabled:opacity-30 disabled:cursor-not-allowed transition"
             aria-label="Clear live stream"
           >
             <Trash2 className="h-3.5 w-3.5" />

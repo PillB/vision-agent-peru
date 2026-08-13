@@ -244,3 +244,64 @@ Verification:
   4. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear in real time.
   5. **Keyboard shortcut help modal** (`?` to open) listing all 7 shortcuts.
   6. **Snapshot/export of the live stream** as CSV for VP handoff.
+
+---
+Task ID: 7
+Agent: Z.ai (cron webDevReview — round 4)
+Task: QA the dashboard, fix the critical responsive overflow bug, then add 3 new features (history replay, shortcut help, CSV export) + polish.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–6) is LIVE and stable on `/`. All previous features verified intact.
+- QA pass this round: dev server returns HTTP 200, `bun run lint` passes clean (0 errors). All tabs and interactions work.
+- **Critical UX bug found + fixed:** at the default 1280px viewport, the Agent Flow tab's 2-column grid (`xl:grid-cols-[1fr_340px]` kicking in at 1280px) caused 696px of horizontal overflow (scrollWidth=1976 vs clientWidth=1280) because the flow SVG is 1594px wide — both columns can't fit. The side panel (live ticker, history, reasoning) was entirely off-screen at left=1636.
+
+## Current goals / completed modifications / verification results
+
+### Bug fix: responsive layout overflow
+- Changed both 2-column grids (AgentFlowPanel + CorrelationNetworkPanel) from `xl:grid-cols-[1fr_340px]` to `min-[1960px]:grid-cols-[1fr_340px]` — the 2-col layout now only applies at 1960px+ where both the 1594px flow and 340px panel actually fit.
+- Added `min-w-0` to all grid columns to prevent flex/grid blowout from the SVG min-width.
+- Below 1960px, the layout gracefully stacks to a single column: flow canvas on top (with internal horizontal scroll), side panel below — fully visible and usable.
+- Verified: overflow=0 on all 3 tabs (flow, network, compare) at 1280px viewport. Side panel now at left=24, liveVisible=true.
+
+### 3 new features (all verified with agent-browser):
+
+1. **History replay** (`onReplay` callback + clickable history items)
+   - Each logged cycle in the "Recent cycles" panel is now a button with amber hover + "replay ↩" hint.
+   - Clicking it calls `replayHistory(useCaseId, cycle)` which sets both the use case + cycle (regenerating the identical deterministic run) and auto-plays the trace via `requestAnimationFrame(() => setPlaying(true))`.
+   - Verified: clicked "Replay cycle 1 — Hurto en Tienda" → agent auto-played the trace (Pause button appeared).
+
+2. **Keyboard shortcut help modal** (`shortcut-help.tsx` + `?` shortcut)
+   - New `?` keyboard shortcut (Shift+/) toggles a centered modal listing all 10 shortcuts grouped by Playback / Navigation / Flow graph, with styled `<kbd>` badges.
+   - Header now has a Keyboard icon button (desktop + mobile) to open the help.
+   - `Esc` closes the help (and inspector + palette). Added `?` to the playback bar kbd hint row.
+   - VLM-verified: modal renders with all shortcuts, grouped categories, kbd badges, close button, footer hint.
+
+3. **CSV export of live detection stream** (`exportCsv` in `live-ticker.tsx`)
+   - New Download icon button on the LiveTicker header (emerald hover, disabled when empty).
+   - Exports all ticks as CSV: `id,timestamp,iso_time,feed_id,feed_label,class,z_score,tier,tier_label` (oldest first).
+   - Verified: downloaded `vision-agent-live-detections-<ts>.csv` (532 bytes, 5 rows) with correct headers + data.
+
+### Styling polish
+- History items: amber hover border + "group-hover:text-amber-200" + "replay ↩" suffix.
+- LiveTicker: CSV export button (emerald) + refined clear button (rose hover).
+- Header: Keyboard icon button (amber hover) for shortcut help, desktop + mobile.
+- Playback bar: added `?` to the kbd hint row.
+- All grid columns: `min-w-0` to prevent overflow.
+
+Verification:
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: page loads (HTTP 200), 0 console errors throughout (history replay, shortcut help open/close, CSV export, live mode, tab switches).
+- Overflow: 0px on all 3 tabs at 1280px viewport (was 696px before fix).
+- CSV: valid 532-byte file with correct headers + 5 data rows.
+- VLM: confirmed shortcut help modal renders correctly; side panel now visible in single-column layout.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable and more capable (11 components, 3 tabs, 8 keyboard shortcuts, 3 export formats, history replay, responsive layout).
+- **Known trade-off:** on viewports 1280–1959px, the flow tab is single-column (flow on top, side panel below) requiring vertical scroll to reach the side panel. On 1960px+ it's 2-column side-by-side. This is the correct responsive behavior given the 1594px flow width.
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Live mode drives the agent flow** — when live mode detects anomalies (tier ≥ 2), auto-generate + animate agent runs so the flow responds to live detections in real time.
+  2. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear dynamically.
+  3. **Collapsible flow canvas** — let the VP collapse the flow to focus on the side panel (reasoning + history + live) for a "monitoring" view.
+  4. **Drag-to-pan / pinch-zoom on the flow SVG** — for touch/mobile, add pointer-based pan + zoom instead of horizontal scrollbar.
+  5. **Theme toggle** (light/dark) — currently dark-only; a light theme would help VP presentations in bright rooms.
+  6. **Onboarding tour** — a 4-step guided tour (flow → network → compare → live) for first-time viewers.

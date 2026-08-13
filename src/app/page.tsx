@@ -7,7 +7,7 @@ import {
   RotateCw, Zap, Shield, Flame, Moon, Users, Package, Eye, Waves,
   Mountain, Building, TrafficCone, UserCheck, List, Car, ShoppingBag,
   Radar, Target, TrendingUp, AlertTriangle, Cpu, Gauge, Layers,
-  Download, MousePointerClick, Info, FileImage, Command, GitCompare,
+  Download, MousePointerClick, Info, FileImage, Command, GitCompare, Keyboard,
   type LucideIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,7 @@ import { CompareView } from '@/components/vision/compare-view'
 import { CommandPalette } from '@/components/vision/command-palette'
 import { TimeWindowAnalytics } from '@/components/vision/time-window-analytics'
 import { LiveTicker } from '@/components/vision/live-ticker'
+import { ShortcutHelp } from '@/components/vision/shortcut-help'
 import { useLocalStorage } from '@/lib/vision/use-local-storage'
 import { useLiveData } from '@/lib/vision/use-live-data'
 import type { LiveTick } from '@/lib/vision/use-live-data'
@@ -58,6 +59,7 @@ export default function Home() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [liveMode, setLiveMode] = useState(false)
   const { ticks: liveTicks, clear: clearLiveTicks } = useLiveData(liveMode)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   // Network graph controls
   const [minCorrelation, setMinCorrelation] = useState(0.25)
@@ -109,6 +111,17 @@ export default function Home() {
     setPlaying(false)
   }, [])
   const togglePlay = useCallback(() => setPlaying((p) => !p), [])
+
+  // Replay a logged cycle: load the exact use case + cycle, then auto-play.
+  // generateAgentRun is deterministic (seeded by useCaseId + cycle), so the
+  // same inputs reproduce the identical trace.
+  const replayHistory = useCallback((useCaseId: string, cycleNum: number) => {
+    setSelectedUseCaseId(useCaseId)
+    setCycle(cycleNum)
+    setActiveStep(-1)
+    // Defer play so the new run is rendered first.
+    requestAnimationFrame(() => setPlaying(true))
+  }, [])
 
   // Select a flow node (from the graph OR the command palette) + scroll the
   // flow container to center the node horizontally.
@@ -190,7 +203,7 @@ export default function Home() {
   const selectedNode = selectedNodeId ? NODE_BY_ID[selectedNodeId] ?? null : null
 
   // Keyboard shortcuts: space=play/pause, ←/→=step, r=reset, n=next cycle,
-  // esc=close inspector/palette, ⌘K/Ctrl+K=command palette
+  // esc=close inspector/palette/help, ⌘K/Ctrl+K=command palette, ?=help
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // ⌘K / Ctrl+K toggles the palette (works even when focused on inputs)
@@ -200,13 +213,18 @@ export default function Home() {
         return
       }
       const tag = (e.target as HTMLElement)?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      if (tag === 'INPUT' || tag === 'TEXTAREA') {
+        // allow Escape to close help/palette even from inputs
+        if (e.code === 'Escape') { setHelpOpen(false); setPaletteOpen(false) }
+        return
+      }
       if (e.code === 'Space') { e.preventDefault(); togglePlay() }
       else if (e.code === 'ArrowRight') { e.preventDefault(); stepForward() }
       else if (e.code === 'ArrowLeft') { e.preventDefault(); stepBack() }
       else if (e.code === 'KeyR') { reset() }
       else if (e.code === 'KeyN') { nextCycle() }
-      else if (e.code === 'Escape') { setSelectedNodeId(null); setPaletteOpen(false) }
+      else if (e.code === 'Escape') { setSelectedNodeId(null); setPaletteOpen(false); setHelpOpen(false) }
+      else if (e.key === '?' || (e.shiftKey && e.code === 'Slash')) { e.preventDefault(); setHelpOpen((o) => !o) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -275,14 +293,29 @@ export default function Home() {
               <span className="hidden xl:inline">Search</span>
               <kbd className="hidden xl:inline rounded border border-slate-700 bg-slate-900 px-1 py-0.5 text-[9px] font-mono">⌘K</kbd>
             </button>
+            <button
+              onClick={() => setHelpOpen(true)}
+              className="grid place-items-center h-8 w-8 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-amber-300 transition"
+              aria-label="Show keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+            >
+              <Keyboard className="h-3.5 w-3.5" />
+            </button>
           </div>
-          {/* mobile ⌘K button */}
+          {/* mobile buttons */}
           <button
             onClick={() => setPaletteOpen(true)}
-            className="md:hidden ml-auto grid place-items-center h-9 w-9 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-slate-200"
+            className="md:hidden grid place-items-center h-9 w-9 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-slate-200"
             aria-label="Open command palette"
           >
             <Command className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setHelpOpen(true)}
+            className="md:hidden grid place-items-center h-9 w-9 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-amber-300"
+            aria-label="Show keyboard shortcuts"
+          >
+            <Keyboard className="h-4 w-4" />
           </button>
         </div>
       </header>
@@ -341,6 +374,7 @@ export default function Home() {
               onSpeed={setSpeed}
               onNextCycle={nextCycle}
               history={history}
+              onReplay={replayHistory}
               selectedNodeId={selectedNodeId}
               onNodeClick={handleSelectFlowNode}
               onExport={exportFlowSvg}
@@ -395,6 +429,9 @@ export default function Home() {
         onSelectFlowNode={handleSelectFlowNode}
         onSwitchTab={setTab}
       />
+
+      {/* ─── Keyboard shortcut help (?) ───────────────────────────── */}
+      <ShortcutHelp open={helpOpen} onOpenChange={setHelpOpen} />
 
       {/* ─── Footer (sticky) ─────────────────────────────────────── */}
       <footer className="mt-auto border-t border-slate-800 bg-slate-950">
@@ -472,6 +509,7 @@ function AgentFlowPanel(props: {
   onSpeed: (s: number) => void
   onNextCycle: () => void
   history: AgentFlowRun[]
+  onReplay: (useCaseId: string, cycle: number) => void
   selectedNodeId: string | null
   onNodeClick: (id: string) => void
   onExport: () => void
@@ -481,13 +519,13 @@ function AgentFlowPanel(props: {
   onToggleLive: () => void
   onClearLive: () => void
 }) {
-  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive } = props
+  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, onReplay, selectedNodeId, onNodeClick, onExport, onExportPng, liveTicks, liveMode, onToggleLive, onClearLive } = props
   const activeTrace = activeStep >= 0 && activeStep < run.trace.length ? run.trace[activeStep] : null
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4">
+    <div className="grid grid-cols-1 min-[1960px]:grid-cols-[1fr_340px] gap-4">
       {/* Flow canvas + controls */}
-      <div className="space-y-3">
+      <div className="space-y-3 min-w-0">
         {/* use case selector strip */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
           <div className="flex items-center justify-between mb-2">
@@ -586,6 +624,7 @@ function AgentFlowPanel(props: {
               <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">←</kbd>
               <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">→</kbd>
               <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">n</kbd>
+              <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">?</kbd>
               <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">esc</kbd>
             </span>
             <span className="text-[10px] text-slate-400 uppercase tracking-wide">Speed</span>
@@ -607,7 +646,7 @@ function AgentFlowPanel(props: {
       </div>
 
       {/* Reasoning side panel */}
-      <div className="space-y-3">
+      <div className="space-y-3 min-w-0">
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -745,9 +784,14 @@ function AgentFlowPanel(props: {
             <ScrollArea className="max-h-[180px] pr-1">
               <div className="space-y-1.5">
                 {history.map((h, i) => (
-                  <div key={i} className="rounded-lg border border-slate-800 bg-slate-950/40 p-2">
+                  <button
+                    key={i}
+                    onClick={() => onReplay(h.useCaseId, h.cycle)}
+                    className="w-full text-left rounded-lg border border-slate-800 bg-slate-950/40 p-2 hover:border-amber-500/40 hover:bg-amber-500/5 transition group"
+                    aria-label={`Replay cycle ${h.cycle} — ${h.useCaseName}`}
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-slate-300 truncate">{h.useCaseName}</span>
+                      <span className="text-[10px] font-mono text-slate-300 truncate group-hover:text-amber-200">{h.useCaseName}</span>
                       <span
                         className="rounded px-1.5 py-0.5 text-[9px] font-mono font-bold"
                         style={{ background: TIER_META[h.finalTier].color + '22', color: TIER_META[h.finalTier].color }}
@@ -757,14 +801,14 @@ function AgentFlowPanel(props: {
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-[9px] font-mono uppercase" style={{ color: outcomeColor(h.finalOutcome) }}>{h.finalOutcome}</span>
-                      <span className="text-[9px] font-mono text-slate-500">cycle #{h.cycle}</span>
+                      <span className="text-[9px] font-mono text-slate-500 group-hover:text-amber-300">cycle #{h.cycle} · replay ↩</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {h.finalActions.slice(0, 4).map((a) => (
                         <span key={a} className="rounded bg-slate-800/70 px-1 py-0.5 text-[8px] font-mono text-slate-400">{a}</span>
                       ))}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </ScrollArea>
@@ -801,8 +845,8 @@ function CorrelationNetworkPanel(props: {
   const { network, minCorrelation, feedFilter, kindFilter, onMinCorrelation, onFeedFilter, onKindFilter, rankedEdges, nodeById } = props
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4">
-      <div className="space-y-3">
+    <div className="grid grid-cols-1 min-[1960px]:grid-cols-[1fr_340px] gap-4">
+      <div className="space-y-3 min-w-0">
         {/* Controls */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
@@ -857,7 +901,7 @@ function CorrelationNetworkPanel(props: {
       </div>
 
       {/* Side: ranked correlations + feed roster */}
-      <div className="space-y-3">
+      <div className="space-y-3 min-w-0">
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
           <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-emerald-400" /> Top correlations
