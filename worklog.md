@@ -121,3 +121,64 @@ Verification:
   4. **Live agent heartbeat should reflect actual playback state** — currently always animates; tie it to `playing` so it flatlines when paused (more honest signal).
   5. **PNG export** in addition to SVG (render the SVG to a canvas → toDataURL → download).
   6. **Node search/jump** — a command palette (⌘K) to jump to any of the 13 flow nodes or 15 use cases.
+
+---
+Task ID: 5
+Agent: Z.ai (cron webDevReview — round 2)
+Task: QA the dashboard, then add 5 new features (compare view, PNG export, ⌘K palette, time-windowed analytics, playback-aware heartbeat) + polish.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–4) is LIVE and stable on `/`. All previous features (correlation network, n8n agent flow, heartbeat, node inspector, SVG export, per-feed matrix) verified intact.
+- QA pass this round: dev server returns HTTP 200, zero console errors, `bun run lint` passes clean (0 errors). All tabs and interactions work. Footer sticky verified.
+
+## Current goals / completed modifications / verification results
+This round implemented 5 new features, all verified with agent-browser + VLM:
+
+1. **Playback-aware heartbeat** (`heartbeat.tsx` rewrite)
+   - The header ECG now flatlines (grey, "paused" label) when the agent is not playing, and animates green ("1 Hz") when playing.
+   - Accumulates elapsed "active" time in a ref so the blip freezes (not jumps) on pause/resume. Fixed lint error (was accessing ref during render) by mirroring elapsed into state.
+   - VLM-confirmed: paused → grey flatline + "paused"; playing → green animated pulse + "1 Hz".
+
+2. **Compare Two Use Cases split view** (`compare-view.tsx` + new "Compare" tab)
+   - Side-by-side vertical traces of two use cases (default Shoplifting vs Fire & Smoke), each with numbered stages, status icons, reasoning, branch tags, outcome + actions.
+   - Two `<select>` pickers to choose use cases A/B.
+   - **Decision diff panel**: top-line comparison (final tier / outcome / action count, with A-vs-B cards highlighting mismatches) + stage-by-stage diff table with ✓/✗ match indicators and amber highlighting on divergent rows.
+   - VLM-confirmed: shows Shoplifting (Agentic · T3) vs Fire & Smoke (ML/DL · T3), "3 stages diverge" (JUDGE, VALIDATE_JUDGE, VERIFY_OUTCOME).
+
+3. **PNG export** (in addition to SVG)
+   - New `FileImage` button next to the SVG export button. Renders the flow SVG to a 2× retina canvas → PNG download (`vision-agent-flow-<useCase>-cycle<N>.png`).
+   - Verified: downloaded `vision-agent-flow-shoplifting-cycle1.png` (1.9MB, valid 3188×944 RGBA PNG).
+
+4. **⌘K command palette** (`command-palette.tsx`)
+   - Modal palette (⌘K / Ctrl+K) to jump to any of 15 use cases, 13 flow stages, or 3 tabs. Fuzzy filter, keyboard nav (↑↓ / ↵ / esc), grouped results, result count.
+   - Header "Search ⌘K" button (desktop) + icon-only button (mobile).
+   - Selecting an item switches tab + loads use case / selects flow node + closes palette.
+   - Verified: typing "fire" filters to 1 result (Fire & Smoke Detection); pressing ↵ switches to Agent Flow tab with that use case loaded.
+
+5. **Time-windowed correlation analytics** (`time-window-analytics.tsx`)
+   - New panel at the top of the Correlation Network tab. Time-window selector (5 min / 15 min / 1 hour / 24 hours).
+   - Recomputes: active entities, active correlations, avg ρ, estimated detections, tier distribution (animated bars), top correlated pair (with progress bar), and a 12-bucket detection-volume sparkline (animated).
+   - Verified: 5 min → 105 detections; 24 hours → 29,856 detections (stats scale correctly with window).
+
+6. **Styling polish**
+   - Added 3rd tab ("Compare") to the tab list; condensed tab labels on mobile.
+   - Added PNG export button with emerald hover + tooltip.
+   - Added ⌘K button to header (desktop + mobile variants).
+   - Heartbeat idle state uses a distinct grey gradient + "paused" label.
+   - Animated sparkline bars and tier-distribution bars (framer-motion width transitions).
+
+Verification:
+- `bun run lint` → 0 errors.
+- agent-browser: page loads (HTTP 200), 0 console errors throughout all interactions (tab switches, palette open/close/filter/select, compare view, time-window switching, PNG/SVG export).
+- VLM: confirmed playback-aware heartbeat (both states), compare view with diff table, command palette with filtering, time-window analytics with sparkline + tier bars.
+- Downloads: SVG (20KB) + PNG (1.9MB) both verified valid.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable and feature-rich (8 components, 3 tabs, 6 keyboard shortcuts, 2 export formats).
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Mobile-condensed flow variant** — the flow SVG is 1594px wide; on mobile a vertical/condensed flow or pinch-zoom container would improve UX (currently relies on horizontal scroll).
+  2. **Node search/jump within the flow** — extend the ⌘K palette to also scroll the flow SVG to center on the selected node.
+  3. **Save/load agent traces** — persist completed cycles to localStorage so the audit history survives reloads.
+  4. **A/B use-case picker autocomplete** — the Compare `<select>` works but a searchable combobox would be nicer with 15 use cases.
+  5. **Live data simulation** — currently the network + time-window data is seeded/static; a "live" mode that streams new detections every second would make the dashboard feel alive for a VP demo.
+  6. **Accessibility audit** — ensure all interactive elements have proper ARIA labels and keyboard focus rings (the flow nodes are SVG `<g>` which need role/label for screen readers).

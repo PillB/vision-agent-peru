@@ -7,7 +7,7 @@ import {
   RotateCw, Zap, Shield, Flame, Moon, Users, Package, Eye, Waves,
   Mountain, Building, TrafficCone, UserCheck, List, Car, ShoppingBag,
   Radar, Target, TrendingUp, AlertTriangle, Cpu, Gauge, Layers,
-  Download, MousePointerClick, Info,
+  Download, MousePointerClick, Info, FileImage, Command, GitCompare,
   type LucideIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,9 @@ import { AgentDecisionFlow } from '@/components/vision/agent-decision-flow'
 import { Heartbeat } from '@/components/vision/heartbeat'
 import { CorrelationMatrix } from '@/components/vision/correlation-matrix'
 import { NodeInspector, stageIdFor } from '@/components/vision/node-inspector'
+import { CompareView } from '@/components/vision/compare-view'
+import { CommandPalette } from '@/components/vision/command-palette'
+import { TimeWindowAnalytics } from '@/components/vision/time-window-analytics'
 import { USE_CASES, LEVEL_META, USE_CASE_BY_ID } from '@/lib/vision/use-cases'
 import { getEntityNetwork, KIND_META } from '@/lib/vision/entity-network'
 import { generateAgentRun, NODE_BY_ID } from '@/lib/vision/agent-flow'
@@ -119,11 +122,57 @@ export default function Home() {
     URL.revokeObjectURL(url)
   }, [selectedUseCaseId, cycle])
 
+  // Export the agent decision flow as a downloadable .png file
+  const exportFlowPng = useCallback(() => {
+    const svg = document.querySelector('[data-testid="agent-flow-svg"]') as SVGSVGElement | null
+    if (!svg) return
+    const clone = svg.cloneNode(true) as SVGSVGElement
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    const data = new XMLSerializer().serializeToString(clone)
+    const svgBlob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
+    const img = new Image()
+    img.onload = () => {
+      const scale = 2 // retina-quality
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width * scale
+      canvas.height = img.height * scale
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { URL.revokeObjectURL(url); return }
+      ctx.fillStyle = '#020617'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      canvas.toBlob((blob) => {
+        if (!blob) return
+        const pngUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = pngUrl
+        a.download = `vision-agent-flow-${selectedUseCaseId}-cycle${cycle}.png`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(pngUrl)
+      }, 'image/png')
+    }
+    img.src = url
+  }, [selectedUseCaseId, cycle])
+
+  // Command palette (⌘K / Ctrl+K)
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
   const selectedNode = selectedNodeId ? NODE_BY_ID[selectedNodeId] ?? null : null
 
-  // Keyboard shortcuts: space=play/pause, ←/→=step, r=reset, n=next cycle, esc=close inspector
+  // Keyboard shortcuts: space=play/pause, ←/→=step, r=reset, n=next cycle,
+  // esc=close inspector/palette, ⌘K/Ctrl+K=command palette
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // ⌘K / Ctrl+K toggles the palette (works even when focused on inputs)
+      if ((e.metaKey || e.ctrlKey) && e.code === 'KeyK') {
+        e.preventDefault()
+        setPaletteOpen((o) => !o)
+        return
+      }
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
       if (e.code === 'Space') { e.preventDefault(); togglePlay() }
@@ -131,7 +180,7 @@ export default function Home() {
       else if (e.code === 'ArrowLeft') { e.preventDefault(); stepBack() }
       else if (e.code === 'KeyR') { reset() }
       else if (e.code === 'KeyN') { nextCycle() }
-      else if (e.code === 'Escape') { setSelectedNodeId(null) }
+      else if (e.code === 'Escape') { setSelectedNodeId(null); setPaletteOpen(false) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -185,13 +234,30 @@ export default function Home() {
           </div>
           <div className="ml-auto hidden md:flex items-center gap-2">
             <div className="hidden lg:flex items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/5 px-2.5 py-1">
-              <Heartbeat active={true} width={150} height={28} />
+              <Heartbeat active={playing} width={150} height={28} />
             </div>
             <StatusPill icon={Cpu} label="Models" value="4 feeds · 6 detectors" tone="sky" />
             <StatusPill icon={Gauge} label="Avg correlation" value={stats.avgCorrelation.toFixed(2)} tone="emerald" />
             <StatusPill icon={AlertTriangle} label="Hazards" value={String(stats.hazards)} tone="rose" />
             <StatusPill icon={Activity} label="Agent cycles" value={String(cycle)} tone="amber" />
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/60 px-2.5 py-1.5 text-[11px] text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition"
+              aria-label="Open command palette"
+            >
+              <Command className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Search</span>
+              <kbd className="hidden xl:inline rounded border border-slate-700 bg-slate-900 px-1 py-0.5 text-[9px] font-mono">⌘K</kbd>
+            </button>
           </div>
+          {/* mobile ⌘K button */}
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="md:hidden ml-auto grid place-items-center h-9 w-9 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-400 hover:text-slate-200"
+            aria-label="Open command palette"
+          >
+            <Command className="h-4 w-4" />
+          </button>
         </div>
       </header>
 
@@ -212,10 +278,13 @@ export default function Home() {
           <div className="flex flex-wrap items-center gap-3 justify-between">
             <TabsList className="bg-slate-900 border border-slate-800 h-auto p-1">
               <TabsTrigger value="flow" className="data-[state=active]:bg-slate-800 data-[state=active]:text-amber-300 gap-1.5 text-xs sm:text-sm">
-                <Workflow className="h-4 w-4" /> Agent Decision Flow
+                <Workflow className="h-4 w-4" /> <span className="hidden sm:inline">Agent</span> Flow
               </TabsTrigger>
               <TabsTrigger value="network" className="data-[state=active]:bg-slate-800 data-[state=active]:text-sky-300 gap-1.5 text-xs sm:text-sm">
-                <Network className="h-4 w-4" /> Correlation Network
+                <Network className="h-4 w-4" /> <span className="hidden sm:inline">Correlation</span> Network
+              </TabsTrigger>
+              <TabsTrigger value="compare" className="data-[state=active]:bg-slate-800 data-[state=active]:text-violet-300 gap-1.5 text-xs sm:text-sm">
+                <GitCompare className="h-4 w-4" /> <span className="hidden sm:inline">Compare</span>
               </TabsTrigger>
             </TabsList>
             <div className="hidden lg:flex items-center gap-2 text-[11px] text-slate-400 font-mono">
@@ -249,11 +318,13 @@ export default function Home() {
               selectedNodeId={selectedNodeId}
               onNodeClick={(id) => setSelectedNodeId((prev) => (prev === id ? null : id))}
               onExport={exportFlowSvg}
+              onExportPng={exportFlowPng}
             />
           </TabsContent>
 
           {/* ───────────── CORRELATION NETWORK TAB ───────────── */}
           <TabsContent value="network" className="space-y-4 mt-0">
+            <TimeWindowAnalytics network={network} />
             <CorrelationNetworkPanel
               network={network}
               minCorrelation={minCorrelation}
@@ -268,6 +339,11 @@ export default function Home() {
             {/* Per-feed correlation matrix */}
             <CorrelationMatrix network={network} />
           </TabsContent>
+
+          {/* ───────────── COMPARE USE CASES TAB ───────────── */}
+          <TabsContent value="compare" className="space-y-4 mt-0">
+            <CompareView />
+          </TabsContent>
         </Tabs>
 
         {/* Use case gallery */}
@@ -280,6 +356,15 @@ export default function Home() {
 
       {/* ─── Node detail inspector drawer ──────────────────────────── */}
       <NodeInspector node={selectedNode} run={run} onClose={() => setSelectedNodeId(null)} />
+
+      {/* ─── Command palette (⌘K) ─────────────────────────────────── */}
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onSelectUseCase={selectUseCase}
+        onSelectFlowNode={setSelectedNodeId}
+        onSwitchTab={setTab}
+      />
 
       {/* ─── Footer (sticky) ─────────────────────────────────────── */}
       <footer className="mt-auto border-t border-slate-800 bg-slate-950">
@@ -360,8 +445,9 @@ function AgentFlowPanel(props: {
   selectedNodeId: string | null
   onNodeClick: (id: string) => void
   onExport: () => void
+  onExportPng: () => void
 }) {
-  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, selectedNodeId, onNodeClick, onExport } = props
+  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, selectedNodeId, onNodeClick, onExport, onExportPng } = props
   const activeTrace = activeStep >= 0 && activeStep < run.trace.length ? run.trace[activeStep] : null
 
   return (
@@ -422,6 +508,18 @@ function AgentFlowPanel(props: {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Export current flow as SVG</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onExportPng}
+                    className="grid place-items-center h-7 w-7 rounded-md border border-slate-700 bg-slate-950/80 text-slate-400 hover:text-emerald-300 hover:border-emerald-500/50 transition backdrop-blur"
+                    aria-label="Export flow as PNG"
+                  >
+                    <FileImage className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">Export current flow as PNG (retina)</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
