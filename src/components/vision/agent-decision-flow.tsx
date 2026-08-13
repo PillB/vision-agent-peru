@@ -46,6 +46,8 @@ interface Props {
   activeStep: number
   width?: number
   height?: number
+  selectedNodeId?: string | null
+  onNodeClick?: (nodeId: string) => void
 }
 
 const NODE_TYPE_STYLE: Record<FlowNode['type'], { fill: string; stroke: string; accent: string }> = {
@@ -58,7 +60,7 @@ const NODE_TYPE_STYLE: Record<FlowNode['type'], { fill: string; stroke: string; 
   terminal: { fill: '#0b1220', stroke: '#334155', accent: '#94a3b8' },
 }
 
-export function AgentDecisionFlow({ run, activeStep }: Props) {
+export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick }: Props) {
   const { nodes: activeNodes, edges: activeEdges } = useMemo(
     () => computeActivePath(run),
     [run],
@@ -149,6 +151,7 @@ export function AgentDecisionFlow({ run, activeStep }: Props) {
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="xMidYMid meet"
         className="block"
+        data-testid="agent-flow-svg"
         style={{ minWidth: width, background: 'radial-gradient(circle at 30% 20%, #0f172a 0%, #020617 75%)' }}
       >
         <defs>
@@ -244,22 +247,24 @@ export function AgentDecisionFlow({ run, activeStep }: Props) {
           {FLOW_NODES.map((n) => {
             const pos = nodePos(n)
             const isActive = activeNodeId === n.id
+            const isSelected = selectedNodeId === n.id
             const isCompleted = completedNodes.has(n.id)
             const onPath = activeNodes.has(n.id)
             const style = NODE_TYPE_STYLE[n.type]
             const Icon = ICONS[n.icon] ?? Eye
             const stageTrace = run.trace.find((t) => STAGE_ID_BY_STAGE[t.stage] === n.id)
             const tier = stageTrace?.tier
-            const accent = isActive ? '#fbbf24' : isCompleted ? style.accent : style.stroke
+            const accent = isActive ? '#fbbf24' : isSelected ? '#38bdf8' : isCompleted ? style.accent : style.stroke
             const fillOpacity = onPath ? 1 : 0.45
-            const scale = isActive ? 1.06 : 1
+            const scale = isActive ? 1.06 : isSelected ? 1.04 : 1
             return (
               <motion.g
                 key={n.id}
                 initial={false}
                 animate={{ scale }}
-                style={{ transformOrigin: `${pos.x + NODE_W / 2}px ${pos.y + NODE_H / 2}px` }}
+                style={{ transformOrigin: `${pos.x + NODE_W / 2}px ${pos.y + NODE_H / 2}px`, cursor: onNodeClick ? 'pointer' : 'default' }}
                 transition={{ duration: 0.25 }}
+                onClick={() => onNodeClick?.(n.id)}
               >
                 {/* glow ring when active */}
                 {isActive && (
@@ -273,6 +278,21 @@ export function AgentDecisionFlow({ run, activeStep }: Props) {
                     stroke="#fbbf24"
                     strokeOpacity={0.7}
                     strokeWidth={2}
+                  />
+                )}
+                {/* selection ring */}
+                {isSelected && !isActive && (
+                  <rect
+                    x={pos.x - 4}
+                    y={pos.y - 4}
+                    width={NODE_W + 8}
+                    height={NODE_H + 8}
+                    rx={13}
+                    fill="none"
+                    stroke="#38bdf8"
+                    strokeOpacity={0.8}
+                    strokeWidth={1.5}
+                    strokeDasharray="3 2"
                   />
                 )}
                 {/* card */}

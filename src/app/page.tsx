@@ -7,6 +7,7 @@ import {
   RotateCw, Zap, Shield, Flame, Moon, Users, Package, Eye, Waves,
   Mountain, Building, TrafficCone, UserCheck, List, Car, ShoppingBag,
   Radar, Target, TrendingUp, AlertTriangle, Cpu, Gauge, Layers,
+  Download, MousePointerClick, Info,
   type LucideIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,9 +20,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { EntityCorrelationGraph } from '@/components/vision/entity-correlation-graph'
 import { AgentDecisionFlow } from '@/components/vision/agent-decision-flow'
+import { Heartbeat } from '@/components/vision/heartbeat'
+import { CorrelationMatrix } from '@/components/vision/correlation-matrix'
+import { NodeInspector, stageIdFor } from '@/components/vision/node-inspector'
 import { USE_CASES, LEVEL_META, USE_CASE_BY_ID } from '@/lib/vision/use-cases'
 import { getEntityNetwork, KIND_META } from '@/lib/vision/entity-network'
-import { generateAgentRun } from '@/lib/vision/agent-flow'
+import { generateAgentRun, NODE_BY_ID } from '@/lib/vision/agent-flow'
 import { TIER_META } from '@/lib/vision/types'
 import type { UseCase, AgentFlowRun, EntityKind, Tier } from '@/lib/vision/types'
 
@@ -44,6 +48,7 @@ export default function Home() {
   const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [history, setHistory] = useState<AgentFlowRun[]>([])
   const [tab, setTab] = useState('flow')
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
 
   // Network graph controls
   const [minCorrelation, setMinCorrelation] = useState(0.25)
@@ -96,7 +101,27 @@ export default function Home() {
   }, [])
   const togglePlay = useCallback(() => setPlaying((p) => !p), [])
 
-  // Keyboard shortcuts: space=play/pause, ←/→=step, r=reset, n=next cycle
+  // Export the agent decision flow SVG as a downloadable .svg file
+  const exportFlowSvg = useCallback(() => {
+    const svg = document.querySelector('[data-testid="agent-flow-svg"]') as SVGSVGElement | null
+    if (!svg) return
+    const clone = svg.cloneNode(true) as SVGSVGElement
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    const data = new XMLSerializer().serializeToString(clone)
+    const blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `vision-agent-flow-${selectedUseCaseId}-cycle${cycle}.svg`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, [selectedUseCaseId, cycle])
+
+  const selectedNode = selectedNodeId ? NODE_BY_ID[selectedNodeId] ?? null : null
+
+  // Keyboard shortcuts: space=play/pause, ←/→=step, r=reset, n=next cycle, esc=close inspector
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName
@@ -106,6 +131,7 @@ export default function Home() {
       else if (e.code === 'ArrowLeft') { e.preventDefault(); stepBack() }
       else if (e.code === 'KeyR') { reset() }
       else if (e.code === 'KeyN') { nextCycle() }
+      else if (e.code === 'Escape') { setSelectedNodeId(null) }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -158,6 +184,9 @@ export default function Home() {
             </div>
           </div>
           <div className="ml-auto hidden md:flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/5 px-2.5 py-1">
+              <Heartbeat active={true} width={150} height={28} />
+            </div>
             <StatusPill icon={Cpu} label="Models" value="4 feeds · 6 detectors" tone="sky" />
             <StatusPill icon={Gauge} label="Avg correlation" value={stats.avgCorrelation.toFixed(2)} tone="emerald" />
             <StatusPill icon={AlertTriangle} label="Hazards" value={String(stats.hazards)} tone="rose" />
@@ -217,6 +246,9 @@ export default function Home() {
               onSpeed={setSpeed}
               onNextCycle={nextCycle}
               history={history}
+              selectedNodeId={selectedNodeId}
+              onNodeClick={(id) => setSelectedNodeId((prev) => (prev === id ? null : id))}
+              onExport={exportFlowSvg}
             />
           </TabsContent>
 
@@ -233,6 +265,8 @@ export default function Home() {
               rankedEdges={rankedEdges}
               nodeById={nodeById}
             />
+            {/* Per-feed correlation matrix */}
+            <CorrelationMatrix network={network} />
           </TabsContent>
         </Tabs>
 
@@ -243,6 +277,9 @@ export default function Home() {
           onSelect={selectUseCase}
         />
       </main>
+
+      {/* ─── Node detail inspector drawer ──────────────────────────── */}
+      <NodeInspector node={selectedNode} run={run} onClose={() => setSelectedNodeId(null)} />
 
       {/* ─── Footer (sticky) ─────────────────────────────────────── */}
       <footer className="mt-auto border-t border-slate-800 bg-slate-950">
@@ -320,8 +357,11 @@ function AgentFlowPanel(props: {
   onSpeed: (s: number) => void
   onNextCycle: () => void
   history: AgentFlowRun[]
+  selectedNodeId: string | null
+  onNodeClick: (id: string) => void
+  onExport: () => void
 }) {
-  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history } = props
+  const { run, activeStep, playing, speed, useCase, cycle, useCases, selectedUseCaseId, onSelectUseCase, onStepForward, onStepBack, onReset, onPlayPause, onSpeed, onNextCycle, history, selectedNodeId, onNodeClick, onExport } = props
   const activeTrace = activeStep >= 0 && activeStep < run.trace.length ? run.trace[activeStep] : null
 
   return (
@@ -363,8 +403,29 @@ function AgentFlowPanel(props: {
         </div>
 
         {/* Flow viz */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
-          <AgentDecisionFlow run={run} activeStep={activeStep} />
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden relative">
+          {/* floating hint + export */}
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+            <div className="hidden sm:flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-950/80 px-2 py-1 text-[9px] font-mono text-slate-400 backdrop-blur">
+              <MousePointerClick className="h-3 w-3 text-sky-400" />
+              click a node for detail
+            </div>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onExport}
+                    className="grid place-items-center h-7 w-7 rounded-md border border-slate-700 bg-slate-950/80 text-slate-400 hover:text-sky-300 hover:border-sky-500/50 transition backdrop-blur"
+                    aria-label="Export flow as SVG"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">Export current flow as SVG</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <AgentDecisionFlow run={run} activeStep={activeStep} selectedNodeId={selectedNodeId} onNodeClick={onNodeClick} />
         </div>
 
         {/* Playback controls */}
@@ -393,6 +454,7 @@ function AgentFlowPanel(props: {
               <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">←</kbd>
               <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">→</kbd>
               <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">n</kbd>
+              <kbd className="rounded border border-slate-700 bg-slate-800 px-1 py-0.5">esc</kbd>
             </span>
             <span className="text-[10px] text-slate-400 uppercase tracking-wide">Speed</span>
             <div className="flex items-center gap-1">
