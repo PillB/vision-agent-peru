@@ -10,6 +10,7 @@ import {
 import type { AgentFlowRun, BranchTag, FlowNode, Tier } from '@/lib/vision/types'
 import { TIER_META } from '@/lib/vision/types'
 import { FLOW_NODES, FLOW_EDGES, NODE_BY_ID, STAGE_ORDER, BRANCH_COLORS, computeActivePath } from '@/lib/vision/agent-flow'
+import { FlowMiniMap } from '@/components/vision/flow-mini-map'
 
 const ICONS: Record<string, LucideIcon> = {
   eye: Eye,
@@ -70,6 +71,18 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null)
+  // Track the container (viewport) size for the mini-map.
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [viewport, setViewport] = useState({ width: 0, height: 0 })
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const update = () => setViewport({ width: el.clientWidth, height: el.clientHeight })
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const clampZoom = (z: number) => Math.max(0.4, Math.min(2.5, z))
   const zoomIn = () => setZoom((z) => clampZoom(z + 0.2))
@@ -178,6 +191,7 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
 
   return (
     <div
+      ref={containerRef}
       className="relative overflow-hidden select-none"
       style={{ cursor: dragRef.current ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
       onPointerDown={onPointerDown}
@@ -475,6 +489,18 @@ export function AgentDecisionFlow({ run, activeStep, selectedNodeId, onNodeClick
           {TIER_META[run.finalTier].short}
         </span>
       </div>
+
+      {/* Mini-map overview — only when zoomed or panned */}
+      {(zoom !== 1 || pan.x !== 0 || pan.y !== 0) && viewport.width > 0 && (
+        <FlowMiniMap
+          flowWidth={width}
+          flowHeight={height}
+          zoom={zoom}
+          pan={pan}
+          viewport={viewport}
+          onJump={(p) => setPan(p)}
+        />
+      )}
     </div>
   )
 }

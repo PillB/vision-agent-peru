@@ -476,3 +476,42 @@ Verification:
   3. **Per-setting tooltips** — hover help on each setting row explaining the trade-off.
   4. **Pinch-to-zoom on touch devices** — the current wheel-zoom requires ctrl; add touch gesture support for tablets.
   5. **Mini-map** — a small overview of the full flow in the corner showing the current viewport when zoomed/panned.
+
+---
+Task ID: 12
+Agent: Z.ai (cron webDevReview — round 9)
+Task: QA + add mini-map overview for the flow canvas + settings reset confirmation.
+
+## Current project status description/assessment
+- The dashboard (Task IDs 1–11) was LIVE and stable. QA pass: dev server HTTP 200, `bun run lint` clean, 0 console errors, overflow=0.
+- Verified round 8 features intact: zoom in (scale 1.4→1), reset view, all 3 tabs, zero errors.
+
+## Current goals / completed modifications / verification results
+
+### 1. Mini-map overview for the flow canvas (`flow-mini-map.tsx` + `agent-decision-flow.tsx`)
+- New `FlowMiniMap` component: a 140px-wide scaled overview of the full agent decision flow that appears in the bottom-right corner when the canvas is zoomed or panned.
+- Shows simplified node-position dots (9 backbone + judge row + terminals) and a **yellow dashed viewport rectangle** indicating the current visible area.
+- **Click-to-jump:** clicking anywhere on the mini-map centers the main viewport on that flow coordinate (computes the pan offset so the clicked point is centered).
+- Parent tracks container size via `ResizeObserver` so the viewport rect is accurate.
+- Auto-hides when zoom=1 && pan={0,0} (no mini-map needed at default view).
+- Verified: zoomed to 1.6 → mini-map appeared; click-to-jump on the top-left corner moved pan to (-660, -127); zero errors. DOM-confirmed mini-map is positioned in the bottom-right of the flow container.
+
+### 2. Settings reset confirmation (`settings-panel.tsx`)
+- "Reset to defaults" now requires a 2-step confirmation: first click reveals "Confirm reset" (rose) + "Cancel" buttons; only "Confirm reset" wipes the prefs.
+- Confirmation auto-dismisses after 4s (so a stray click doesn't leave the destructive button armed indefinitely).
+- Verified: clicking "Reset to defaults" → "Confirm reset" + "Cancel" appeared; clicking "Cancel" dismissed it back to "Reset to defaults"; zero errors.
+
+Verification:
+- `bun run lint` → 0 errors, 0 warnings.
+- agent-browser: page loads HTTP 200, 0 console errors throughout (zoom in/out, mini-map appear + click-to-jump, settings open via comma / reset confirm / cancel / close via escape, tab switches).
+- DOM-confirmed: mini-map visible at zoom 1.6; pan changes on click-to-jump; reset confirmation flow works.
+- Overflow: 0px on all 3 tabs.
+
+## Unresolved issues / risks, and priority recommendations for the next phase
+- **No bugs or errors.** Project is stable (15 components, 3 tabs, 9 keyboard shortcuts, 3 export formats, history replay, responsive layout, monitoring view, guided tour, live-mode-drives-flow, settings panel + presentation mode, drag-to-pan/zoom, mini-map, reset confirmation).
+- **Recommended next-phase features** (for the recurring cron):
+  1. **Live ticker → correlation feed** — feed live detections into the correlation network so new entities/edges appear dynamically.
+  2. **Per-setting tooltips** — hover help on each setting row explaining the trade-off.
+  3. **Pinch-to-zoom on touch devices** — the current wheel-zoom requires ctrl; add touch gesture support for tablets.
+  4. **Mini-map node labels** — show abbreviated stage labels on the mini-map dots for better orientation.
+  5. **Keyboard shortcut: 0 to reset view** — add a `0` shortcut to reset the flow pan/zoom.

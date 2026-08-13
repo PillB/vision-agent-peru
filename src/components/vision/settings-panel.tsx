@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings, X, Zap, Gauge, Radio, Maximize2, Type } from 'lucide-react'
 import { useLocalStorage } from '@/lib/vision/use-local-storage'
@@ -35,6 +35,7 @@ export function SettingsPanel({ open, onOpenChange, settings, onChange }: Props)
   const update = <K extends keyof DashboardSettings>(key: K, value: DashboardSettings[K]) => {
     onChange({ ...settings, [key]: value })
   }
+  const [confirmReset, setConfirmReset] = useState(false)
 
   // Close on Escape — the motion backdrop catches clicks, but keyboard users
   // need a way out without reaching for the X button.
@@ -46,6 +47,19 @@ export function SettingsPanel({ open, onOpenChange, settings, onChange }: Props)
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [open, onOpenChange])
+
+  // Auto-dismiss the reset confirmation after 4s (so a stray click doesn't
+  // leave the destructive button armed indefinitely).
+  useEffect(() => {
+    if (!confirmReset) return
+    const t = setTimeout(() => setConfirmReset(false), 4000)
+    return () => clearTimeout(t)
+  }, [confirmReset])
+
+  const doReset = () => {
+    onChange(DEFAULTS)
+    setConfirmReset(false)
+  }
 
   return (
     <AnimatePresence>
@@ -118,12 +132,29 @@ export function SettingsPanel({ open, onOpenChange, settings, onChange }: Props)
 
               {/* Reset */}
               <div className="pt-3 border-t border-slate-800">
-                <button
-                  onClick={() => onChange(DEFAULTS)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800/60 py-2 text-xs font-mono text-slate-400 hover:text-rose-300 hover:border-rose-500/40 transition"
-                >
-                  Reset to defaults
-                </button>
+                {confirmReset ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={doReset}
+                      className="flex-1 rounded-lg border border-rose-500 bg-rose-500/20 py-2 text-xs font-mono font-semibold text-rose-200 hover:bg-rose-500/30 transition"
+                    >
+                      Confirm reset
+                    </button>
+                    <button
+                      onClick={() => setConfirmReset(false)}
+                      className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-mono text-slate-400 hover:text-slate-200 transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmReset(true)}
+                    className="w-full rounded-lg border border-slate-700 bg-slate-800/60 py-2 text-xs font-mono text-slate-400 hover:text-rose-300 hover:border-rose-500/40 transition"
+                  >
+                    Reset to defaults
+                  </button>
+                )}
               </div>
 
               <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
