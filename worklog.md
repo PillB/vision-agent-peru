@@ -8,6 +8,7 @@ Task: Add production-safe graph export, synchronized split comparison, and a cle
 ## Current project status description / assessment
 
 - Started from `main` at `4b7762f`, after PR #8 and its deployed release verification were complete.
+- PR #9 was squash-merged as `8310a2aa8f25042f9e762c502c306ade0ebeb0c0`; the follow-up test-fixture stabilization PR #10 was squash-merged as `95847f4181e1e2e42b24786e36414841717a132a`.
 - Reviewed the repository instructions, current worklog, public Pages HTML, live release status, and PillB's `solarize_skill` v2.2 repository before selecting scope.
 - The required `agent-browser` executable is not installed in this environment. The supported cloud-browser connection also timed out before tab acquisition in this round. Local Playwright launch confirmed that no browser executable is present; Playwright's CDN returned truncated zero-length archives during the install attempt. These are environment limitations, not application failures.
 - Stable baseline before implementation: ESLint and TypeScript passed; 18 unit, 28 contract, and 15 model tests passed; the public Pages root returned HTTP 200 and preserved all four top-level destination labels.
@@ -24,18 +25,21 @@ Task: Add production-safe graph export, synchronized split comparison, and a cle
 - Added a second ten-round Solarize ledger at `docs/solarize/vision-agent-evidence-search-rebuild/agent-graph-presentation-ledger.json`.
 - Current verification: ESLint 0 errors; TypeScript 0 errors; 20 unit + 28 contract + 15 model tests = 63/63 passed; `git diff --check` passed; optimized production build passed with only the unchanged face-api dynamic-require warning.
 - Generated and visually inspected a 2000×1240 PNG from the real export generator. The result preserved hierarchy, branch routing, stage status, active-node emphasis, tasks, and the established zinc/emerald/amber/rose visual language.
+- PR run #66 (`31830125335`) passed the complete installed-browser matrix and isolated static export before merge.
+- The first merged release run #67 (`31831061329`) correctly stopped deployment after an existing synthetic-camera test sometimes re-read its enrollment frame on Chromium tablet. The failure was reproduced from the trace/log evidence (`distance 0.000`), then fixed by requesting and awaiting a newly presented canvas-capture frame instead of relying on `currentTime` plus a 500 ms delay.
+- PR #10 run #68 (`31832515687`) passed the repaired test, full visible-UI matrix, and static export. Final main release run #69 (`31833762015`) passed build, full browser matrix, static Pages export, deployment, and the live Chromium smoke gate.
+- The public site returned HTTP 200 after deployment with a `Last-Modified` timestamp of 2026-08-14 19:50:36 UTC and still exposed the original Solution Overview, Strategic Brief, Live Prototype, and Evidence Workspace destinations.
 
 ## Unresolved issues or risks / next-phase priority
 
-1. Run the new focused Playwright download and split-comparison test in GitHub Actions, where the workflow installs Chromium, Firefox, and WebKit.
-2. Re-run the GitHub Pages static export and deployed live smoke after merging. No API route is used by the new feature.
-3. The preview lane is intentionally not a simulation and never claims execution. A future true two-cycle comparison would need two separately recorded `AgentCycleSnapshot` objects.
-4. The existing relationship score remains a heuristic, not a calibrated probability; cross-feed identity claims remain prohibited.
-5. The unchanged `@vladmandic/face-api` bundler warning remains a separate packaging task.
+1. The preview lane is intentionally not a simulation and never claims execution. A future true two-cycle comparison would need two separately recorded `AgentCycleSnapshot` objects.
+2. The existing relationship score remains a heuristic, not a calibrated probability; cross-feed identity claims remain prohibited.
+3. The unchanged `@vladmandic/face-api` dynamic-require bundler warning remains a separate packaging task.
+4. Recommended next increment: persist explicitly authorized cycle snapshots so two real completed runs can be compared, then add an operator-controlled MP4/GIF export of replay evidence.
 
 Stage Summary:
-- Research, Red, Green, refactor, local non-browser verification, visual export inspection, and the ten-round Solarize ledger are complete.
-- Installed-browser CI, merge, Pages deployment, and post-deploy verification remain before final release closure.
+- Research, Red, Green, refactor, ten-round Solarize iteration, installed-browser CI, merge, Pages deployment, and live post-deploy verification are complete.
+- The release is production-ready within the documented static-site, local-first, source-scoped tracking, and non-probabilistic relationship-score boundaries.
 
 
 # Worklog — Agentic Camera Intelligence System (Peru)
