@@ -93,7 +93,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
   }, [t])
 
   return (
-    <main className="bg-white text-zinc-950">
+    <main className="min-w-0 bg-white text-zinc-950">
       {/* ============================================================ SLIDE 1 — HERO ============================================================ */}
       <SlideSection slideNumber={1} kicker={t('Tab3.slide1.kicker')}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
@@ -128,7 +128,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
             </p>
           </div>
           <div className="lg:col-span-5">
-            <div className="grid grid-cols-3 gap-px bg-zinc-200 rounded-xl overflow-hidden border border-zinc-200">
+            <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-zinc-200 bg-zinc-200 sm:grid-cols-3">
               <ScrCard label={t('Tab3.slide1.situation')} icon={<Clock className="h-4 w-4" />} tone="zinc" body={t('Tab3.slide1.situationBody')} />
               <ScrCard label={t('Tab3.slide1.complication')} icon={<AlertTriangle className="h-4 w-4" />} tone="amber" body={t('Tab3.slide1.complicationBody')} />
               <ScrCard label={t('Tab3.slide1.resolution')} icon={<Zap className="h-4 w-4" />} tone="emerald" body={t('Tab3.slide1.resolutionBody')} />
@@ -171,7 +171,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               )
             })}
           </div>
-          <div className="relative h-16 mt-6">
+          <div className="relative mt-6 hidden h-16 md:block">
             <div className="absolute top-1/2 left-0 right-0 h-px bg-zinc-300" />
             {TIMELINE.flatMap((phase) =>
               phase.milestones.map((m, i) => {
@@ -189,7 +189,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               })
             )}
           </div>
-          <div className="mt-12 flex items-center justify-between text-xs font-mono text-zinc-600">
+          <div className="mt-12 hidden items-center justify-between font-mono text-xs text-zinc-600 md:flex">
             <span>{t('Tab3.slide2.timelineStart')}</span>
             <span>{t('Tab3.slide2.timelineEnd')}</span>
           </div>
@@ -324,7 +324,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
         <OrientingParagraph>{t('Tab3.slide6.body')}</OrientingParagraph>
         <div className="mt-12">
           <div className="relative">
-            <div className="grid grid-cols-6 gap-1">
+            <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-6">
               {AUTONOMY_SPECTRUM.map((lvl) => {
                 const stage = lvl.autonomous ? STAGES[3] : lvl.level <= 2 ? STAGES[0] : STAGES[1]
                 return (
@@ -336,7 +336,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
                 )
               })}
             </div>
-            <div className="absolute top-0 bottom-0 flex items-center" style={{ left: '66.6%' }}>
+            <div className="absolute bottom-0 top-0 hidden items-center md:flex" style={{ left: '66.6%' }}>
               <div className="h-32 w-px border-l-2 border-dashed border-rose-500" />
               <div className="absolute -top-2 -translate-x-1/2 left-0.5 whitespace-nowrap">
                 <div className="bg-rose-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded uppercase tracking-wide">{t('Tab3.slide6.threshold')}</div>
@@ -344,7 +344,8 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               <div className="absolute -bottom-6 -translate-x-1/2 left-0.5 whitespace-nowrap text-[10px] text-rose-600 font-medium">{t('Tab3.slide6.thresholdSub')}</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-8 mt-12">
+          <div className="mt-4 md:hidden"><span className="inline-flex rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">{t('Tab3.slide6.threshold')}</span><p className="mt-1 text-[10px] font-medium text-rose-600">{t('Tab3.slide6.thresholdSub')}</p></div>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-8">
             <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4">
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">{t('AutonomySpectrum.levelsHuman')}</div>
               <p className="text-sm text-zinc-700 leading-relaxed">{t('Tab3.slide6.levelsHumanBody')}</p>

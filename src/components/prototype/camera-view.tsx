@@ -745,7 +745,7 @@ export function CameraView() {
       {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-2">
         <Select value={activeCameraId} onValueChange={(v) => { setActiveCamera(v); clearSamples() }}>
-          <SelectTrigger aria-label="Camera source" className="w-[260px] h-9 bg-white" data-testid="camera-trigger">
+          <SelectTrigger aria-label="Camera source" className="h-9 w-full max-w-[260px] min-w-0 bg-white" data-testid="camera-trigger">
             <SelectValue placeholder="Select camera" />
           </SelectTrigger>
           <SelectContent>

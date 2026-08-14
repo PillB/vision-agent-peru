@@ -39,6 +39,25 @@ test('agent flow and measured temporal correlation views remain wired to runtime
   assert.match(flow, /Contract preview · not executed/)
 })
 
+test('primary destinations and graph canvases use explicit responsive containment', async () => {
+  const page = await read('src/app/page.tsx')
+  const layout = await read('src/app/layout.tsx')
+  const styles = await read('src/app/globals.css')
+  const flow = await read('src/components/prototype/agent-decision-flow.tsx')
+  const correlation = await read('src/components/prototype/co-occurrence-graph.tsx')
+  assert.match(page, /data-testid="primary-tab-strip"/)
+  assert.match(page, /data-testid="primary-destination-viewport"/)
+  assert.match(page, /data-allow-horizontal-scroll="true"/)
+  assert.match(layout, /viewportFit: "cover"/)
+  assert.match(styles, /safe-area-inset-left/)
+  assert.match(styles, /safe-area-inset-right/)
+  assert.match(flow, /flow-map-responsive/)
+  assert.match(flow, /flow-stage-node/)
+  assert.doesNotMatch(flow, /className="overflow-x-auto bg-zinc-50\/70"/)
+  assert.match(correlation, /maxWidth: width/)
+  assert.doesNotMatch(correlation, /style=\{\{ width, height \}\}/)
+})
+
 test('restored production path uses the pinned detector and exposes no model globals', async () => {
   const loader = await read('src/components/prototype/real-ml-loader.tsx')
   const detector = await read('src/lib/yolos-detector.ts')

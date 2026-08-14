@@ -1,6 +1,41 @@
 # Worklog — Agentic Camera Intelligence System (Peru)
 
 ---
+Task ID: mobile-overflow-hardening-2026-08-14
+Agent: Codex
+Task: Close the remaining responsive PR gates and eliminate document-level horizontal overflow across current phones and tablets.
+
+## Current project status description / assessment
+
+- Started from current `main` at `d784d3b`, after the authoritative graph, presentation/export, CI-stabilization, Pages deployment, and live-smoke rounds completed.
+- GitHub still has one stale open PR (#7) from the superseded dashboard branch. Its static-analysis failures are not present on current `main`; this round uses a focused branch instead of reviving obsolete graph code.
+- Root cause confirmed: `src/app/page.tsx` placed the tab strip and every destination inside a single `overflow-x-auto` ancestor. That allowed destination overflow to become a nested page-width scroller and could hide it from document-level checks.
+- Secondary mobile risks included fixed-size empty/canvas states in the correlation graph, a permanently 970px decision canvas, fixed multi-column strategic visuals, long intrinsic labels, and missing iOS safe-area metadata.
+- Local browser installation remains unavailable because Playwright browser downloads are truncated or rejected by the environment clock/certificate path. The repository workflow installs Chromium, Firefox, and WebKit, so exact rendered viewport evidence is delegated to the PR browser matrix.
+
+## Current goals / completed modifications / verification results
+
+- Separated the primary tab strip from destination content. Only the tab strip is an explicitly allowed horizontal scroller; every destination is contained by a `w-full min-w-0` viewport.
+- Added reusable overflow containment and anywhere-wrapping rules, responsive media defaults, `viewport-fit=cover`, and left/right iOS safe-area padding.
+- Rebuilt the decision map responsively: one column on compact phones, two columns from 520–1023px, and the familiar n8n-style fixed DAG at desktop widths. The inspector and decision tasks reflow with the nodes; desktop edge animation remains intact.
+- Made the entity correlation empty state and live canvas scale to their container, wrapped analysis-window controls, stacked compact metrics, and retained only explicitly marked table scrolling where column comparison genuinely requires it.
+- Hardened the Live Prototype, Evidence Workspace, Strategic Brief, camera/use-case selectors, status rows, actions, tables, and comparison cards against intrinsic-width overflow while preserving all four original destinations and the established zinc/emerald/amber/rose visual system.
+- Added a red-first responsive contract and an installed-browser Playwright audit covering Android 360×800 and 412×915, iPhone 13 Pro portrait/landscape, iPad mini portrait, and iPad Pro 11 landscape. The audit exercises all four primary destinations, expanded flow comparison, and all six Evidence Workspace destinations; it reports exact offending selectors and disallows unexpected horizontal scrollers.
+- Local verification currently passes: ESLint 0 errors; TypeScript 0 errors; 64/64 unit, contract, and model tests; `git diff --check`; optimized standalone production build; and an isolated GitHub Pages static export containing only `/` and `/_not-found`. The only build warning is the unchanged face-api dynamic-require warning.
+
+## Unresolved issues or risks / next-phase priority
+
+1. Publish the focused branch and require the complete installed-browser PR matrix to pass at all six added phone/tablet sizes before merge.
+2. After merge, require the Pages release and live Chromium smoke gates, then confirm the public root returns HTTP 200 and current content.
+3. Horizontal scrolling remains intentional only for compact navigation and genuinely wide comparison tables; document/body overflow must remain exactly zero.
+4. The unchanged `@vladmandic/face-api` dynamic-require warning remains a separate packaging task.
+5. Close stale PR #7 as superseded only after this current-main responsive release is green.
+
+Stage Summary:
+- Responsive diagnosis, implementation, contracts, and local/static build verification are complete.
+- Installed-browser CI, merge, Pages deployment, and public-site verification remain the release gates.
+
+---
 Task ID: agent-graph-presentation-2026-08-14
 Agent: Codex
 Task: Add production-safe graph export, synchronized split comparison, and a clearer current-edge animation after the authoritative graph release stabilized.

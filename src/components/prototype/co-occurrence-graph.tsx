@@ -226,7 +226,7 @@ export function CoOccurrenceGraph({ network, windowedNetworks, width = 400, heig
 
   if (!network || network.nodes.length === 0) {
     return (
-      <div className="flex items-center justify-center text-xs text-zinc-400" style={{ width, height }}>
+      <div className="flex w-full items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-3 text-center text-xs text-zinc-400" style={{ maxWidth: width, aspectRatio: `${width} / ${height}`, minHeight: Math.min(height, 180) }}>
         No subjects tracked yet
       </div>
     )
@@ -236,7 +236,7 @@ export function CoOccurrenceGraph({ network, windowedNetworks, width = 400, heig
     <div className="space-y-2" data-testid="co-occurrence-graph">
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-2">
         <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Analysis window</div>
-        <div className="flex gap-1" role="group" aria-label="Correlation time window">
+        <div className="flex flex-wrap gap-1" role="group" aria-label="Correlation time window">
           {([['session', 'Session'], [30_000, '30s'], [120_000, '2m'], [600_000, '10m']] as const).map(([value, label]) => (
             <button
               key={String(value)}
@@ -250,10 +250,10 @@ export function CoOccurrenceGraph({ network, windowedNetworks, width = 400, heig
           ))}
         </div>
       </div>
-      <div className="overflow-x-auto rounded-md border border-zinc-200 bg-zinc-50">
-        <canvas ref={canvasRef} className="block" style={{ width, height }} />
+      <div className="overflow-hidden rounded-md border border-zinc-200 bg-zinc-50">
+        <canvas ref={canvasRef} className="block h-auto w-full" style={{ maxWidth: width, aspectRatio: `${width} / ${height}` }} />
       </div>
-      <div className="flex items-center justify-between text-[9px] text-zinc-500 px-1">
+      <div className="flex min-w-0 flex-col gap-1 px-1 text-[9px] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
         <span>
           {filteredNetwork?.totalSubjects ?? 0} local tracks · {filteredNetwork?.edges.length ?? 0} measured links
           {(filteredNetwork?.totalSubjects ?? 0) > 12 ? ' · top 12 shown' : ''}
@@ -287,7 +287,7 @@ export function CoOccurrenceGraph({ network, windowedNetworks, width = 400, heig
         </div>
       )}
       {(filteredNetwork?.edges.length ?? 0) > 0 && (
-        <div className="overflow-x-auto rounded border border-zinc-200 bg-white">
+        <div className="overflow-x-auto rounded border border-zinc-200 bg-white" data-allow-horizontal-scroll="true">
           <table className="w-full text-[9px] text-zinc-600">
             <thead className="bg-zinc-50 text-zinc-500">
               <tr>

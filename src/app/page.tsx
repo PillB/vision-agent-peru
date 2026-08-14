@@ -17,20 +17,20 @@ export default function Home() {
   const t = useTranslations()
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="overflow-safe flex min-h-screen min-w-0 flex-col bg-white">
       {/* Top App Bar */}
       <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto max-w-[1400px] px-4 md:px-8 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="mx-auto flex h-14 w-full max-w-[1400px] min-w-0 items-center justify-between gap-2 px-4 md:px-8">
+          <div className="flex min-w-0 items-center gap-2.5">
             <div className="h-7 w-7 rounded-md bg-emerald-700 text-white flex items-center justify-center">
               <Camera className="h-4 w-4" />
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-serif text-lg text-zinc-950">{t('Header.brand')}</span>
+            <div className="flex min-w-0 items-baseline gap-2">
+              <span className="truncate font-serif text-lg text-zinc-950">{t('Header.brand')}</span>
               <span className="hidden sm:inline text-xs text-zinc-500 font-mono">{t('Header.version')}</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-3">
             <LocaleSwitcher />
             <div className="hidden md:flex items-center gap-1.5 text-xs text-zinc-500">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -48,10 +48,14 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Tab Nav */}
-      <div className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto max-w-[1400px] px-4 md:px-8 overflow-x-auto">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)}>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="min-w-0 flex-1">
+        {/* Only the primary tab strip may scroll horizontally. Destination content never inherits it. */}
+        <div className="border-b border-zinc-200 bg-white">
+          <div
+            className="mx-auto max-w-[1400px] overflow-x-auto px-4 [scrollbar-width:thin] md:px-8"
+            data-testid="primary-tab-strip"
+            data-allow-horizontal-scroll="true"
+          >
             <TabsList className="bg-transparent h-12 min-w-max p-0 gap-4 md:gap-6">
               <TabsTrigger
                 value="overview"
@@ -82,24 +86,26 @@ export default function Home() {
                 <span className="text-sm font-medium">{t('Nav.evidence')}</span>
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="overview" className="mt-0 focus-visible:outline-none">
-              <Tab1Overview onTryPrototype={() => setTab('prototype')} />
-            </TabsContent>
-            <TabsContent value="brief" className="mt-0 focus-visible:outline-none">
-              <Tab3StrategicBrief
-                onTryPrototype={() => setTab('prototype')}
-                onSeeOverview={() => setTab('overview')}
-              />
-            </TabsContent>
-            <TabsContent value="prototype" className="mt-0 focus-visible:outline-none">
-              <Tab2Prototype />
-            </TabsContent>
-            <TabsContent value="evidence" className="mt-0 focus-visible:outline-none">
-              <EvidenceWorkspace />
-            </TabsContent>
-          </Tabs>
+          </div>
         </div>
-      </div>
+        <div className="w-full min-w-0" data-testid="primary-destination-viewport">
+          <TabsContent value="overview" className="mt-0 w-full min-w-0 focus-visible:outline-none">
+            <Tab1Overview onTryPrototype={() => setTab('prototype')} />
+          </TabsContent>
+          <TabsContent value="brief" className="mt-0 w-full min-w-0 focus-visible:outline-none">
+            <Tab3StrategicBrief
+              onTryPrototype={() => setTab('prototype')}
+              onSeeOverview={() => setTab('overview')}
+            />
+          </TabsContent>
+          <TabsContent value="prototype" className="mt-0 w-full min-w-0 focus-visible:outline-none">
+            <Tab2Prototype />
+          </TabsContent>
+          <TabsContent value="evidence" className="mt-0 w-full min-w-0 focus-visible:outline-none">
+            <EvidenceWorkspace />
+          </TabsContent>
+        </div>
+      </Tabs>
 
       {/* Footer */}
       <footer className="mt-auto border-t border-zinc-200 bg-zinc-50">

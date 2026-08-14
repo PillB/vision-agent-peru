@@ -385,8 +385,8 @@ export function EvidenceWorkspace() {
   const selectedPreview = selectedResult && prepared.find(item => item.metadata.videoId === selectedResult.videoId)
 
   return (
-    <main className="min-h-[calc(100vh-8rem)] bg-zinc-50" aria-label="Evidence workspace">
-      <div className="mx-auto max-w-[1600px] px-3 py-5 md:px-6 space-y-4">
+    <main className="min-h-[calc(100vh-8rem)] min-w-0 bg-zinc-50" aria-label="Evidence workspace">
+      <div className="mx-auto max-w-[1600px] min-w-0 space-y-4 px-3 py-5 md:px-6 [&>*]:min-w-0">
         <div className="rounded-xl border border-zinc-200 bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -395,7 +395,7 @@ export function EvidenceWorkspace() {
             </div>
             <Badge variant="outline">{capabilities.badge}</Badge>
           </div>
-          <nav className="mt-4 flex gap-2 overflow-x-auto" aria-label="Evidence destinations">
+          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]" aria-label="Evidence destinations" data-allow-horizontal-scroll="true">
             {DESTINATIONS.map(item => (
               <Button
                 key={item.id}
@@ -449,7 +449,7 @@ export function EvidenceWorkspace() {
               </div>
               {preflightError && <Notice tone="error">{preflightError}</Notice>}
               <div className="mt-4 space-y-2">
-                {prepared.map(item => <div key={item.metadata.videoId} className="rounded border p-3 text-sm"><FileVideo className="mr-2 inline h-4 w-4" />{item.file.name} · {item.metadata.durationSeconds.toFixed(1)}s · {item.estimate.estimatedFrames} sampled frames · estimate {item.estimate.estimatedTimeSeconds.toFixed(0)}s / {item.estimate.estimatedMemoryMB.toFixed(1)}MB</div>)}
+                {prepared.map(item => <div key={item.metadata.videoId} className="overflow-wrap-anywhere rounded border p-3 text-sm"><FileVideo className="mr-2 inline h-4 w-4" />{item.file.name} · {item.metadata.durationSeconds.toFixed(1)}s · {item.estimate.estimatedFrames} sampled frames · estimate {item.estimate.estimatedTimeSeconds.toFixed(0)}s / {item.estimate.estimatedMemoryMB.toFixed(1)}MB</div>)}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button onClick={startAnalysis} disabled={!prepared.length || !storage.available || analysisState === 'running'}><Play className="mr-2 h-4 w-4" />Approve and analyze locally</Button>
@@ -507,7 +507,7 @@ export function EvidenceWorkspace() {
               <Panel key={item.associationId} title={`${item.reviewer ? (item.decision === 'plausible' ? 'Human-confirmed association' : 'Rejected association') : 'Plausible cross-video association'} · experimental fusion ${item.fusionScore.toFixed(3)}`}>
                 <p>{item.leftTrackId} ↔ {item.rightTrackId}</p><p className="text-xs">Appearance {item.appearanceScore.toFixed(3)} · topology {item.topologyScore.toFixed(3)} · temporal {item.temporalScore.toFixed(3)} · quality {item.evidenceQuality}</p>
                 {item.conflicts.map(conflict => <p className="text-xs text-amber-700" key={conflict}>{conflict}</p>)}
-                <div className="mt-3 flex gap-2"><Button onClick={() => reviewAssociation(item, true)}>Human confirm</Button><Button variant="outline" onClick={() => reviewAssociation(item, false)}>Reject</Button></div>
+                <div className="mt-3 flex flex-wrap gap-2"><Button onClick={() => reviewAssociation(item, true)}>Human confirm</Button><Button variant="outline" onClick={() => reviewAssociation(item, false)}>Reject</Button></div>
               </Panel>
             ))}
             {selectedResult && <Panel title="Timeline review"><img className="max-h-64 rounded" src={selectedResult.snapshotDataUrl} alt={`Evidence ${selectedResult.id}`} /><p className="mt-2">{selectedResult.cameraId} · {new Date(selectedResult.timestamp).toLocaleString()} · {selectedResult.contextPosition ?? 'middle'} context</p>{selectedPreview && <video className="mt-3 w-full max-w-xl" src={selectedPreview.objectUrl} controls onLoadedMetadata={event => { event.currentTarget.currentTime = selectedResult.sourceTimestampSeconds ?? 0 }} />}</Panel>}
@@ -531,7 +531,7 @@ export function EvidenceWorkspace() {
         {destination === 'governance' && (
           <section className="space-y-4" aria-labelledby="governance-heading">
             <Panel title="Model and adapter inventory" id="governance-heading">
-              <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th>Model</th><th>Status</th><th>Revision</th><th>License</th><th>Limits</th></tr></thead><tbody>{ALL_MODELS.map(model => <tr className="border-t" key={model.id}><td className="py-2">{model.label}</td><td>{model.adapterImplemented && model.browserReady ? 'experimental adapter' : 'unavailable candidate'}</td><td className="font-mono text-xs">{model.revision}</td><td>{model.license}</td><td>{model.cons.join(' · ')}</td></tr>)}</tbody></table></div>
+              <div className="overflow-x-auto" data-allow-horizontal-scroll="true"><table className="w-full text-left text-sm"><thead><tr><th>Model</th><th>Status</th><th>Revision</th><th>License</th><th>Limits</th></tr></thead><tbody>{ALL_MODELS.map(model => <tr className="border-t" key={model.id}><td className="py-2">{model.label}</td><td>{model.adapterImplemented && model.browserReady ? 'experimental adapter' : 'unavailable candidate'}</td><td className="font-mono text-xs">{model.revision}</td><td>{model.license}</td><td>{model.cons.join(' · ')}</td></tr>)}</tbody></table></div>
             </Panel>
             <Panel title="Responsible-use boundary">
               <p>No facial recognition or permanent watchlists. Age, perceived gender, body proportion, and gait are disabled research-only topics and never enter operational ranking, normal retention, association, or action authorization.</p>
@@ -545,9 +545,9 @@ export function EvidenceWorkspace() {
 }
 
 function Panel({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
-  return <div className="rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-700"><h2 id={id} className="mb-3 text-base font-semibold text-zinc-950">{title}</h2>{children}</div>
+  return <div className="overflow-wrap-anywhere min-w-0 rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-700"><h2 id={id} className="mb-3 text-base font-semibold text-zinc-950">{title}</h2>{children}</div>
 }
-function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block text-sm"><span className="mb-1 block font-medium text-zinc-700">{label}</span>{children}</label> }
-function Status({ label, value, ok }: { label: string; value: string; ok: boolean }) { return <div data-status={ok ? 'available' : 'unavailable'} className="flex items-start justify-between gap-4 border-b py-2"><span>{label}</span><span className="flex items-center gap-1 text-right">{ok ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <XCircle className="h-4 w-4 text-rose-600" />}{value}</span></div> }
-function Notice({ tone, children }: { tone: 'info' | 'error'; children: React.ReactNode }) { return <div role={tone === 'error' ? 'alert' : 'status'} className={`mt-3 rounded-md border px-3 py-2 text-sm ${tone === 'error' ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-blue-200 bg-blue-50 text-blue-800'}`}>{tone === 'error' ? <AlertTriangle className="mr-2 inline h-4 w-4" /> : <Shield className="mr-2 inline h-4 w-4" />}{children}</div> }
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block min-w-0 text-sm"><span className="mb-1 block font-medium text-zinc-700">{label}</span>{children}</label> }
+function Status({ label, value, ok }: { label: string; value: string; ok: boolean }) { return <div data-status={ok ? 'available' : 'unavailable'} className="flex min-w-0 flex-col gap-1 border-b py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4"><span>{label}</span><span className="flex min-w-0 items-start gap-1 overflow-wrap-anywhere sm:justify-end sm:text-right">{ok ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />}{value}</span></div> }
+function Notice({ tone, children }: { tone: 'info' | 'error'; children: React.ReactNode }) { return <div role={tone === 'error' ? 'alert' : 'status'} className={`overflow-wrap-anywhere mt-3 rounded-md border px-3 py-2 text-sm ${tone === 'error' ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-blue-200 bg-blue-50 text-blue-800'}`}>{tone === 'error' ? <AlertTriangle className="mr-2 inline h-4 w-4" /> : <Shield className="mr-2 inline h-4 w-4" />}{children}</div> }
 function ResultGrid({ title, items, onSelect }: { title: string; items: ExplainedSearchResult[]; onSelect: (record: EvidenceRecord) => void }) { return <Panel title={title}>{items.length === 0 ? <p>No results.</p> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">{items.map(item => <button className="rounded border p-2 text-left focus-visible:ring-2" key={item.record.id} onClick={() => onSelect(item.record)}><img className="aspect-video w-full rounded object-cover" src={item.record.snapshotDataUrl} alt={`${item.record.detection.class} candidate`} /><strong className="mt-2 block">{item.outcome.replace('_', ' ')} · {item.score.toFixed(3)}</strong><span className="text-xs">{item.record.cameraId} · {new Date(item.record.timestamp).toLocaleString()}</span><span className="mt-1 block text-xs">{item.explanation.join(' · ')}</span></button>)}</div>}</Panel> }
