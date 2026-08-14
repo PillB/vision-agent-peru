@@ -1,6 +1,41 @@
 # Worklog — Agentic Camera Intelligence System (Peru)
 
 ---
+Task ID: authoritative-agent-graphs-release-2026-08-14
+Agent: Codex
+Task: Final release, deployed-site verification, and handover closure for the authoritative decision and entity-correlation graphs.
+
+## Current project status description / assessment
+
+- PR #8, `Add authoritative agent and entity correlation graphs`, was squash-merged into `main` as `e4e4c95bd2a11cd666333052bd54a4f6bf28f961`.
+- GitHub Actions run #64 (`31757431342`) completed successfully in 15m35s for the merged commit, including the full visible-UI browser matrix, static analysis/contracts, isolated static export, Pages deployment, and live smoke gates.
+- The public site at https://pillb.github.io/vision-agent-peru/ is serving the new release. The four original destinations remain present: Solution Overview, Strategic Brief, Live Prototype, and Evidence Workspace.
+- The release preserves the zinc/emerald/amber/rose design language while adding denser VP-facing operational detail.
+
+## Current goals / completed modifications / verification results
+
+- Deployed the authoritative nine-stage decision graph: OBSERVE → VALIDATE_EVIDENCE → POLICY → optional JUDGE → VALIDATE_JUDGE → PROPOSE_ACTION → APPROVAL → EXECUTE → VERIFY_OUTCOME.
+- Verified on the public Pages build that all nine nodes render, node selection updates the inspector, the comparison selector covers all 15 use cases, and the graph starts in an honest awaiting-cycle state with replay disabled.
+- Started the real in-browser YOLOS-tiny analysis loop on the public deployment. It advanced to authoritative cycle #2, changed the control to Pause, and populated 20 source-scoped local tracks; the session/30s/2m/10m correlation controls appeared from measured runtime data.
+- Verified the entity concurrence/correlation section, per-feed matrix, local-track semantics, and explicit disclosure that the composite relationship weight is not a calibrated probability and never establishes identity.
+- Verified functional continuity of the existing camera selector, model selector, thresholds, optional judge, alert panels, evidence search, natural-language search, incident state machine, audit/report panels, snapshot/reset controls, and four top-level destinations.
+- Final automated gates: ESLint 0 errors; TypeScript 0 errors; 18 unit + 28 contract + 15 model tests = 61/61 passed; GitHub Pages static export passed; full installed-browser GitHub Actions run passed.
+- The first merged-release animation sampler was configured for 500 ms intervals. The live runtime cycle and populated graph were confirmed, but the browser-control session itself timed out during the multi-sample capture; no application exception or failed CI assertion was observed.
+
+## Unresolved issues or risks / next-phase priority
+
+1. Relationship weight remains an explainable heuristic, not a probability. Calibrate only against a labeled evaluation set.
+2. Tracks remain source-scoped. Do not introduce cross-feed identity claims without separate authorization, benchmark evidence, and privacy review.
+3. The pre-existing `@vladmandic/face-api` dynamic-require bundler warning is non-fatal and unchanged; address it in a dedicated owner-verification packaging task.
+4. If a presentation artifact is needed, rerun the deployed replay capture in a long-lived browser session and export the 500 ms frames or an MP4/GIF. This is an evidence-capture limitation, not a release blocker.
+5. Recommended next product increment: export the current decision graph to SVG/PNG and add an operator-controlled split-screen compare mode with synchronized cycle replay.
+
+Stage Summary:
+- Implementation, CI, merge, Pages deployment, and real public-runtime inference verification are complete.
+- The application release is production-ready within its documented static-site and local-first boundaries.
+- Final handover evidence is recorded here for the next phase.
+
+---
 Task ID: authoritative-agent-graphs-2026-08-13
 Agent: Codex
 Task: Add measured entity correlation analytics and an authoritative n8n-style agent decision map while preserving the current four-destination product.
