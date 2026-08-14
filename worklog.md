@@ -8,10 +8,11 @@ Task: Close the remaining responsive PR gates and eliminate document-level horiz
 ## Current project status description / assessment
 
 - Started from current `main` at `d784d3b`, after the authoritative graph, presentation/export, CI-stabilization, Pages deployment, and live-smoke rounds completed.
-- GitHub still has one stale open PR (#7) from the superseded dashboard branch. Its static-analysis failures are not present on current `main`; this round uses a focused branch instead of reviving obsolete graph code.
+- PR #11, `fix: eliminate mobile and tablet horizontal overflow`, passed its complete release matrix and was squash-merged into `main` as `48a6c0a4abe4b8cca31f9e5d5cfb236df47e0c80`.
+- Closed stale PR #7 from the superseded `feat/dashboard-clean` branch after linking it to the successfully deployed replacement release.
 - Root cause confirmed: `src/app/page.tsx` placed the tab strip and every destination inside a single `overflow-x-auto` ancestor. That allowed destination overflow to become a nested page-width scroller and could hide it from document-level checks.
 - Secondary mobile risks included fixed-size empty/canvas states in the correlation graph, a permanently 970px decision canvas, fixed multi-column strategic visuals, long intrinsic labels, and missing iOS safe-area metadata.
-- Local browser installation remains unavailable because Playwright browser downloads are truncated or rejected by the environment clock/certificate path. The repository workflow installs Chromium, Firefox, and WebKit, so exact rendered viewport evidence is delegated to the PR browser matrix.
+- Local browser installation remains unavailable because Playwright browser downloads are truncated or rejected by the environment clock/certificate path. The repository workflow installs Chromium, Firefox, and WebKit, so exact rendered viewport evidence was produced by the PR browser matrix.
 
 ## Current goals / completed modifications / verification results
 
@@ -23,20 +24,20 @@ Task: Close the remaining responsive PR gates and eliminate document-level horiz
 - Added a red-first responsive contract and an installed-browser Playwright audit covering Android 360×800 and 412×915, iPhone 13 Pro portrait/landscape, iPad mini portrait, and iPad Pro 11 landscape. The audit exercises all four primary destinations, expanded flow comparison, and all six Evidence Workspace destinations; it reports exact offending selectors and disallows unexpected horizontal scrollers.
 - Local verification currently passes: ESLint 0 errors; TypeScript 0 errors; 64/64 unit, contract, and model tests; `git diff --check`; optimized standalone production build; and an isolated GitHub Pages static export containing only `/` and `/_not-found`. The only build warning is the unchanged face-api dynamic-require warning.
 - PR #11 run #70 (`31846801998`) exercised 225 browser cases: 137 passed, 81 intentionally skipped, and 7 failed. The new audit exposed an 8px WebKit root overflow from four unanchored Overview arrow SVGs and one camera-location paint overflow at Android 360px. The existing graph interaction test also exposed that mobile `!important` resets overrode desktop node coordinates, stacking click targets.
-- Corrected the three CI findings without weakening assertions: anchored the Overview value-chain arrows, clipped/truncated the selected camera label, and restored desktop graph coordinates through explicit responsive CSS custom properties. The complete local non-browser and production-build gates pass again; the follow-up installed-browser run is pending.
+- Corrected the three CI findings without weakening assertions: anchored the Overview value-chain arrows, clipped/truncated the selected camera label, and restored desktop graph coordinates through explicit responsive CSS custom properties. The complete local non-browser and production-build gates passed again before the follow-up installed-browser runs.
 - PR #11 run #71 (`31848086708`) confirmed the first fixes: 142 browser cases passed and only two WebKit cases remained. Both traced to the Strategic Brief's final absolute milestone label, centered at the 100% timeline point, extending 17px beyond the viewport at 768–844px. The detailed timeline line is now large-screen only; the complete milestone cards remain visible at phone/tablet widths.
+- PR #11 run #72 (`31849127790`) passed all 225 browser cases (144 passed and 81 feature-appropriate skips), static analysis/contracts, diagnostic evidence upload, isolated Pages export, and `.nojekyll` packaging. This validates zero root/body horizontal overflow at Android 360×800 and 412×915, iPhone 13 Pro portrait and landscape, iPad mini portrait, and iPad Pro 11 landscape while preserving the explicit tab/table scrollers.
+- Main release run #73 (`31850102875`) passed the full browser/build gate, Pages deployment, and post-deploy live Chromium smoke. The public root returned HTTP 200 with `Last-Modified: Fri, 14 Aug 2026 23:35:30 GMT` and exposed all four original destinations.
 
 ## Unresolved issues or risks / next-phase priority
 
-1. Publish the focused branch and require the complete installed-browser PR matrix to pass at all six added phone/tablet sizes before merge.
-2. After merge, require the Pages release and live Chromium smoke gates, then confirm the public root returns HTTP 200 and current content.
-3. Horizontal scrolling remains intentional only for compact navigation and genuinely wide comparison tables; document/body overflow must remain exactly zero.
-4. The unchanged `@vladmandic/face-api` dynamic-require warning remains a separate packaging task.
-5. Close stale PR #7 as superseded only after this current-main responsive release is green.
+1. Horizontal scrolling remains intentional only for compact navigation and genuinely wide comparison tables; document/body overflow must remain exactly zero.
+2. The unchanged `@vladmandic/face-api` dynamic-require warning remains a separate packaging task.
+3. Continue retaining the six-device responsive audit in the required CI matrix for future layout changes.
 
 Stage Summary:
-- Responsive diagnosis, implementation, contracts, and local/static build verification are complete.
-- Installed-browser CI, merge, Pages deployment, and public-site verification remain the release gates.
+- Responsive diagnosis, implementation, contracts, installed-browser CI, merge, Pages deployment, and public-site verification are complete.
+- The responsive release is production-ready within the existing static-site and local-first runtime boundaries.
 
 ---
 Task ID: agent-graph-presentation-2026-08-14
