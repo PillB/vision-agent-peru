@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { CheckCircle2, Clock3, Columns2, Download, FileImage, GitBranch, HeartPulse, PauseCircle, RotateCcw, ShieldCheck, XCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { USE_CASES } from '@/lib/use-cases'
@@ -182,11 +182,11 @@ export function AgentDecisionFlow() {
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm" data-testid="agent-decision-flow">
+    <section className="min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm" data-testid="agent-decision-flow">
       <div className="flex flex-col gap-3 border-b border-zinc-200 bg-gradient-to-r from-zinc-950 via-zinc-900 to-emerald-950 px-4 py-4 text-white md:flex-row md:items-center md:justify-between">
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300"><GitBranch className="h-3.5 w-3.5" /> Agent execution map</div>
-          <h3 className="mt-1 font-serif text-xl">Decision flow · {activeUseCase.name}</h3>
+          <h3 className="mt-1 break-words font-serif text-xl">Decision flow · {activeUseCase.name}</h3>
           <p className="mt-1 max-w-3xl text-xs leading-relaxed text-zinc-300">Replay of the authoritative decision record and its real action audit states. It exposes evidence, policy, gates and outcomes—not private chain-of-thought.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-[10px]">
@@ -201,9 +201,9 @@ export function AgentDecisionFlow() {
         </div>
       </div>
 
-      <div className="overflow-x-auto bg-zinc-50/70">
-        <div className="relative h-[500px] min-w-[970px] bg-[radial-gradient(circle_at_1px_1px,rgba(113,113,122,0.18)_1px,transparent_0)] bg-[size:18px_18px]" data-playback-step={playbackIndex}>
-          <svg aria-hidden="true" className="absolute inset-0 h-full w-[970px]" viewBox="0 0 970 500">
+      <div className="overflow-hidden bg-zinc-50/70 lg:overflow-x-auto" data-allow-horizontal-scroll="true">
+        <div className="flow-map-responsive relative bg-[radial-gradient(circle_at_1px_1px,rgba(113,113,122,0.18)_1px,transparent_0)] bg-[size:18px_18px] lg:h-[500px] lg:min-w-[970px]" data-playback-step={playbackIndex}>
+          <svg aria-hidden="true" className="absolute inset-0 hidden h-full w-[970px] lg:block" viewBox="0 0 970 500">
             <defs><marker id="flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" /></marker></defs>
             {FLOW_EDGES.map(edge => {
               const branchVisible = !edge.branch || edge.branch === judgeBranch
@@ -222,25 +222,25 @@ export function AgentDecisionFlow() {
             const trace = traceByStage.get(stage)
             const status = trace?.status ?? 'idle'
             const active = Boolean(snapshot && activeStage === stage)
-            return <button key={stage} type="button" data-testid={`flow-node-${stage.toLowerCase()}`} data-status={status} data-active={active ? 'true' : 'false'} onClick={() => setSelectedStage(stage)} className={`absolute h-[68px] w-[150px] rounded-lg border p-2 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${statusClasses(status, active)}`} style={{ left: position.x, top: position.y }}>
+            return <button key={stage} type="button" data-testid={`flow-node-${stage.toLowerCase()}`} data-status={status} data-active={active ? 'true' : 'false'} onClick={() => setSelectedStage(stage)} className={`flow-stage-node rounded-lg border p-2 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${statusClasses(status, active)}`} style={{ '--flow-node-x': `${position.x}px`, '--flow-node-y': `${position.y}px` } as CSSProperties}>
               <div className="flex items-center justify-between gap-2"><span className="text-[8px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{STAGE_META[stage].eyebrow}</span><StatusIcon status={status} /></div>
               <div className="mt-1 text-[11px] font-semibold text-zinc-900">{STAGE_META[stage].label}</div><div className="mt-0.5 truncate font-mono text-[8px] text-zinc-500">{stage}</div>
             </button>
           })}
 
-          <div className="absolute left-[36px] top-[222px] w-[500px] rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-sm backdrop-blur">
+          <div className="flow-node-inspector rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-sm backdrop-blur">
             <div className="flex items-center justify-between gap-2"><div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Selected node inspector</div><Badge variant="outline" className="text-[9px]">{selectedTrace?.status ?? 'awaiting data'}</Badge></div>
             <div className="mt-1 text-sm font-semibold text-zinc-950">{STAGE_META[selectedStage].label}</div>
             <p className="mt-1 min-h-10 text-[10px] leading-relaxed text-zinc-600">{selectedTrace?.detail ?? 'Start analysis to populate this node with measured evidence and gate state.'}</p>
             {selectedTrace?.result && <div className="mt-2 flex flex-wrap gap-1">{Object.entries(selectedTrace.result).slice(0, 4).map(([key, value]) => <span key={key} className="rounded bg-zinc-100 px-1.5 py-1 font-mono text-[8px] text-zinc-600">{key}={Array.isArray(value) ? value.join('|') : String(value)}</span>)}</div>}
           </div>
 
-          <div className="absolute left-[36px] top-[386px] flex max-w-[500px] flex-wrap gap-1.5" aria-label="Current decision tasks">
+          <div className="flow-decision-tasks flex flex-wrap gap-1.5" aria-label="Current decision tasks">
             {(proposedActions.length > 0 ? proposedActions : activeUseCase.actions.map(name => ({ name }))).slice(0, 7).map((action, index) => {
               const name = action.name
               const execution = Array.from(executionByAction.entries()).find(([actionName]) => actionName === name)?.[1]
               const taskClass = execution?.status === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : execution?.status === 'failed' ? 'border-rose-200 bg-rose-50 text-rose-800' : execution?.status === 'skipped' ? 'border-zinc-200 bg-zinc-100 text-zinc-500 line-through' : execution?.status === 'pending' ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-zinc-200 bg-white text-zinc-500'
-              return <span key={`${name}-${index}`} className={`rounded-md border px-2 py-1 font-mono text-[9px] ${taskClass}`}>{name} · {execution?.status ?? (snapshot ? 'queued' : 'configured')}</span>
+              return <span key={`${name}-${index}`} className={`max-w-full overflow-wrap-anywhere rounded-md border px-2 py-1 font-mono text-[9px] ${taskClass}`}>{name} · {execution?.status ?? (snapshot ? 'queued' : 'configured')}</span>
             })}
           </div>
         </div>
@@ -254,7 +254,7 @@ export function AgentDecisionFlow() {
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-3" data-testid="use-case-comparison">
           <div className="flex flex-wrap items-center justify-between gap-2"><div><div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Compare decision contracts</div><div className="mt-1 text-[9px] text-zinc-400">Previewed contracts never claim runtime execution.</div></div><label className="sr-only" htmlFor="flow-compare-use-case">Compare with use case</label><select id="flow-compare-use-case" value={comparisonId} onChange={event => setComparisonId(event.target.value)} className="max-w-[210px] rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] text-zinc-700">{USE_CASES.map(useCase => <option key={useCase.id} value={useCase.id}>{useCase.name}</option>)}</select></div>
-          <div className="mt-2 grid grid-cols-2 gap-2 text-[9px]">{[activeUseCase, comparisonUseCase].map((useCase, index) => <div key={`${useCase.id}-${index}`} className="rounded-md bg-zinc-50 p-2"><div className="truncate font-semibold text-zinc-900">{useCase.name}</div><div className="mt-1 text-zinc-500">{useCase.ruleType} · {useCase.level}</div><div className="mt-1 text-zinc-600">{useCase.actions.length} tasks · {useCase.actions.includes('llm_judge') ? 'judge branch' : 'no judge'}</div></div>)}</div>
+          <div className="mt-2 grid min-w-0 grid-cols-1 gap-2 text-[9px] sm:grid-cols-2">{[activeUseCase, comparisonUseCase].map((useCase, index) => <div key={`${useCase.id}-${index}`} className="min-w-0 rounded-md bg-zinc-50 p-2"><div className="truncate font-semibold text-zinc-900">{useCase.name}</div><div className="mt-1 overflow-wrap-anywhere text-zinc-500">{useCase.ruleType} · {useCase.level}</div><div className="mt-1 overflow-wrap-anywhere text-zinc-600">{useCase.actions.length} tasks · {useCase.actions.includes('llm_judge') ? 'judge branch' : 'no judge'}</div></div>)}</div>
         </div>
       </div>
       {splitComparison && <div className="border-t border-zinc-200 bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_100%)] p-4" data-testid="flow-split-comparison">

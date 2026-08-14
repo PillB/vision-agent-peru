@@ -124,6 +124,15 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv01", "cv11";
+    min-width: 0;
+    max-width: 100%;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
   }
   /* McKinsey-style typography helpers */
   .font-serif {
@@ -134,6 +143,85 @@
   }
   .tabular-nums {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+@utility overflow-wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.overflow-safe {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.flow-map-responsive {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  height: auto;
+  min-width: 0;
+  padding: 0.75rem;
+}
+
+.flow-stage-node {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: 100%;
+  min-width: 0;
+  min-height: 4.25rem;
+}
+
+.flow-node-inspector,
+.flow-decision-tasks {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+@media (min-width: 520px) and (max-width: 1023px) {
+  .flow-map-responsive {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .flow-map-responsive {
+    display: block;
+    height: 500px;
+    min-width: 970px;
+    padding: 0;
+  }
+
+  .flow-stage-node {
+    position: absolute !important;
+    left: var(--flow-node-x) !important;
+    top: var(--flow-node-y) !important;
+    width: 150px;
+    height: 68px;
+    min-height: 0;
+  }
+
+  .flow-node-inspector {
+    position: absolute !important;
+    left: 36px !important;
+    top: 222px !important;
+    width: 500px;
+  }
+
+  .flow-decision-tasks {
+    position: absolute !important;
+    left: 36px !important;
+    top: 386px !important;
+    width: auto;
+    max-width: 500px;
   }
 }
 

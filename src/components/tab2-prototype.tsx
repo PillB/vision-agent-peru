@@ -53,8 +53,8 @@ export function Tab2Prototype() {
   } : undefined
 
   return (
-    <main aria-label="Live prototype" className="bg-zinc-50 min-h-[calc(100vh-3.5rem-3rem)]">
-      <div className="mx-auto max-w-[1600px] px-3 md:px-6 py-4 md:py-6 space-y-3 md:space-y-4">
+    <main aria-label="Live prototype" className="min-h-[calc(100vh-3.5rem-3rem)] min-w-0 bg-zinc-50">
+      <div className="mx-auto max-w-[1600px] min-w-0 space-y-3 px-3 py-4 md:space-y-4 md:px-6 md:py-6 [&>*]:min-w-0">
         <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2 flex items-start gap-2 text-xs text-zinc-700">
           <Info className="h-3.5 w-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1 leading-relaxed">{t('banner')}</div>
@@ -68,11 +68,11 @@ export function Tab2Prototype() {
         <AgentDecisionFlow />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4">
-          <div className="lg:col-span-8 space-y-3 md:space-y-4">
+          <div className="min-w-0 space-y-3 md:space-y-4 lg:col-span-8">
             <CameraView />
             <CountChart />
           </div>
-          <div className="lg:col-span-4 space-y-3 md:space-y-4">
+          <div className="min-w-0 space-y-3 md:space-y-4 lg:col-span-4">
             <AgentTrace />
             <AlertsPanel />
           </div>
@@ -94,7 +94,7 @@ export function Tab2Prototype() {
 
         {/* Local-track entity concurrence + correlation network */}
         <div className="rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             <h3 className="font-serif text-base text-zinc-950">Entity concurrence &amp; correlation</h3>
             <Badge variant="outline" className="text-[9px]">Measured local tracks</Badge>
           </div>
@@ -106,7 +106,7 @@ export function Tab2Prototype() {
             <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3" data-testid="per-feed-correlation-matrix">
               <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Per-feed analytics matrix</div>
               <p className="mt-1 text-[9px] leading-relaxed text-zinc-500">Each row is an independent source session. No cross-feed identity merge is performed.</p>
-              <div className="mt-2 overflow-x-auto">
+              <div className="mt-2 overflow-x-auto" data-allow-horizontal-scroll="true">
                 <table className="w-full text-[9px]">
                   <thead className="text-zinc-500"><tr><th className="py-1 text-left">Feed</th><th className="py-1 text-right">Tracks</th><th className="py-1 text-right">Links</th><th className="py-1 text-right">Top weight</th></tr></thead>
                   <tbody>

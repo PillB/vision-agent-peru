@@ -427,7 +427,7 @@ export function Tab1Overview({ onTryPrototype }: Props) {
           <div className="mt-12">
             <div className="grid grid-cols-5 gap-2 h-64 items-end">
               {VALUE_CHAIN.map((stage, i) => (
-                <div key={stage.label} className="flex flex-col items-center gap-2">
+                <div key={stage.label} className="relative flex min-w-0 flex-col items-center gap-2">
                   <div className="text-xs font-mono text-zinc-500">{stage.pct}%</div>
                   <div
                     className={`w-full rounded-t-lg ${stage.tone === 'emerald' ? 'bg-emerald-700' : stage.tone === 'amber' ? 'bg-amber-500' : stage.tone === 'rose' ? 'bg-rose-600' : 'bg-zinc-400'}`}
