@@ -745,7 +745,7 @@ export function CameraView() {
       {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-2">
         <Select value={activeCameraId} onValueChange={(v) => { setActiveCamera(v); clearSamples() }}>
-          <SelectTrigger aria-label="Camera source" className="h-9 w-full max-w-[260px] min-w-0 bg-white" data-testid="camera-trigger">
+          <SelectTrigger aria-label="Camera source" className="h-9 w-full max-w-[260px] min-w-0 overflow-hidden bg-white" data-testid="camera-trigger">
             <SelectValue placeholder="Select camera" />
           </SelectTrigger>
           <SelectContent>
@@ -762,7 +762,7 @@ export function CameraView() {
               return all.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   <span className="font-medium">{c.label}</span>
-                  <span className="text-xs text-zinc-500 ml-2">· {c.location}</span>
+                  <span className="ml-2 min-w-0 truncate text-xs text-zinc-500">· {c.location}</span>
                   {c.isStatic && <span className="text-[9px] text-blue-600 ml-1">[static]</span>}
                 </SelectItem>
               ))

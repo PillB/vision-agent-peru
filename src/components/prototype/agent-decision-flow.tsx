@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { CheckCircle2, Clock3, Columns2, Download, FileImage, GitBranch, HeartPulse, PauseCircle, RotateCcw, ShieldCheck, XCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { USE_CASES } from '@/lib/use-cases'
@@ -222,7 +222,7 @@ export function AgentDecisionFlow() {
             const trace = traceByStage.get(stage)
             const status = trace?.status ?? 'idle'
             const active = Boolean(snapshot && activeStage === stage)
-            return <button key={stage} type="button" data-testid={`flow-node-${stage.toLowerCase()}`} data-status={status} data-active={active ? 'true' : 'false'} onClick={() => setSelectedStage(stage)} className={`flow-stage-node rounded-lg border p-2 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${statusClasses(status, active)}`} style={{ left: position.x, top: position.y }}>
+            return <button key={stage} type="button" data-testid={`flow-node-${stage.toLowerCase()}`} data-status={status} data-active={active ? 'true' : 'false'} onClick={() => setSelectedStage(stage)} className={`flow-stage-node rounded-lg border p-2 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${statusClasses(status, active)}`} style={{ '--flow-node-x': `${position.x}px`, '--flow-node-y': `${position.y}px` } as CSSProperties}>
               <div className="flex items-center justify-between gap-2"><span className="text-[8px] font-semibold uppercase tracking-[0.14em] text-zinc-500">{STAGE_META[stage].eyebrow}</span><StatusIcon status={status} /></div>
               <div className="mt-1 text-[11px] font-semibold text-zinc-900">{STAGE_META[stage].label}</div><div className="mt-0.5 truncate font-mono text-[8px] text-zinc-500">{stage}</div>
             </button>

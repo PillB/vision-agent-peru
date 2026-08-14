@@ -202,6 +202,8 @@
 
   .flow-stage-node {
     position: absolute !important;
+    left: var(--flow-node-x) !important;
+    top: var(--flow-node-y) !important;
     width: 150px;
     height: 68px;
     min-height: 0;
