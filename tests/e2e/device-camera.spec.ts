@@ -70,7 +70,7 @@ test('owner can enroll three local face samples and verify one-to-one without pe
   const sample = readFileSync(resolve(process.cwd(), 'node_modules/@vladmandic/face-api/demo/sample3.jpg')).toString('base64')
   const alternateSample = readFileSync(resolve(process.cwd(), 'node_modules/@vladmandic/face-api/demo/sample6.jpg')).toString('base64')
   await page.addInitScript(async ({ sampleData, alternateSampleData }) => {
-    const crop = { alternate: false }
+    const crop: { alternate: boolean; draw?: () => void } = { alternate: false }
     Object.defineProperty(window, '__ownerFaceCrop', { value: crop })
     Object.defineProperty(navigator, 'mediaDevices', {
       configurable: true,
@@ -88,6 +88,7 @@ test('owner can enroll three local face samples and verify one-to-one without pe
           const draw = () => crop.alternate
             ? context.drawImage(alternateImage, 0, 120, 650, 900, 0, 0, canvas.width, canvas.height)
             : context.drawImage(image, 850, 80, 500, 680, 0, 0, canvas.width, canvas.height)
+          crop.draw = draw
           draw()
           window.setInterval(draw, 100)
           return canvas.captureStream(5)
@@ -119,10 +120,17 @@ test('owner can enroll three local face samples and verify one-to-one without pe
   await page.getByRole('button', { name: /Verify owner/i }).evaluate((button: HTMLButtonElement) => button.click())
   await expect(page.getByTestId('owner-verification-status')).toContainText(/Owner match · distance/i, { timeout: 180_000 })
   await page.screenshot({ path: testInfo.outputPath('owner-verification-match.png'), fullPage: true })
+  const videoTimeBeforeAlternate = await page.locator('video').evaluate(video => (video as HTMLVideoElement).currentTime)
   await page.evaluate(() => {
-    (window as typeof window & { __ownerFaceCrop: { alternate: boolean } }).__ownerFaceCrop.alternate = true
+    const crop = (window as typeof window & { __ownerFaceCrop: { alternate: boolean; draw?: () => void } }).__ownerFaceCrop
+    crop.alternate = true
+    crop.draw?.()
   })
-  await page.waitForTimeout(250)
+  await expect.poll(
+    () => page.locator('video').evaluate(video => (video as HTMLVideoElement).currentTime),
+    { timeout: 5_000 },
+  ).toBeGreaterThan(videoTimeBeforeAlternate)
+  await page.waitForTimeout(500)
   await page.getByRole('button', { name: /Verify owner/i }).evaluate((button: HTMLButtonElement) => button.click())
   await expect(page.getByTestId('owner-verification-status')).toContainText(/Not verified · distance/i, { timeout: 60_000 })
   await page.screenshot({ path: testInfo.outputPath('owner-verification-reject.png'), fullPage: true })
