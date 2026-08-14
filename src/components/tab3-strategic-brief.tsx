@@ -171,7 +171,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               )
             })}
           </div>
-          <div className="relative mt-6 hidden h-16 md:block">
+          <div className="relative mt-6 hidden h-16 lg:block">
             <div className="absolute top-1/2 left-0 right-0 h-px bg-zinc-300" />
             {TIMELINE.flatMap((phase) =>
               phase.milestones.map((m, i) => {
@@ -189,7 +189,7 @@ export function Tab3StrategicBrief({ onTryPrototype, onSeeOverview }: Props) {
               })
             )}
           </div>
-          <div className="mt-12 hidden items-center justify-between font-mono text-xs text-zinc-600 md:flex">
+          <div className="mt-12 hidden items-center justify-between font-mono text-xs text-zinc-600 lg:flex">
             <span>{t('Tab3.slide2.timelineStart')}</span>
             <span>{t('Tab3.slide2.timelineEnd')}</span>
           </div>
