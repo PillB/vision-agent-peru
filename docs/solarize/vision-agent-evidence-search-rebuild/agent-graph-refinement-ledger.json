@@ -1,0 +1,84 @@
+{
+  "task": "authoritative-agent-flow-and-entity-correlation",
+  "date": "2026-08-13",
+  "method": "Solarize claim-evidence-risk iteration",
+  "iterations": [
+    {
+      "iteration": 1,
+      "focus": "repository and handover reconciliation",
+      "finding": "Main already preserved four top-level destinations and a restored browser-only prototype.",
+      "change": "Kept the existing information architecture and constrained additions to Live Prototype.",
+      "verification": "Repository, AGENTS.md, worklog, current main history, and live site reviewed."
+    },
+    {
+      "iteration": 2,
+      "focus": "live-baseline differential review",
+      "finding": "The deployed prototype retained the expected style and controls but had no visible nine-stage decision map.",
+      "change": "Captured the existing zinc/emerald visual grammar as the styling constraint for the new graph.",
+      "verification": "All four live tabs inspected; Live Prototype start/pause interaction exercised."
+    },
+    {
+      "iteration": 3,
+      "focus": "telemetry authority",
+      "finding": "Decision execution and agentic trace were produced by separate calls and could diverge.",
+      "change": "Built AgentCycleSnapshot from the exact AgentDecision passed to the serialized executor.",
+      "verification": "Contract test prohibits the parallel agenticResponse call and asserts authoritative snapshot wiring."
+    },
+    {
+      "iteration": 4,
+      "focus": "nine-stage flow semantics",
+      "finding": "A VP-facing graph needs branch visibility without exposing private chain-of-thought.",
+      "change": "Added nine inspectable operational stages showing evidence, policy, gates, tasks, and outcomes.",
+      "verification": "Unit tests cover judge/approval and no-action branches; E2E asserts all nine nodes."
+    },
+    {
+      "iteration": 5,
+      "focus": "runtime status reconciliation",
+      "finding": "A static trace could imply execution success before asynchronous actions finish.",
+      "change": "Linked every action audit entry to a cycle ID and derive judge, approval, execute, and verify status from those entries.",
+      "verification": "Action contract asserts cycle linkage; blocked Pages actions remain failed or skipped, never successful."
+    },
+    {
+      "iteration": 6,
+      "focus": "branch-correct animation",
+      "finding": "Linear playback would incorrectly illuminate skipped judge nodes.",
+      "change": "Playback follows only non-skipped stages, animates active edges, supports reduced motion, and can replay the last measured cycle.",
+      "verification": "E2E samples active-stage changes at 500 ms intervals after a measured runtime cycle."
+    },
+    {
+      "iteration": 7,
+      "focus": "temporal correlation correctness",
+      "finding": "Filtering links by last-seen time does not recalculate a window-specific relationship score.",
+      "change": "Stored timestamped node and pair observations and recompute 30 s, 2 min, and 10 min counts, duration, proximity, encounters, and weight.",
+      "verification": "Unit test proves recent-window frame, node-observation, duration, and edge values differ from session values."
+    },
+    {
+      "iteration": 8,
+      "focus": "entity interpretation and privacy",
+      "finding": "Relationship weights and track labels could be mistaken for identity or calibrated probability.",
+      "change": "Renamed the surface around local tracks, disclosed the composite formula, added a track inspector, and stated source-reset and non-identity boundaries.",
+      "verification": "UI copy and types label the value as an explainable composite weight, not identity or probability."
+    },
+    {
+      "iteration": 9,
+      "focus": "executive usability and responsive layout",
+      "finding": "The visualization needed quick comparison and mobile containment for review meetings.",
+      "change": "Added heartbeat, policy chips, per-use-case comparison, per-feed matrix, node inspector, keyboard controls, and horizontal graph containment.",
+      "verification": "E2E covers inspector, comparison, nine nodes, and document-width containment at 390 px."
+    },
+    {
+      "iteration": 10,
+      "focus": "release gates and deployment evidence",
+      "finding": "Browser binaries were absent locally, while GitHub Actions owns the full installed-browser matrix and Pages smoke test.",
+      "change": "Added focused browser tests and preserved them for CI; completed lint, type, unit, contract, model, and production build gates locally.",
+      "verification": "Local non-browser gates pass; browser run failure is isolated to missing executable before app launch and is pending CI/live evidence."
+    }
+  ],
+  "claims": {
+    "decision_graph_is_authoritative": "supported by shared AgentDecision and cycle-linked action audit entries",
+    "correlation_is_measured": "supported by timestamped within-feed observations",
+    "track_is_identity": "rejected",
+    "relationship_weight_is_probability": "rejected",
+    "external_action_succeeded_on_pages": "rejected"
+  }
+}

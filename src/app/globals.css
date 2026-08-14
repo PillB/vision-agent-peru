@@ -136,3 +136,9 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}

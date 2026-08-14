@@ -6,7 +6,8 @@
  *   - Reappearance count (how many times subject left and returned)
  *   - Total observed duration
  *   - Co-occurrence network (which subjects shared the screen)
- *   - Familiarity score (Jaccard-normalized shared screen time)
+ *   - Explainable relationship weight from shared frames, duration,
+ *     proximity, and repeat encounters
  *
  * Privacy boundary: These are TRACK IDs, not identity. Appearance
  * similarity does not establish identity (section 2, Solarize).
@@ -32,9 +33,11 @@ export interface CoOccurrenceEdge {
   sharedFrames: number
   sharedDurationMs: number
   encounterCount: number
-  familiarityScore: number  // 0..1, Jaccard-normalized
+  familiarityScore: number  // 0..1 composite weight; not a calibrated probability
   proximityScore: number    // 0..1, average pixel distance when co-occurring
   durationScore: number     // 0..1, shared duration / shorter observed duration
+  firstSeen: number
+  lastSeen: number
 }
 
 export interface CoOccurrenceNetwork {
@@ -73,7 +76,15 @@ export class SubjectReidentifier {
   private nextTrackId = 1
   private disappearanceThresholdMs: number
   private lastFrameTimestamp: number | null = null
-  private edgeStats: Map<string, { sharedFrames: number; sharedDurationMs: number; proximitySum: number; encounterCount: number }> = new Map()
+  private frameTimestamps: number[] = []
+  private trackObservations: Map<string, Array<{ timestamp: number; durationMs: number }>> = new Map()
+  private edgeStats: Map<string, {
+    sharedFrames: number
+    sharedDurationMs: number
+    proximitySum: number
+    encounterCount: number
+    observations: Array<{ timestamp: number; durationMs: number; proximity: number; newEncounter: boolean }>
+  }> = new Map()
   private lastBboxes: Map<string, [number, number, number, number]> = new Map()
 
   constructor(disappearanceThresholdMs = 3000) {
@@ -91,6 +102,9 @@ export class SubjectReidentifier {
     timestamp: number = Date.now(),
   ): ActiveSubjectTrack[] {
     this.frameCount++
+    this.frameTimestamps.push(timestamp)
+    while (this.frameTimestamps[0] < timestamp - 600_000) this.frameTimestamps.shift()
+    if (this.frameTimestamps.length > 36_000) this.frameTimestamps.splice(0, this.frameTimestamps.length - 36_000)
     const frameDurationMs = this.lastFrameTimestamp === null
       ? 0
       : Math.max(0, Math.min(1000, timestamp - this.lastFrameTimestamp))
@@ -142,6 +156,11 @@ export class SubjectReidentifier {
         currentActiveTracks.set(bestMatch, { bbox: det.bbox, class: det.class, score: det.score })
         this.lastBboxes.set(bestMatch, det.bbox)
         this.activeTracks.add(bestMatch)
+        const observations = this.trackObservations.get(bestMatch) ?? []
+        observations.push({ timestamp, durationMs: frameDurationMs })
+        while (observations[0]?.timestamp < timestamp - 600_000) observations.shift()
+        if (observations.length > 36_000) observations.splice(0, observations.length - 36_000)
+        this.trackObservations.set(bestMatch, observations)
       } else {
         // Create new track
         const trackId = `T${this.nextTrackId++}`
@@ -160,6 +179,7 @@ export class SubjectReidentifier {
         currentActiveTracks.set(trackId, { bbox: det.bbox, class: det.class, score: det.score })
         this.lastBboxes.set(trackId, det.bbox)
         this.activeTracks.add(trackId)
+        this.trackObservations.set(trackId, [{ timestamp, durationMs: frameDurationMs }])
       }
     }
 
@@ -189,11 +209,15 @@ export class SubjectReidentifier {
         const centerB = [boxB[0] + boxB[2] / 2, boxB[1] + boxB[3] / 2]
         const normalizedDistance = Math.hypot(centerA[0] - centerB[0], centerA[1] - centerB[1]) / Math.max(1, Math.hypot(canvasW, canvasH))
         const proximity = Math.max(0, 1 - normalizedDistance)
-        const stats = this.edgeStats.get(edgeKey) ?? { sharedFrames: 0, sharedDurationMs: 0, proximitySum: 0, encounterCount: 0 }
-        if (!this.lastFrameTracks.has(idA) || !this.lastFrameTracks.has(idB)) stats.encounterCount += 1
+        const stats = this.edgeStats.get(edgeKey) ?? { sharedFrames: 0, sharedDurationMs: 0, proximitySum: 0, encounterCount: 0, observations: [] }
+        const newEncounter = !this.lastFrameTracks.has(idA) || !this.lastFrameTracks.has(idB)
+        if (newEncounter) stats.encounterCount += 1
         stats.sharedFrames += 1
         stats.sharedDurationMs += frameDurationMs
         stats.proximitySum += proximity
+        stats.observations.push({ timestamp, durationMs: frameDurationMs, proximity, newEncounter })
+        while (stats.observations[0]?.timestamp < timestamp - 600_000) stats.observations.shift()
+        if (stats.observations.length > 36_000) stats.observations.splice(0, stats.observations.length - 36_000)
         this.edgeStats.set(edgeKey, stats)
       }
     }
@@ -215,9 +239,23 @@ export class SubjectReidentifier {
   /**
    * Build the co-occurrence network from all tracked subjects.
    */
-  getCoOccurrenceNetwork(): CoOccurrenceNetwork {
+  getCoOccurrenceNetwork(windowMs?: number, now: number = this.lastFrameTimestamp ?? Date.now()): CoOccurrenceNetwork {
     const edges: CoOccurrenceEdge[] = []
     const processed = new Set<string>()
+    const nodes = Array.from(this.tracks.values()).flatMap(track => {
+      if (windowMs === undefined) return [track]
+      const observations = (this.trackObservations.get(track.trackId) ?? [])
+        .filter(observation => observation.timestamp >= now - windowMs)
+      if (observations.length === 0) return []
+      return [{
+        ...track,
+        firstSeen: observations[0].timestamp,
+        lastSeen: observations.at(-1)?.timestamp ?? track.lastSeen,
+        totalDurationMs: observations.reduce((sum, observation) => sum + observation.durationMs, 0),
+        detectionCount: observations.length,
+      }]
+    })
+    const nodeById = new Map(nodes.map(node => [node.trackId, node]))
 
     for (const [trackId, track] of this.tracks) {
       for (const [otherId, sharedFrames] of track.coOccurrences) {
@@ -230,29 +268,54 @@ export class SubjectReidentifier {
 
         // Composite relationship weight: normalized co-occurrence, average
         // spatial proximity, and repeated encounters. No component establishes identity.
-        const totalA = track.detectionCount
-        const totalB = other.detectionCount
+        const totalA = nodeById.get(trackId)?.detectionCount ?? track.detectionCount
+        const totalB = nodeById.get(otherId)?.detectionCount ?? other.detectionCount
         const jaccard = totalA + totalB - sharedFrames > 0
           ? sharedFrames / (totalA + totalB - sharedFrames)
           : 0
         const stats = this.edgeStats.get(edgeKey)
-        const proximity = stats?.sharedFrames ? stats.proximitySum / stats.sharedFrames : 0
-        const shorterObservedDuration = Math.min(track.totalDurationMs, other.totalDurationMs)
+        const observations = windowMs === undefined
+          ? (stats?.observations ?? [])
+          : (stats?.observations ?? []).filter(observation => observation.timestamp >= now - windowMs)
+        if (windowMs !== undefined && observations.length === 0) continue
+        const windowSharedFrames = windowMs === undefined ? (stats?.sharedFrames ?? sharedFrames) : observations.length
+        const windowSharedDurationMs = windowMs === undefined
+          ? (stats?.sharedDurationMs ?? 0)
+          : observations.reduce((sum, observation) => sum + observation.durationMs, 0)
+        const windowEncounterCount = windowMs === undefined
+          ? (stats?.encounterCount ?? 0)
+          : observations.filter(observation => observation.newEncounter).length
+        const proximity = windowMs === undefined
+          ? (stats?.sharedFrames ? stats.proximitySum / stats.sharedFrames : 0)
+          : observations.reduce((sum, observation) => sum + observation.proximity, 0) / observations.length
+        const shorterObservedDuration = Math.min(
+          nodeById.get(trackId)?.totalDurationMs ?? track.totalDurationMs,
+          nodeById.get(otherId)?.totalDurationMs ?? other.totalDurationMs,
+        )
         const duration = shorterObservedDuration > 0
-          ? Math.min(1, (stats?.sharedDurationMs ?? 0) / shorterObservedDuration)
+          ? Math.min(1, windowSharedDurationMs / shorterObservedDuration)
           : 0
-        const recurrence = Math.min(1, (stats?.encounterCount ?? 0) / 3)
-        const familiarity = 0.35 * jaccard + 0.25 * duration + 0.25 * proximity + 0.15 * recurrence
+        const recurrence = Math.min(1, windowEncounterCount / 3)
+        const windowJaccard = totalA + totalB - windowSharedFrames > 0
+          ? windowSharedFrames / (totalA + totalB - windowSharedFrames)
+          : 0
+        const familiarity = 0.35 * (windowMs === undefined ? jaccard : windowJaccard) + 0.25 * duration + 0.25 * proximity + 0.15 * recurrence
 
         edges.push({
           source: trackId,
           target: otherId,
-          sharedFrames,
-          sharedDurationMs: stats?.sharedDurationMs ?? 0,
-          encounterCount: stats?.encounterCount ?? 0,
+          sharedFrames: windowSharedFrames,
+          sharedDurationMs: windowSharedDurationMs,
+          encounterCount: windowEncounterCount,
           familiarityScore: Math.min(1, familiarity),
           proximityScore: proximity,
           durationScore: duration,
+          firstSeen: windowMs === undefined
+            ? Math.max(track.firstSeen, other.firstSeen)
+            : (observations[0]?.timestamp ?? Math.max(track.firstSeen, other.firstSeen)),
+          lastSeen: windowMs === undefined
+            ? Math.min(track.lastSeen, other.lastSeen)
+            : (observations.at(-1)?.timestamp ?? Math.min(track.lastSeen, other.lastSeen)),
         })
       }
     }
@@ -261,10 +324,12 @@ export class SubjectReidentifier {
     edges.sort((a, b) => b.familiarityScore - a.familiarityScore)
 
     return {
-      nodes: Array.from(this.tracks.values()),
+      nodes,
       edges,
-      totalFrames: this.frameCount,
-      totalSubjects: this.tracks.size,
+      totalFrames: windowMs === undefined
+        ? this.frameCount
+        : this.frameTimestamps.filter(frameTimestamp => frameTimestamp >= now - windowMs).length,
+      totalSubjects: nodes.length,
     }
   }
 
@@ -307,6 +372,8 @@ export class SubjectReidentifier {
     this.frameCount = 0
     this.nextTrackId = 1
     this.lastFrameTimestamp = null
+    this.frameTimestamps = []
+    this.trackObservations.clear()
     this.edgeStats.clear()
     this.lastBboxes.clear()
   }

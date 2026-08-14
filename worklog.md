@@ -1,5 +1,43 @@
 # Worklog — Agentic Camera Intelligence System (Peru)
 
+---
+Task ID: authoritative-agent-graphs-2026-08-13
+Agent: Codex
+Task: Add measured entity correlation analytics and an authoritative n8n-style agent decision map while preserving the current four-destination product.
+
+## Current project status description / assessment
+
+- Baseline reconciled against `main` at `5a668f6`, this handover, the live GitHub Pages site, and the Solarize skill repository. The existing Overview, Live Prototype, Strategic Brief, and Evidence Workspace destinations remain independent and intact.
+- Baseline quality gates passed before implementation: TypeScript, ESLint, 15 unit tests, 27 contract tests, and 15 model tests.
+- The most important runtime defect was a telemetry-authority split: `camera-view.tsx` used `decide()` for execution but a separate `agenticResponse()` call for the displayed trace. The two could diverge while still looking plausible.
+- The prior co-occurrence graph showed session-wide values but had no genuinely recalculated time windows, per-feed matrix, or individual local-track inspector.
+- `agent-browser` and the Playwright browser executable are unavailable in this container. The pre-change public site was inspected and exercised through the connected cloud browser. A local Playwright launch was attempted and failed before page launch only because Chromium is not installed; installing it is blocked by this sandbox's network policy. Browser tests were added for GitHub Actions, whose workflow installs the browsers.
+
+## Current goals / completed modifications / verification results
+
+- Added `AgentCycleSnapshot`, derived from the exact authoritative `AgentDecision` sent to `executeSequentially`. Removed the parallel `agenticResponse()` trace path.
+- Added cycle IDs to asynchronous action audit entries. The visualization now reconciles judge, approval, execution, and outcome status from real entries for that same cycle.
+- Added a VP-facing nine-stage graph: OBSERVE → VALIDATE_EVIDENCE → POLICY → optional JUDGE → VALIDATE_JUDGE → PROPOSE_ACTION → APPROVAL → EXECUTE → VERIFY_OUTCOME. It includes branch-aware animated edges, active-node glow, operational node inspector, task chips, heartbeat, replay, policy summary, and use-case comparison. It displays evidence/policy/gates/outcomes rather than private chain-of-thought.
+- Skipped judge stages never animate. Static-deployment judge/email/escalation limitations display as blocked/skipped or failed closed, never as successful action.
+- Added timestamped per-track and per-pair observations. Session, 30-second, 2-minute, and 10-minute selections now recalculate observations, shared frames, duration, proximity, encounter count, and composite relationship weight rather than merely filtering old links.
+- Added a local-track inspector and per-feed analytics matrix. UI copy explicitly says local track IDs are source-scoped, reset between sources, do not establish identity, and relationship weight is not a calibrated probability.
+- Added responsive containment, keyboard-operable graph nodes, reduced-motion behavior, a moving dashed-edge animation, and retained the zinc/emerald/amber/rose visual system.
+- Added a ten-pass Solarize claim/evidence/risk ledger at `docs/solarize/vision-agent-evidence-search-rebuild/agent-graph-refinement-ledger.json`.
+- Added unit, contract, and browser coverage for authoritative decision wiring, temporal recalculation, nine graph stages, node inspection, use-case comparison, 390px containment, and 500ms animation sampling after a real inference cycle.
+- Current non-browser verification: ESLint 0 errors; TypeScript 0 errors; 18 unit + 28 contract + 15 model tests = 61/61 passed; `git diff --check` passed. A normal optimized production build passed with only the pre-existing `@vladmandic/face-api` dynamic-require warning.
+
+## Unresolved issues or risks / next-phase priority
+
+1. Publish the branch and let GitHub Actions run the installed-browser desktop/tablet/mobile matrix plus static export. The new focused runtime animation test is opt-in with `RUN_REMOTE_MODELS=true`; CI's existing visible-UI suite still guards all product surfaces.
+2. After Pages deployment, repeat public-site section/tab interactions and capture the decision graph at 500ms intervals through the cloud browser. Confirm more than one active stage and verify no console/runtime errors.
+3. The relationship weight is an explainable heuristic, not an empirically calibrated correlation probability. Any probability language requires a labeled dataset and calibration study.
+4. Local track association is within-feed and appearance/geometry-based. Do not add cross-feed identity claims without a separately authorized, benchmarked, privacy-reviewed system.
+5. The existing face-api bundler warning remains unchanged and non-fatal, but should be removed in a separate owner-verification packaging task.
+
+Stage Summary:
+- Implementation and local non-browser gates are complete.
+- CI/browser, static-export, and deployed Pages evidence remain the release gates before this item can be marked production-complete.
+
 Shared multi-agent work log. Each new section starts with `---` and includes Task ID, Agent, Task, Work Log, Stage Summary.
 
 ---

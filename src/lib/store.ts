@@ -13,6 +13,7 @@ import { computeAnomalyStats, DEFAULT_ANOMALY_CONFIG } from './anomaly'
 import type { Action, Tier, AgentConfig } from './agent'
 import { DEFAULT_AGENT_CONFIG } from './agent'
 import { USE_CASES } from './use-cases'
+import type { AgentCycleSnapshot } from './decision-flow'
 
 export interface Detection {
   bbox: [number, number, number, number]  // [x, y, w, h] in source pixels
@@ -51,6 +52,22 @@ export interface ActionLogEntry {
   action: Action
   status: 'pending' | 'success' | 'failed' | 'skipped'
   message?: string
+  /** Links the asynchronous executor result to the authoritative decision cycle. */
+  cycleId?: string
+}
+
+export interface StoredCoOccurrenceSlice {
+  nodes: Array<{ trackId: string; detectionCount: number; reappearanceCount: number; totalDurationMs: number; lastClass: string; firstSeen: number; lastSeen: number; coSubjects: number }>
+  edges: Array<{ source: string; target: string; sharedFrames: number; sharedDurationMs: number; encounterCount: number; familiarityScore: number; proximityScore: number; durationScore: number; firstSeen: number; lastSeen: number }>
+  totalFrames: number
+  totalSubjects: number
+}
+
+export interface StoredCoOccurrenceNetwork extends StoredCoOccurrenceSlice {
+  cameraId: string
+  cameraLabel: string
+  updatedAt: number
+  windows: Record<'30000' | '120000' | '600000', StoredCoOccurrenceSlice>
 }
 
 export interface IncidentReport {
@@ -352,6 +369,8 @@ interface PrototypeState {
   actionLog: ActionLogEntry[]
   reports: IncidentReport[]
   agentTrace: string[]   // last N reasoning strings
+  /** Latest authoritative decision snapshot used by the VP flow visualizer. */
+  agentCycleSnapshot: AgentCycleSnapshot | null
 
   // Appearance tracking (NOT identity — these are appearance-similarity tracks)
   appearanceTracks: Array<{
@@ -365,12 +384,9 @@ interface PrototypeState {
   }>
 
   // Co-occurrence network (JSON-serializable for store)
-  coOccurrenceData: {
-    nodes: Array<{ trackId: string; detectionCount: number; reappearanceCount: number; totalDurationMs: number; lastClass: string; firstSeen: number; lastSeen: number; coSubjects: number }>
-    edges: Array<{ source: string; target: string; sharedFrames: number; sharedDurationMs: number; encounterCount: number; familiarityScore: number; proximityScore: number; durationScore: number }>
-    totalFrames: number
-    totalSubjects: number
-  } | null
+  coOccurrenceData: StoredCoOccurrenceNetwork | null
+  /** Retains the most recent measured network for every visited feed. */
+  coOccurrenceByFeed: Record<string, StoredCoOccurrenceNetwork>
 
   // Model selection (user-chosen models for the active use case)
   selectedModelIds: string[]
@@ -403,6 +419,7 @@ interface PrototypeState {
     escalationHistory?: number[]
   }) => void
   pushTrace: (line: string) => void
+  setAgentCycleSnapshot: (snapshot: AgentCycleSnapshot) => void
   setAppearanceTracks: (identities: PrototypeState['appearanceTracks']) => void
   setCoOccurrenceData: (data: PrototypeState['coOccurrenceData']) => void
 }
@@ -443,10 +460,20 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
   actionLog: [],
   reports: [],
   agentTrace: [],
+  agentCycleSnapshot: null,
   appearanceTracks: [],
   coOccurrenceData: null,
+  coOccurrenceByFeed: {},
 
-  setActiveCamera: (id) => set({ activeCameraId: id, samples: [], stats: null, sustainCount: 0, currentTier: 0 }),
+  setActiveCamera: (id) => set((state) => ({
+    activeCameraId: id,
+    samples: [],
+    stats: null,
+    sustainCount: 0,
+    currentTier: 0,
+    agentCycleSnapshot: null,
+    coOccurrenceData: state.coOccurrenceByFeed[id] ?? null,
+  })),
   setModelStatus: (s, err = null) => set({ modelStatus: s, modelError: err }),
   setRunning: (r) => set({ isRunning: r }),
   setFps: (f) => set({ fps: f }),
@@ -459,8 +486,9 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
     currentTier: 0,
     detections: [],
     personCount: 0,
+    agentCycleSnapshot: null,
   }),
-  setCapabilityLevel: (level) => set({ capabilityLevel: level }),
+  setCapabilityLevel: (level) => set({ capabilityLevel: level, agentCycleSnapshot: null }),
 
   pushDetections: (dets) => {
     // Count all detections (not just persons) — the agent loop filters by
@@ -539,8 +567,13 @@ export const usePrototypeStore = create<PrototypeState>((set) => ({
       return { agentTrace: [`[${ts}] ${line}`, ...state.agentTrace].slice(0, MAX_TRACE) }
     }),
 
+  setAgentCycleSnapshot: (snapshot) => set({ agentCycleSnapshot: snapshot }),
+
   setAppearanceTracks: (identities) => set({ appearanceTracks: identities }),
-  setCoOccurrenceData: (data) => set({ coOccurrenceData: data }),
+  setCoOccurrenceData: (data) => set((state) => data ? ({
+    coOccurrenceData: data,
+    coOccurrenceByFeed: { ...state.coOccurrenceByFeed, [data.cameraId]: data },
+  }) : ({ coOccurrenceData: null })),
 }))
 
 // NOTE: The dev-only window.__visionStore hook has moved to

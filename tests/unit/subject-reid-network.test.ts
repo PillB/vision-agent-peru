@@ -41,3 +41,24 @@ test('active subjects retain their own bbox when several share a class', () => {
   assert.deepEqual(subjects.map(subject => subject.score), [0.9, 0.9])
   assert.notEqual(subjects[0].trackId, subjects[1].trackId)
 })
+
+test('co-occurrence metrics can be recalculated for a recent time window', () => {
+  const tracker = new SubjectReidentifier(100)
+  const pair = [
+    { bbox: [0, 0, 20, 20] as [number, number, number, number], class: 'person', score: 0.9 },
+    { bbox: [22, 0, 20, 20] as [number, number, number, number], class: 'person', score: 0.9 },
+  ]
+
+  tracker.processFrame(pair, 100, 100, 1_000)
+  tracker.processFrame(pair, 100, 100, 2_000)
+  tracker.processFrame(pair, 100, 100, 10_000)
+
+  const sessionEdge = tracker.getCoOccurrenceNetwork().edges[0]
+  const recentEdge = tracker.getCoOccurrenceNetwork(2_000, 10_000).edges[0]
+
+  assert.equal(sessionEdge.sharedFrames, 3)
+  assert.equal(recentEdge.sharedFrames, 1)
+  assert.ok(recentEdge.sharedDurationMs < sessionEdge.sharedDurationMs)
+  assert.equal(tracker.getCoOccurrenceNetwork(2_000, 10_000).nodes[0].detectionCount, 1)
+  assert.equal(tracker.getCoOccurrenceNetwork(2_000, 10_000).totalFrames, 1)
+})

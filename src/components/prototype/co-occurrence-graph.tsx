@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CoOccurrenceNetwork, SubjectTrack } from '@/lib/subject-reid'
 
 interface Props {
   network: CoOccurrenceNetwork | null
+  windowedNetworks?: Partial<Record<30000 | 120000 | 600000, CoOccurrenceNetwork>>
   width?: number
   height?: number
 }
@@ -20,14 +21,36 @@ interface Props {
  * and their familiarity score. This is NOT identity — appearance
  * similarity does not establish identity (Solarize section 2).
  */
-export function CoOccurrenceGraph({ network, width = 400, height = 300 }: Props) {
+export function CoOccurrenceGraph({ network, windowedNetworks, width = 400, height = 300 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<number>(0)
   const positionsRef = useRef<Map<string, { x: number; y: number; vx: number; vy: number }>>(new Map())
+  const [windowMs, setWindowMs] = useState<number | 'session'>('session')
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null)
+
+  const filteredNetwork = useMemo<CoOccurrenceNetwork | null>(() => {
+    if (!network) return null
+    if (windowMs === 'session') return network
+    const measuredWindow = windowedNetworks?.[windowMs]
+    if (measuredWindow) return measuredWindow
+    const latest = Math.max(
+      ...network.nodes.map(node => node.lastSeen),
+      ...network.edges.map(edge => edge.lastSeen),
+      0,
+    )
+    const cutoff = latest - windowMs
+    const edges = network.edges.filter(edge => edge.lastSeen >= cutoff)
+    const visibleIds = new Set(edges.flatMap(edge => [edge.source, edge.target]))
+    const nodes = network.nodes.filter(node => node.lastSeen >= cutoff || visibleIds.has(node.trackId))
+    return { ...network, nodes, edges, totalSubjects: nodes.length }
+  }, [network, windowedNetworks, windowMs])
+
+  const selectedTrack = filteredNetwork?.nodes.find(node => node.trackId === selectedTrackId) ?? null
+  const selectedEdges = filteredNetwork?.edges.filter(edge => edge.source === selectedTrackId || edge.target === selectedTrackId) ?? []
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !network) return
+    if (!canvas || !filteredNetwork) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -37,13 +60,13 @@ export function CoOccurrenceGraph({ network, width = 400, height = 300 }: Props)
     // Keep the canvas legible in crowded scenes. The complete network remains
     // available in `network` and the ranked edge table below; the visualization
     // prioritizes the most-observed subjects and strongest relationships.
-    const nodes = [...network.nodes]
+    const nodes = [...filteredNetwork.nodes]
       .sort((a, b) => b.detectionCount - a.detectionCount)
       .slice(0, 12)
     if (nodes.length === 0) return
     const visibleNodeIds = new Set(nodes.map(node => node.trackId))
     const degree = new Map<string, number>()
-    const edges = network.edges.filter(edge => {
+    const edges = filteredNetwork.edges.filter(edge => {
       if (!visibleNodeIds.has(edge.source) || !visibleNodeIds.has(edge.target)) return false
       if ((degree.get(edge.source) ?? 0) >= 3 || (degree.get(edge.target) ?? 0) >= 3) return false
       degree.set(edge.source, (degree.get(edge.source) ?? 0) + 1)
@@ -199,7 +222,7 @@ export function CoOccurrenceGraph({ network, width = 400, height = 300 }: Props)
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current)
     }
-  }, [network, width, height])
+  }, [filteredNetwork, width, height])
 
   if (!network || network.nodes.length === 0) {
     return (
@@ -210,20 +233,60 @@ export function CoOccurrenceGraph({ network, width = 400, height = 300 }: Props)
   }
 
   return (
-    <div className="space-y-1" data-testid="co-occurrence-graph">
-      <canvas
-        ref={canvasRef}
-        className="rounded-md border border-zinc-200 bg-zinc-50"
-        style={{ width, height }}
-      />
+    <div className="space-y-2" data-testid="co-occurrence-graph">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-2">
+        <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Analysis window</div>
+        <div className="flex gap-1" role="group" aria-label="Correlation time window">
+          {([['session', 'Session'], [30_000, '30s'], [120_000, '2m'], [600_000, '10m']] as const).map(([value, label]) => (
+            <button
+              key={String(value)}
+              type="button"
+              onClick={() => setWindowMs(value)}
+              aria-pressed={windowMs === value}
+              className={`rounded px-2 py-1 text-[9px] font-medium ${windowMs === value ? 'bg-emerald-600 text-white' : 'bg-white text-zinc-600 hover:bg-zinc-100'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="overflow-x-auto rounded-md border border-zinc-200 bg-zinc-50">
+        <canvas ref={canvasRef} className="block" style={{ width, height }} />
+      </div>
       <div className="flex items-center justify-between text-[9px] text-zinc-500 px-1">
         <span>
-          {network.totalSubjects} subjects · {network.edges.length} links
-          {network.totalSubjects > 12 ? ' · top 12 shown' : ''}
+          {filteredNetwork?.totalSubjects ?? 0} local tracks · {filteredNetwork?.edges.length ?? 0} measured links
+          {(filteredNetwork?.totalSubjects ?? 0) > 12 ? ' · top 12 shown' : ''}
         </span>
-        <span>{network.totalFrames} frames analyzed</span>
+        <span>{filteredNetwork?.totalFrames ?? network.totalFrames} frames in selected calculation</span>
       </div>
-      {network.edges.length > 0 && (
+      {(filteredNetwork?.nodes.length ?? 0) > 0 && (
+        <div className="rounded-md border border-zinc-200 bg-white p-2">
+          <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Inspect local track</div>
+          <div className="flex flex-wrap gap-1">
+            {filteredNetwork!.nodes.slice(0, 20).map(node => (
+              <button
+                type="button"
+                key={node.trackId}
+                aria-pressed={selectedTrackId === node.trackId}
+                onClick={() => setSelectedTrackId(current => current === node.trackId ? null : node.trackId)}
+                className={`rounded border px-2 py-1 font-mono text-[9px] ${selectedTrackId === node.trackId ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
+              >
+                {node.trackId} · {node.lastClass}
+              </button>
+            ))}
+          </div>
+          {selectedTrack && (
+            <div className="mt-2 grid gap-2 rounded bg-zinc-50 p-2 text-[9px] text-zinc-600 sm:grid-cols-4" data-testid="entity-node-inspector">
+              <div><span className="block text-zinc-400">Observations</span><strong className="text-zinc-900">{selectedTrack.detectionCount}</strong></div>
+              <div><span className="block text-zinc-400">Observed duration</span><strong className="text-zinc-900">{(selectedTrack.totalDurationMs / 1000).toFixed(1)}s</strong></div>
+              <div><span className="block text-zinc-400">Appearance sessions</span><strong className="text-zinc-900">{selectedTrack.reappearanceCount + 1}</strong></div>
+              <div><span className="block text-zinc-400">Measured links</span><strong className="text-zinc-900">{selectedEdges.length}</strong></div>
+            </div>
+          )}
+        </div>
+      )}
+      {(filteredNetwork?.edges.length ?? 0) > 0 && (
         <div className="overflow-x-auto rounded border border-zinc-200 bg-white">
           <table className="w-full text-[9px] text-zinc-600">
             <thead className="bg-zinc-50 text-zinc-500">
@@ -236,8 +299,8 @@ export function CoOccurrenceGraph({ network, width = 400, height = 300 }: Props)
               </tr>
             </thead>
             <tbody>
-              {network.edges.slice(0, 5).map(edge => (
-                <tr key={`${edge.source}-${edge.target}`} className="border-t border-zinc-100">
+              {filteredNetwork!.edges.slice(0, 8).map(edge => (
+                <tr key={`${edge.source}-${edge.target}`} className={`border-t border-zinc-100 ${selectedTrackId && (edge.source === selectedTrackId || edge.target === selectedTrackId) ? 'bg-emerald-50' : ''}`}>
                   <td className="px-1.5 py-1 font-mono">{edge.source}–{edge.target}</td>
                   <td className="px-1.5 py-1 text-right">{edge.encounterCount}× · {edge.sharedFrames} frames</td>
                   <td className="px-1.5 py-1 text-right">{(edge.sharedDurationMs / 1000).toFixed(1)}s</td>
