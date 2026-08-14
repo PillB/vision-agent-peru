@@ -1,0 +1,95 @@
+{
+  "skill_version": "2.2.0",
+  "cycle_id": "agent-graph-presentation-2026-08-14",
+  "status": "passed",
+  "objective": "Add truthful decision-flow export and synchronized use-case comparison without weakening the authoritative runtime boundary or the existing product surfaces.",
+  "iterations": [
+    {
+      "round": 1,
+      "focus": "Baseline and compatibility",
+      "finding": "The deployed authoritative graph, four top-level destinations, and 61-test baseline were stable.",
+      "change": "Selected additive presentation features instead of restructuring the existing dashboard.",
+      "evidence": ["ESLint passed", "TypeScript passed", "18 unit tests passed", "28 contract tests passed", "15 model tests passed"],
+      "gate": "passed"
+    },
+    {
+      "round": 2,
+      "focus": "Truth boundary",
+      "finding": "A second use case has no runtime evidence and must not inherit the active cycle's status.",
+      "change": "Defined the right lane as a synchronized contract preview and labeled it 'not executed'.",
+      "evidence": ["Playwright assertion requires the explicit preview label", "Only the authoritative lane receives traceByStage"],
+      "gate": "passed"
+    },
+    {
+      "round": 3,
+      "focus": "Red tests",
+      "finding": "No export module or split comparison existed.",
+      "change": "Added failing unit, contract, and browser behaviors before implementation.",
+      "evidence": ["Unit test failed with MODULE_NOT_FOUND for flow-export", "Contract test failed because buildDecisionFlowSvg was absent"],
+      "gate": "passed"
+    },
+    {
+      "round": 4,
+      "focus": "Portable SVG architecture",
+      "finding": "DOM screenshot libraries add dependency and CSS-cloning risk on a static site.",
+      "change": "Built a deterministic standalone SVG from the same stage layout, statuses, branch, tasks, and active cursor used by the UI.",
+      "evidence": ["20/20 unit tests passed", "Export contains all nine data-stage markers"],
+      "gate": "passed"
+    },
+    {
+      "round": 5,
+      "focus": "PNG conversion",
+      "finding": "VP handoff needs a raster option that works without an API route.",
+      "change": "Added a client-only SVG-to-canvas-toBlob PNG path with object-URL cleanup and error reporting.",
+      "evidence": ["Rendered 2000x1240 PNG inspected from generated SVG", "No server or API dependency introduced"],
+      "gate": "passed"
+    },
+    {
+      "round": 6,
+      "focus": "Current-edge motion",
+      "finding": "Dashed paths showed visited edges but the exact transition cursor was less obvious.",
+      "change": "Added a moving SVG token only on the edge entering the current authoritative playback stage.",
+      "evidence": ["Token predicate uses activeStage and visited source", "Reduced-motion hides the moving token"],
+      "gate": "passed"
+    },
+    {
+      "round": 7,
+      "focus": "Synchronized split comparison",
+      "finding": "The prior comparison cards exposed counts but not the complete branch topology.",
+      "change": "Added two nine-stage lanes, branch visibility, task chips, and a synchronized cursor.",
+      "evidence": ["Browser contract expects 18 comparison stages", "All 15 use cases remain selectable"],
+      "gate": "passed"
+    },
+    {
+      "round": 8,
+      "focus": "Accessibility and mobile containment",
+      "finding": "New controls need stable names and the detailed view must not force document-level overflow.",
+      "change": "Added named export/compare buttons, aria-pressed, aria-live export status, and responsive stacked lanes.",
+      "evidence": ["Existing 390px containment test retained", "New controls use explicit accessible names"],
+      "gate": "passed"
+    },
+    {
+      "round": 9,
+      "focus": "Security and data hygiene",
+      "finding": "Use-case and detail strings are embedded in downloadable XML.",
+      "change": "Escaped XML entities and bounded exported detail/task lengths.",
+      "evidence": ["Malicious script-label unit test passes", "Export contains escaped markup instead of executable tags"],
+      "gate": "passed"
+    },
+    {
+      "round": 10,
+      "focus": "Converged verification",
+      "finding": "No new source, type, lint, unit, contract, model, or optimized-build issue remained; local browser acquisition was infrastructure-blocked.",
+      "change": "Prepared focused Playwright download/comparison coverage for the installed-browser CI matrix and documented the local limitation.",
+      "evidence": ["ESLint 0 errors", "TypeScript 0 errors", "20 unit + 28 contract + 15 model tests = 63/63 passed", "Optimized production build passed", "git diff --check passed"],
+      "gate": "passed"
+    }
+  ],
+  "truth_boundaries": [
+    "The comparison lane is a configured contract preview, not a second executed cycle.",
+    "Exports contain operational evidence, policy, gates, tasks, and outcomes, not private chain-of-thought.",
+    "Static GitHub Pages does not gain external action authority from this presentation feature."
+  ],
+  "skillopt_proposals": [],
+  "human_gate_required": false
+}

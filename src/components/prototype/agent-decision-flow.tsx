@@ -1,43 +1,17 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, Clock3, GitBranch, HeartPulse, PauseCircle, RotateCcw, ShieldCheck, XCircle } from 'lucide-react'
+import { CheckCircle2, Clock3, Columns2, Download, FileImage, GitBranch, HeartPulse, PauseCircle, RotateCcw, ShieldCheck, XCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { USE_CASES } from '@/lib/use-cases'
 import { AGENT_STAGE_ORDER } from '@/lib/decision-flow'
+import { buildDecisionFlowSvg, DECISION_FLOW_EDGES, DECISION_NODE_LAYOUT, DECISION_STAGE_META, downloadBlob, renderDecisionFlowPng } from '@/lib/flow-export'
 import type { StageName, StageTrace } from '@/lib/agentic-response'
 import { usePrototypeStore } from '@/lib/store'
 
-const STAGE_META: Record<StageName, { label: string; eyebrow: string }> = {
-  OBSERVE: { label: 'Observe', eyebrow: 'Perceive' },
-  VALIDATE_EVIDENCE: { label: 'Validate evidence', eyebrow: 'Quality gate' },
-  POLICY: { label: 'Apply policy', eyebrow: 'Deterministic' },
-  JUDGE: { label: 'Advisory judge', eyebrow: 'Optional branch' },
-  VALIDATE_JUDGE: { label: 'Validate verdict', eyebrow: 'Fail closed' },
-  PROPOSE_ACTION: { label: 'Create tasks', eyebrow: 'Authorized only' },
-  APPROVAL: { label: 'Approval gate', eyebrow: 'Human control' },
-  EXECUTE: { label: 'Execute', eyebrow: 'Serialized queue' },
-  VERIFY_OUTCOME: { label: 'Verify outcome', eyebrow: 'Close the loop' },
-}
-
-const NODE_LAYOUT: Record<StageName, { x: number; y: number }> = {
-  OBSERVE: { x: 26, y: 96 }, VALIDATE_EVIDENCE: { x: 214, y: 96 }, POLICY: { x: 402, y: 96 },
-  JUDGE: { x: 596, y: 32 }, VALIDATE_JUDGE: { x: 784, y: 32 },
-  PROPOSE_ACTION: { x: 596, y: 216 }, APPROVAL: { x: 784, y: 216 },
-  EXECUTE: { x: 596, y: 388 }, VERIFY_OUTCOME: { x: 784, y: 388 },
-}
-
-const FLOW_EDGES: Array<{ from: StageName; to: StageName; path: string; branch?: 'requested' | 'skipped' }> = [
-  { from: 'OBSERVE', to: 'VALIDATE_EVIDENCE', path: 'M176 130 H214' },
-  { from: 'VALIDATE_EVIDENCE', to: 'POLICY', path: 'M364 130 H402' },
-  { from: 'POLICY', to: 'JUDGE', path: 'M552 130 C570 130 570 66 596 66', branch: 'requested' },
-  { from: 'JUDGE', to: 'VALIDATE_JUDGE', path: 'M746 66 H784', branch: 'requested' },
-  { from: 'VALIDATE_JUDGE', to: 'PROPOSE_ACTION', path: 'M859 100 V160 C859 184 766 184 746 216', branch: 'requested' },
-  { from: 'POLICY', to: 'PROPOSE_ACTION', path: 'M477 164 V188 C477 228 560 250 596 250', branch: 'skipped' },
-  { from: 'PROPOSE_ACTION', to: 'APPROVAL', path: 'M746 250 H784' },
-  { from: 'APPROVAL', to: 'EXECUTE', path: 'M859 284 V330 C859 354 764 388 746 422' },
-  { from: 'EXECUTE', to: 'VERIFY_OUTCOME', path: 'M746 422 H784' },
-]
+const STAGE_META = DECISION_STAGE_META
+const NODE_LAYOUT = DECISION_NODE_LAYOUT
+const FLOW_EDGES = DECISION_FLOW_EDGES
 
 function statusClasses(status: StageTrace['status'] | 'idle', active: boolean) {
   if (active) return 'border-emerald-500 bg-emerald-50 shadow-[0_0_0_4px_rgba(16,185,129,0.12),0_12px_35px_rgba(16,185,129,0.18)]'
@@ -56,6 +30,46 @@ function StatusIcon({ status }: { status: StageTrace['status'] | 'idle' }) {
   return <span className="h-2 w-2 rounded-full bg-zinc-300" />
 }
 
+function ComparisonLane({
+  label,
+  useCaseName,
+  ruleType,
+  actions,
+  activeStage,
+  traceByStage,
+  preview,
+}: {
+  label: string
+  useCaseName: string
+  ruleType: string
+  actions: string[]
+  activeStage?: StageName
+  traceByStage?: Map<StageName, StageTrace>
+  preview?: boolean
+}) {
+  const judgeEnabled = actions.includes('llm_judge')
+  return <article className={`rounded-xl border p-3 ${preview ? 'border-sky-200 bg-sky-50/50' : 'border-emerald-200 bg-emerald-50/50'}`}>
+    <div className="flex flex-wrap items-start justify-between gap-2">
+      <div><div className={`text-[9px] font-semibold uppercase tracking-[0.16em] ${preview ? 'text-sky-700' : 'text-emerald-700'}`}>{label}</div><div className="mt-1 text-sm font-semibold text-zinc-950">{useCaseName}</div></div>
+      <div className="flex flex-wrap justify-end gap-1"><Badge variant="outline" className="bg-white text-[8px]">{ruleType}</Badge><Badge variant="outline" className="bg-white text-[8px]">{judgeEnabled ? 'judge branch' : 'judge skipped'}</Badge></div>
+    </div>
+    <div className="mt-3 grid grid-cols-3 gap-1.5">
+      {AGENT_STAGE_ORDER.map((stage, index) => {
+        const skipped = !judgeEnabled && (stage === 'JUDGE' || stage === 'VALIDATE_JUDGE')
+        const trace = traceByStage?.get(stage)
+        const active = !skipped && activeStage === stage
+        const status = trace?.status ?? (skipped ? 'skip' : 'idle')
+        return <div key={stage} data-comparison-stage={stage} data-active={active ? 'true' : 'false'} className={`relative min-h-[64px] rounded-lg border px-2 py-2 transition-all ${active ? 'border-emerald-500 bg-white shadow-[0_0_0_3px_rgba(16,185,129,0.12)]' : status === 'skip' ? 'border-zinc-200 bg-zinc-100/80 opacity-55' : status === 'fail' ? 'border-rose-300 bg-rose-50' : status === 'pass' ? 'border-emerald-200 bg-white' : 'border-zinc-200 bg-white/80'}`}>
+          <div className="flex items-center justify-between gap-1"><span className="font-mono text-[7px] text-zinc-500">{String(index + 1).padStart(2, '0')}</span><StatusIcon status={status} /></div>
+          <div className="mt-1 text-[9px] font-semibold leading-tight text-zinc-800">{STAGE_META[stage].label}</div>
+          <div className="mt-1 truncate font-mono text-[7px] text-zinc-400">{stage}</div>
+        </div>
+      })}
+    </div>
+    <div className="mt-3 flex flex-wrap gap-1">{actions.slice(0, 7).map(action => <span key={action} className="rounded-md border border-zinc-200 bg-white px-1.5 py-1 font-mono text-[8px] text-zinc-600">{action}</span>)}</div>
+  </article>
+}
+
 export function AgentDecisionFlow() {
   const snapshot = usePrototypeStore(state => state.agentCycleSnapshot)
   const actionLog = usePrototypeStore(state => state.actionLog)
@@ -68,6 +82,8 @@ export function AgentDecisionFlow() {
   const [comparisonId, setComparisonId] = useState('fire_smoke')
   const [heartbeatAge, setHeartbeatAge] = useState(0)
   const [replayNonce, setReplayNonce] = useState(0)
+  const [splitComparison, setSplitComparison] = useState(false)
+  const [exportStatus, setExportStatus] = useState('')
 
   const activeUseCase = USE_CASES.find(useCase => useCase.id === activeUseCaseId) ?? USE_CASES[0]
   const comparisonUseCase = USE_CASES.find(useCase => useCase.id === comparisonId) ?? USE_CASES[0]
@@ -137,6 +153,33 @@ export function AgentDecisionFlow() {
   const judgeBranch = snapshot?.judgeBranch ?? (activeUseCase.actions.includes('llm_judge') ? 'requested' : 'skipped')
   const visited = new Set(playbackStages.slice(0, snapshot ? playbackIndex + 1 : 0))
   const activeStage = snapshot ? playbackStages[Math.min(playbackIndex, playbackStages.length - 1)] : undefined
+  const exportInput = () => ({
+    title: activeUseCase.name,
+    cycleLabel: `Cycle #${snapshot?.cycleNumber ?? agentCycleCount}`,
+    judgeBranch,
+    activeStage,
+    stages: AGENT_STAGE_ORDER.map(stage => ({
+      stage,
+      status: traceByStage.get(stage)?.status ?? 'idle' as const,
+      detail: traceByStage.get(stage)?.detail,
+    })),
+    tasks: (proposedActions.length > 0 ? proposedActions.map(action => action.name) : activeUseCase.actions),
+  })
+  const exportFilename = `vision-agent-flow-${activeUseCase.id}-cycle-${snapshot?.cycleNumber ?? agentCycleCount}`
+  const exportSvg = () => {
+    downloadBlob(new Blob([buildDecisionFlowSvg(exportInput())], { type: 'image/svg+xml;charset=utf-8' }), `${exportFilename}.svg`)
+    setExportStatus('SVG exported')
+  }
+  const exportPng = async () => {
+    setExportStatus('Rendering PNG…')
+    try {
+      const png = await renderDecisionFlowPng(buildDecisionFlowSvg(exportInput()))
+      downloadBlob(png, `${exportFilename}.png`)
+      setExportStatus('PNG exported')
+    } catch (error) {
+      setExportStatus(error instanceof Error ? error.message : 'PNG export failed')
+    }
+  }
 
   return (
     <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm" data-testid="agent-decision-flow">
@@ -148,9 +191,13 @@ export function AgentDecisionFlow() {
         </div>
         <div className="flex flex-wrap items-center gap-2 text-[10px]">
           <button type="button" onClick={() => setReplayNonce(value => value + 1)} disabled={!snapshot} className="inline-flex items-center rounded-md border border-white/15 bg-white/10 px-2 py-1 text-zinc-100 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40"><RotateCcw className="mr-1 h-3 w-3" />Replay cycle</button>
+          <button type="button" aria-label="Export SVG" onClick={exportSvg} className="inline-flex items-center rounded-md border border-white/15 bg-white/10 px-2 py-1 text-zinc-100 transition hover:border-emerald-300/40 hover:bg-emerald-400/10"><Download className="mr-1 h-3 w-3" />SVG</button>
+          <button type="button" aria-label="Export PNG" onClick={() => void exportPng()} className="inline-flex items-center rounded-md border border-white/15 bg-white/10 px-2 py-1 text-zinc-100 transition hover:border-emerald-300/40 hover:bg-emerald-400/10"><FileImage className="mr-1 h-3 w-3" />PNG</button>
+          <button type="button" aria-label={splitComparison ? 'Close split comparison' : 'Open split comparison'} onClick={() => setSplitComparison(value => !value)} aria-pressed={splitComparison} className={`inline-flex items-center rounded-md border px-2 py-1 transition ${splitComparison ? 'border-sky-300/50 bg-sky-400/15 text-sky-100' : 'border-white/15 bg-white/10 text-zinc-100 hover:bg-white/15'}`}><Columns2 className="mr-1 h-3 w-3" />Compare</button>
           <Badge className="border-emerald-400/30 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/10"><HeartPulse className={`mr-1 h-3 w-3 ${isRunning ? 'animate-pulse' : ''}`} />{isRunning ? `Live · ${fps} fps` : 'Paused'}</Badge>
           <Badge className="border-white/15 bg-white/10 text-zinc-100 hover:bg-white/10">Cycle #{snapshot?.cycleNumber ?? agentCycleCount}</Badge>
           <Badge className="border-white/15 bg-white/10 text-zinc-100 hover:bg-white/10">{snapshot ? `${Math.round(heartbeatAge / 1000)}s since heartbeat` : 'Awaiting first cycle'}</Badge>
+          <span className="sr-only" aria-live="polite">{exportStatus}</span>
         </div>
       </div>
 
@@ -161,7 +208,11 @@ export function AgentDecisionFlow() {
             {FLOW_EDGES.map(edge => {
               const branchVisible = !edge.branch || edge.branch === judgeBranch
               const edgeActive = branchVisible && visited.has(edge.from) && visited.has(edge.to)
-              return <path key={`${edge.from}-${edge.to}`} d={edge.path} fill="none" markerEnd="url(#flow-arrow)" className={`${branchVisible ? '' : 'opacity-15'} ${edgeActive ? 'text-emerald-500 [stroke-dasharray:8_6] motion-safe:animate-[dash_1s_linear_infinite]' : 'text-zinc-300'}`} stroke="currentColor" strokeWidth={edgeActive ? 2.5 : 1.5} />
+              const currentEdge = branchVisible && edge.to === activeStage && visited.has(edge.from)
+              return <g key={`${edge.from}-${edge.to}`}>
+                <path d={edge.path} fill="none" markerEnd="url(#flow-arrow)" className={`${branchVisible ? '' : 'opacity-15'} ${edgeActive ? 'text-emerald-500 [stroke-dasharray:8_6] motion-safe:animate-[dash_1s_linear_infinite]' : 'text-zinc-300'}`} stroke="currentColor" strokeWidth={edgeActive ? 2.5 : 1.5} />
+                {currentEdge && <circle r="4" className="fill-emerald-400 motion-reduce:hidden"><animateMotion dur="0.9s" path={edge.path} repeatCount="indefinite" /></circle>}
+              </g>
             })}
             <text x="558" y="55" className="fill-zinc-500 text-[9px]">judge needed</text><text x="486" y="210" className="fill-zinc-500 text-[9px]">judge skipped</text>
           </svg>
@@ -202,10 +253,17 @@ export function AgentDecisionFlow() {
           <div className="mt-2 flex flex-wrap gap-1.5 text-[9px]"><Badge variant="outline">rule · {activeUseCase.ruleType}</Badge><Badge variant="outline">level · {snapshot?.capabilityLevel ?? activeUseCase.level}</Badge><Badge variant="outline">tier · {snapshot?.tier ?? 0}</Badge><Badge variant="outline">judge · {judgeBranch}</Badge><Badge variant="outline">approval · {snapshot?.requiresApproval ? 'required' : 'not reached'}</Badge></div>
         </div>
         <div className="rounded-lg border border-zinc-200 bg-white p-3" data-testid="use-case-comparison">
-          <div className="flex flex-wrap items-center justify-between gap-2"><div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Compare decision contracts</div><label className="sr-only" htmlFor="flow-compare-use-case">Compare with use case</label><select id="flow-compare-use-case" value={comparisonId} onChange={event => setComparisonId(event.target.value)} className="max-w-[210px] rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] text-zinc-700">{USE_CASES.map(useCase => <option key={useCase.id} value={useCase.id}>{useCase.name}</option>)}</select></div>
+          <div className="flex flex-wrap items-center justify-between gap-2"><div><div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Compare decision contracts</div><div className="mt-1 text-[9px] text-zinc-400">Previewed contracts never claim runtime execution.</div></div><label className="sr-only" htmlFor="flow-compare-use-case">Compare with use case</label><select id="flow-compare-use-case" value={comparisonId} onChange={event => setComparisonId(event.target.value)} className="max-w-[210px] rounded-md border border-zinc-200 bg-white px-2 py-1 text-[10px] text-zinc-700">{USE_CASES.map(useCase => <option key={useCase.id} value={useCase.id}>{useCase.name}</option>)}</select></div>
           <div className="mt-2 grid grid-cols-2 gap-2 text-[9px]">{[activeUseCase, comparisonUseCase].map((useCase, index) => <div key={`${useCase.id}-${index}`} className="rounded-md bg-zinc-50 p-2"><div className="truncate font-semibold text-zinc-900">{useCase.name}</div><div className="mt-1 text-zinc-500">{useCase.ruleType} · {useCase.level}</div><div className="mt-1 text-zinc-600">{useCase.actions.length} tasks · {useCase.actions.includes('llm_judge') ? 'judge branch' : 'no judge'}</div></div>)}</div>
         </div>
       </div>
+      {splitComparison && <div className="border-t border-zinc-200 bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_100%)] p-4" data-testid="flow-split-comparison">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2"><div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">Synchronized branch comparison</div><p className="mt-1 text-[10px] text-zinc-500">The cursor mirrors the current replay stage on both lanes; only the left lane contains measured execution status.</p></div><Badge variant="outline" className="bg-white text-[9px]">cursor · {activeStage ?? 'awaiting cycle'}</Badge></div>
+        <div className="grid gap-3 xl:grid-cols-2">
+          <ComparisonLane label="Authoritative runtime" useCaseName={activeUseCase.name} ruleType={activeUseCase.ruleType} actions={proposedActions.length > 0 ? proposedActions.map(action => action.name) : activeUseCase.actions} activeStage={activeStage} traceByStage={traceByStage} />
+          <ComparisonLane label="Contract preview · not executed" useCaseName={comparisonUseCase.name} ruleType={comparisonUseCase.ruleType} actions={comparisonUseCase.actions} activeStage={activeStage} preview />
+        </div>
+      </div>}
     </section>
   )
 }

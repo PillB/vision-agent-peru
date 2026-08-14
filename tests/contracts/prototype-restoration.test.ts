@@ -34,6 +34,9 @@ test('agent flow and measured temporal correlation views remain wired to runtime
   assert.match(camera, /getCoOccurrenceNetwork\(30_000, measuredAt\)/)
   assert.match(flow, /entry\.cycleId === snapshot\.cycleId/)
   assert.match(flow, /data-active=/)
+  assert.match(flow, /buildDecisionFlowSvg/)
+  assert.match(flow, /data-testid="flow-split-comparison"/)
+  assert.match(flow, /Contract preview · not executed/)
 })
 
 test('restored production path uses the pinned detector and exposes no model globals', async () => {

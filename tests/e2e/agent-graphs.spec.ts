@@ -33,6 +33,27 @@ test('decision map remains contained at mobile width', async ({ page }) => {
   expect(documentOverflows).toBeFalsy()
 })
 
+test('decision map exports SVG and opens a truthful synchronized comparison', async ({ page }) => {
+  await openPrototype(page)
+  const flow = page.getByTestId('agent-decision-flow')
+
+  await expect(flow.getByRole('button', { name: 'Export SVG' })).toBeEnabled()
+  await expect(flow.getByRole('button', { name: 'Export PNG' })).toBeEnabled()
+  const downloadPromise = page.waitForEvent('download')
+  await flow.getByRole('button', { name: 'Export SVG' }).click()
+  const download = await downloadPromise
+  expect(download.suggestedFilename()).toMatch(/^vision-agent-flow-.+\.svg$/)
+
+  await flow.getByRole('button', { name: 'Open split comparison' }).click()
+  const comparison = page.getByTestId('flow-split-comparison')
+  await expect(comparison).toBeVisible()
+  await page.locator('#flow-compare-use-case').selectOption('post_quake')
+  await expect(comparison).toContainText(/Post-Sismo/i)
+  await expect(comparison).toContainText('Authoritative runtime')
+  await expect(comparison).toContainText('Contract preview · not executed')
+  await expect(comparison.locator('[data-comparison-stage]')).toHaveCount(18)
+})
+
 test('authoritative cycle replay advances through distinct active stages at 500ms sampling', async ({ page }, testInfo) => {
   test.skip(process.env.RUN_REMOTE_MODELS !== 'true', 'Set RUN_REMOTE_MODELS=true for measured inference and animation evidence')
   test.setTimeout(360_000)

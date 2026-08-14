@@ -1,6 +1,46 @@
 # Worklog — Agentic Camera Intelligence System (Peru)
 
 ---
+Task ID: agent-graph-presentation-2026-08-14
+Agent: Codex
+Task: Add production-safe graph export, synchronized split comparison, and a clearer current-edge animation after the authoritative graph release stabilized.
+
+## Current project status description / assessment
+
+- Started from `main` at `4b7762f`, after PR #8 and its deployed release verification were complete.
+- Reviewed the repository instructions, current worklog, public Pages HTML, live release status, and PillB's `solarize_skill` v2.2 repository before selecting scope.
+- The required `agent-browser` executable is not installed in this environment. The supported cloud-browser connection also timed out before tab acquisition in this round. Local Playwright launch confirmed that no browser executable is present; Playwright's CDN returned truncated zero-length archives during the install attempt. These are environment limitations, not application failures.
+- Stable baseline before implementation: ESLint and TypeScript passed; 18 unit, 28 contract, and 15 model tests passed; the public Pages root returned HTTP 200 and preserved all four top-level destination labels.
+
+## Current goals / completed modifications / verification results
+
+- Added a deterministic, dependency-free SVG export of the current decision graph. It includes all nine stages, branch selection, active stage, stage status/detail, cycle label, and current task list.
+- Added client-only PNG export by rendering the same SVG through Canvas `toBlob`; no API route or server is required.
+- Added a styled export/compare toolbar, accessible labels, export status announcements, and object-URL cleanup.
+- Added a moving token on only the edge entering the current authoritative playback stage. Reduced-motion users do not receive that movement.
+- Replaced the limited two-card comparison with an optional synchronized split view: the left lane displays the authoritative runtime and the right lane is permanently labeled `Contract preview · not executed`. Both expose all nine stages and use-case-specific judge/task branches.
+- Added XML escaping and bounded labels/details to downloadable files.
+- Added Red-first unit, contract, and Playwright coverage for export, malicious labels, downloads, split comparison, 18 comparison nodes, and the existing mobile containment gate.
+- Added a second ten-round Solarize ledger at `docs/solarize/vision-agent-evidence-search-rebuild/agent-graph-presentation-ledger.json`.
+- Current verification: ESLint 0 errors; TypeScript 0 errors; 20 unit + 28 contract + 15 model tests = 63/63 passed; `git diff --check` passed; optimized production build passed with only the unchanged face-api dynamic-require warning.
+- Generated and visually inspected a 2000×1240 PNG from the real export generator. The result preserved hierarchy, branch routing, stage status, active-node emphasis, tasks, and the established zinc/emerald/amber/rose visual language.
+
+## Unresolved issues or risks / next-phase priority
+
+1. Run the new focused Playwright download and split-comparison test in GitHub Actions, where the workflow installs Chromium, Firefox, and WebKit.
+2. Re-run the GitHub Pages static export and deployed live smoke after merging. No API route is used by the new feature.
+3. The preview lane is intentionally not a simulation and never claims execution. A future true two-cycle comparison would need two separately recorded `AgentCycleSnapshot` objects.
+4. The existing relationship score remains a heuristic, not a calibrated probability; cross-feed identity claims remain prohibited.
+5. The unchanged `@vladmandic/face-api` bundler warning remains a separate packaging task.
+
+Stage Summary:
+- Research, Red, Green, refactor, local non-browser verification, visual export inspection, and the ten-round Solarize ledger are complete.
+- Installed-browser CI, merge, Pages deployment, and post-deploy verification remain before final release closure.
+
+
+# Worklog — Agentic Camera Intelligence System (Peru)
+
+---
 Task ID: authoritative-agent-graphs-release-2026-08-14
 Agent: Codex
 Task: Final release, deployed-site verification, and handover closure for the authoritative decision and entity-correlation graphs.
