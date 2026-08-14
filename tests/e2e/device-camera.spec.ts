@@ -85,13 +85,22 @@ test('owner can enroll three local face samples and verify one-to-one without pe
           canvas.width = 320
           canvas.height = 360
           const context = canvas.getContext('2d')!
-          const draw = () => crop.alternate
-            ? context.drawImage(alternateImage, 0, 120, 650, 900, 0, 0, canvas.width, canvas.height)
-            : context.drawImage(image, 850, 80, 500, 680, 0, 0, canvas.width, canvas.height)
+          let track: (MediaStreamTrack & { requestFrame?: () => void }) | undefined
+          const draw = () => {
+            if (crop.alternate) {
+              context.drawImage(alternateImage, 0, 120, 650, 900, 0, 0, canvas.width, canvas.height)
+            } else {
+              context.drawImage(image, 850, 80, 500, 680, 0, 0, canvas.width, canvas.height)
+            }
+            track?.requestFrame?.()
+          }
           crop.draw = draw
           draw()
           window.setInterval(draw, 100)
-          return canvas.captureStream(5)
+          const stream = canvas.captureStream(5)
+          track = stream.getVideoTracks()[0] as MediaStreamTrack & { requestFrame?: () => void }
+          track.requestFrame?.()
+          return stream
         },
       },
     })
@@ -120,17 +129,24 @@ test('owner can enroll three local face samples and verify one-to-one without pe
   await page.getByRole('button', { name: /Verify owner/i }).evaluate((button: HTMLButtonElement) => button.click())
   await expect(page.getByTestId('owner-verification-status')).toContainText(/Owner match · distance/i, { timeout: 180_000 })
   await page.screenshot({ path: testInfo.outputPath('owner-verification-match.png'), fullPage: true })
-  const videoTimeBeforeAlternate = await page.locator('video').evaluate(video => (video as HTMLVideoElement).currentTime)
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const crop = (window as typeof window & { __ownerFaceCrop: { alternate: boolean; draw?: () => void } }).__ownerFaceCrop
+    const video = document.querySelector('video')
+    if (!video) throw new Error('Expected the device-camera video before changing the verification fixture')
+
+    const presented = new Promise<void>((resolve) => {
+      const timeout = window.setTimeout(resolve, 1_000)
+      if (typeof video.requestVideoFrameCallback === 'function') {
+        video.requestVideoFrameCallback(() => {
+          window.clearTimeout(timeout)
+          resolve()
+        })
+      }
+    })
     crop.alternate = true
     crop.draw?.()
+    await presented
   })
-  await expect.poll(
-    () => page.locator('video').evaluate(video => (video as HTMLVideoElement).currentTime),
-    { timeout: 5_000 },
-  ).toBeGreaterThan(videoTimeBeforeAlternate)
-  await page.waitForTimeout(500)
   await page.getByRole('button', { name: /Verify owner/i }).evaluate((button: HTMLButtonElement) => button.click())
   await expect(page.getByTestId('owner-verification-status')).toContainText(/Not verified · distance/i, { timeout: 60_000 })
   await page.screenshot({ path: testInfo.outputPath('owner-verification-reject.png'), fullPage: true })
